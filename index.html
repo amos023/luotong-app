@@ -338,28 +338,6 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 @media (min-width: 768px) {
   .one-car-block .sub-car-row .sub-car-label { display: none !important; }
 }
-
-/* v36 横向位号布局：6#、5#、4#、3#、2#、1# 从左到右。
-   数据 ID、自动计算、保存格式保持原样，只改变呈现方向；每个位号列内保留 L1/L2/M1/M2/R1/R2 六张记录卡。 */
-.horizontal-position-mode{}
-.one-car-block .sub-cars.horizontal-position-mode{}
-.one-car-block .sub-cars{display:grid!important;grid-template-columns:repeat(6,minmax(150px,1fr));gap:6px!important;overflow-x:auto;overflow-y:hidden}
-.one-car-block .sub-car-row.header-row{display:none!important}
-.one-car-block .sub-car-row{display:flex!important;flex:1 1 auto!important;min-width:150px;min-height:0;flex-direction:column!important;gap:4px!important}
-.one-car-block .sub-car-row .sub-car-label{display:flex!important;flex:0 0 26px!important;width:100%!important;height:26px!important;min-height:26px!important;padding:2px!important;writing-mode:horizontal-tb!important;text-orientation:mixed!important;letter-spacing:0!important;font-size:0!important}
-.one-car-block .sub-car-row:nth-child(2) .sub-car-label::after{content:'6#';font-size:12px}
-.one-car-block .sub-car-row:nth-child(3) .sub-car-label::after{content:'5#';font-size:12px}
-.one-car-block .sub-car-row:nth-child(4) .sub-car-label::after{content:'4#';font-size:12px}
-.one-car-block .sub-car-row:nth-child(5) .sub-car-label::after{content:'3#';font-size:12px}
-.one-car-block .sub-car-row:nth-child(6) .sub-car-label::after{content:'2#';font-size:12px}
-.one-car-block .sub-car-row:nth-child(7) .sub-car-label::after{content:'1#';font-size:12px}
-.one-car-block .sub-car-row .grid-container{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;min-width:0!important;min-height:0!important;width:100%!important;overflow-x:hidden!important;overflow-y:auto!important;gap:4px!important;padding:0 2px 2px!important}
-.one-car-block .sub-car-row .grid-container .item-card{flex:0 0 auto!important;min-width:0!important;width:100%!important;min-height:82px;height:auto!important}
-@media(max-width:767px){
-  .one-car-block .sub-cars{grid-template-columns:repeat(6,minmax(132px,1fr));overflow-x:auto!important;overflow-y:hidden!important}
-  .one-car-block .sub-car-row{min-width:132px!important}
-  .one-car-block .sub-car-row .grid-container .item-card{min-height:76px!important}
-}
 </style>
 </head>
 <body>
@@ -561,10 +539,6 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
-  { version: 'v36', date: '2026-11-01', items: [
-    '调整：位号由纵向 6#、5#、4#、3#、2#、1# 改为横向从左到右排列',
-    '保留：每个位号列内继续显示 L1、L2、M1、M2、R1、R2 六张记录卡，数据字段、自动计算和本地存储格式保持不变'
-  ]},
   { version: 'v34', date: '2026-11-01', items: [
     '修复：时间输入未补冒号时（如 2350、850）也能正确参与跨午夜判断，日期不会在输入过程中和失焦后显示不一致'
   ]},
@@ -3015,4 +2989,4 @@ boot();
 })();
 </script>
 </body>
-</html>
+  </html>
