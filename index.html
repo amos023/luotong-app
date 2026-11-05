@@ -50,10 +50,7 @@ body{background:#f2f2f7;margin:0;padding:0;color:#333;font-size:13px;overflow:hi
 body.keyboard-open .tab-content{scroll-snap-type:y mandatory !important;scroll-behavior:smooth !important}
 
 .cars-container{display:flex;flex-direction:column;gap:12px;width:100%}
-/* 离屏车块跳过布局与绘制；高度由 Layout.adjustCarHeights 显式设定，因此不会引起滚动跳动。 */
-.car-block{flex:0 0 auto;background:#fff;border-radius:10px;border:1px solid #e0e0e0;box-shadow:0 2px 6px rgba(0,0,0,.04);width:100%!important;max-width:100%!important;scroll-snap-align:start;content-visibility:auto;contain-intrinsic-size:auto 640px}
-/* 需要测量离屏块（备注跳转、车次定位）时临时取消跳过。 */
-.car-block.force-render{content-visibility:visible!important}
+.car-block{flex:0 0 auto;background:#fff;border-radius:10px;border:1px solid #e0e0e0;box-shadow:0 2px 6px rgba(0,0,0,.04);width:100%!important;max-width:100%!important;scroll-snap-align:start}
 .one-car-block{background:#fff;height:100%;display:flex;flex-direction:column;overflow:hidden;padding:10px 10px 8px 10px;transition:height .15s ease}
 .one-car-block.collapsed{height:auto!important}
 .one-car-block.collapsed .sub-cars{display:none!important}
@@ -138,12 +135,16 @@ body.locked .clear-btn{pointer-events:none;opacity:.35}
 /* 未填写时间红框提醒：仅在后台管理开启后生效，默认关闭 */
 html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-card:has(input[id^="start_"]:placeholder-shown),
 html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-card:has(input[id^="time_"]:placeholder-shown){border:1px solid #e53935!important;box-shadow:inset 0 0 0 1px rgba(229,57,53,.12)}
+/* 车头栏个数低于批号预设个数：数值标红提醒 */
+.one-car-block .input-group-top input.count-low{color:#e53935!important;font-weight:700!important}
 
 .card-left-col{flex:0 0 48px;width:48px;display:flex;flex-direction:column;align-items:center;justify-content:stretch;gap:0;border-right:1px dashed #d8e4f5;padding:2px;min-height:0;overflow:hidden}
 .left-label{flex:1 1 0;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:15px;font-weight:bold;color:#007aff;letter-spacing:0;line-height:1;white-space:nowrap;user-select:none;overflow:hidden;padding:0}
 .left-title-input{flex:1 1 0;min-height:0;width:100%;text-align:center;vertical-align:middle;font-size:15px;font-weight:bold;color:#007aff;border:none;background:transparent;padding:0;outline:none;line-height:normal}
 .left-title-input:focus{background:#eef5ff;border-radius:3px;box-shadow:none}
 .left-title-input[readonly]{background:transparent;color:#888;border:none;cursor:not-allowed}
+/* 手动改过的位号（与基准车不一致）显示红色，和自动带出的位号区分开 */
+.left-title-input.title-custom{color:#e53935!important;font-weight:bold}
 
 .card-right-col{flex:1 1 0;min-width:0;display:flex;flex-direction:row;gap:4px;justify-content:space-between;padding-right:14px}
 .card-right-col .card-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:3px;justify-content:space-around}
@@ -159,15 +160,6 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .remark-card textarea{width:100%!important;height:100%!important;min-height:36px;resize:none;border:1px solid #ccc;border-radius:3px;padding:4px;font-size:12px;text-align:left;background:#fff;outline:none;box-sizing:border-box;font-family:inherit}
 .remark-card textarea:focus{box-shadow:inset 0 0 0 1px #007aff;border-color:#007aff}
 
-.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center}
-.modal-overlay.active{display:flex}
-.modal-box{background:#fff;border-radius:12px;padding:20px;width:90%;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,.2);text-align:center}
-.modal-title{font-size:18px;font-weight:bold;color:#007aff;margin-bottom:15px}
-.modal-input{width:100%;padding:10px;margin-bottom:15px;border:1px solid #ccc;border-radius:6px;font-size:16px;text-align:center;letter-spacing:2px}
-.modal-btn{width:100%;padding:12px;background:#007aff;color:#fff;border:none;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:10px}
-.modal-btn.danger{background:#ff3b30}
-.modal-btn.success{background:#34c759}
-.modal-btn.cancel{background:#e0e0e0;color:#333}
 .error-text{color:#ff3b30;font-size:13px;margin-bottom:10px;display:none}
 
 .admin-panel-box{max-width:720px!important;width:95%!important;padding:0!important;text-align:left!important;overflow:hidden;display:flex!important;flex-direction:column;max-height:92vh;border-radius:14px}
@@ -295,7 +287,6 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .app-toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top, 0px));transform:translate(-50%,-8px);z-index:12000;max-width:calc(100vw - 32px);padding:10px 15px;border-radius:9px;background:rgba(180,35,24,.96);color:#fff;font-size:13px;line-height:1.45;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.18);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease;}
 .app-toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
 
-
 /* v32：位号区姓名、时间、车次、班次字体保持原设置 */
 .one-car-block input[id^="name_"],
 .one-car-block input[id^="start_"],
@@ -338,7 +329,219 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 @media (min-width: 768px) {
   .one-car-block .sub-car-row .sub-car-label { display: none !important; }
 }
+/* ===== 后台与登录 ===== */
+.admin-panel-box{border-radius:18px!important;box-shadow:0 20px 50px rgba(16,24,40,.24)!important}
+.admin-panel-header{background:#fff!important;border-bottom:1px solid #eef2f7!important;padding:16px 16px 14px!important;box-shadow:none!important}
+.admin-panel-title{font-size:16.5px!important;font-weight:700!important;color:#1677ff!important;letter-spacing:.4px!important}
+.admin-panel-close{background:#f1f4f8!important;color:#64748b!important;border:none!important;width:30px!important;height:30px!important;font-size:15px!important;border-radius:50%!important}
+.admin-panel-tabs{background:#fff!important;border-bottom:1px solid #eef2f7!important}
+.admin-tab{color:#7b8798!important;font-size:13px!important;padding:12px 6px!important}
+.admin-tab.active{color:#1677ff!important;border-bottom-color:#1677ff!important;background:#f6faff!important}
+.admin-stat-card{border-radius:14px!important;border:1px solid #eef2f7!important;background:#fff!important;box-shadow:0 1px 2px rgba(16,24,40,.05)!important;padding:12px 14px!important}
+.admin-btn{border-radius:12px!important;font-weight:700!important}
+#loginModal .modal-box{border-radius:16px!important;padding:20px 18px!important}
+#loginModal .modal-title{color:#1677ff!important;text-align:center!important;font-size:17px!important;font-weight:700!important;margin-bottom:16px!important}
+#loginModal .modal-input{min-height:46px!important;border:1px solid #dfe5ee!important;border-radius:12px!important;background:#f8fafc!important;font-size:15px!important;letter-spacing:0!important;text-align:center!important;margin-bottom:12px!important}
+#loginModal .modal-input:focus{background:#fff!important;border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255,.14)!important}
+#loginModal .modal-btn{border-radius:12px!important;min-height:48px!important;font-size:15.5px!important}
+#loginModal .modal-btn.cancel{background:#f1f4f8!important;color:#475569!important;border:1px solid #e2e8f0!important;box-shadow:none!important}
 </style>
+<style id="ui-shared">
+/* ===== 弹窗基础 ===== */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;justify-content:center;align-items:center;z-index:1000}
+.modal-overlay.active{display:flex}
+.modal-box{background:#fff;width:90%;text-align:center}
+.modal-input{width:100%}
+.error-text{color:#ff3b30;font-size:13px;margin-bottom:10px;display:none}
+/* ===== 统一弹窗 ===== */
+.modal-overlay{background:rgba(15,23,42,.45)!important;backdrop-filter:blur(1.5px);align-items:flex-start!important;overflow-y:auto!important;padding:12px 12px 24px!important;-webkit-overflow-scrolling:touch!important;max-height:var(--kb-view-h,100vh)!important}
+.modal-box{border-radius:16px!important;padding:20px 18px!important;max-width:420px!important;max-height:none!important;margin:0 auto!important;box-shadow:0 18px 48px rgba(16,24,40,.22)!important}
+.modal-overlay.active .modal-box{animation:modalIn .16s ease}
+@keyframes modalIn{from{opacity:.5;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.modal-title{font-size:17px!important;font-weight:700!important;color:#1677ff!important;margin-bottom:16px!important;letter-spacing:.3px!important;text-align:center!important}
+.modal-input,.modal-box input[type="text"],.modal-box input[type="password"],.modal-box input[type="number"]{min-height:46px!important;border:1px solid #dfe5ee!important;border-radius:12px!important;background:#f8fafc!important;color:#0f172a!important;font-size:14px!important;font-weight:500!important;padding:9px 12px!important;letter-spacing:0!important;text-align:left!important;margin-bottom:10px!important}
+.modal-input:focus,.modal-box input:focus{background:#fff!important;border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255,.14)!important;outline:none!important}
+.modal-input::placeholder,.modal-box input::placeholder{color:#aab4c5!important;font-size:13px!important}
+.modal-btn{width:100%!important;min-height:48px!important;border-radius:12px!important;border:none!important;background:linear-gradient(135deg,#3189ff,#1677ff 55%,#0d63d6)!important;color:#fff!important;font-size:15.5px!important;font-weight:700!important;letter-spacing:1px!important;box-shadow:0 6px 16px rgba(22,119,255,.24)!important;margin-bottom:10px!important}
+.modal-btn.cancel{background:#f1f4f8!important;color:#475569!important;box-shadow:none!important;border:1px solid #e2e8f0!important}
+.modal-btn.danger{background:linear-gradient(135deg,#ff7a72,#ff3b30)!important;box-shadow:0 6px 16px rgba(255,59,48,.22)!important}
+.modal-btn.success{background:linear-gradient(135deg,#4ed36a,#34c759)!important;box-shadow:0 6px 16px rgba(52,199,89,.22)!important}
+.modal-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin-top:16px!important}
+.modal-actions .modal-btn,.modal-actions .btn{margin:0!important;width:100%!important;min-height:48px!important;border-radius:12px!important;font-size:15.5px!important;font-weight:700!important;letter-spacing:1px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.modal-actions .modal-btn.cancel,.modal-actions .btn:not(.primary){background:#f1f4f8!important;border:1px solid #e2e8f0!important;color:#475569!important;box-shadow:none!important;order:1}
+.modal-actions .modal-btn:not(.cancel),.modal-actions .btn.primary{order:2}
+.modal-actions.modal-actions-3{grid-template-columns:1fr 1fr 1fr!important}
+.modal-actions.modal-actions-1{grid-template-columns:1fr!important}
+/* 自定义批号弹窗：两列网格 */
+.batch-add-form{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px 12px!important;text-align:left!important;margin-bottom:6px!important}
+.batch-add-field{display:flex!important;flex-direction:column!important;min-width:0!important;align-items:stretch!important}
+.batch-add-field label{font-size:12px!important;color:#666!important;display:block!important;margin-bottom:4px!important;line-height:1.3!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.batch-add-field .modal-input{width:100%!important;margin-bottom:0!important;min-height:44px!important;font-size:13.5px!important;padding:8px 10px!important}
+.batch-add-form .batch-add-field:nth-child(1){grid-column:1!important;grid-row:1!important}
+.batch-add-form .batch-add-field:nth-child(4){grid-column:2!important;grid-row:1!important}
+.batch-add-form .batch-add-field:nth-child(2){grid-column:1!important;grid-row:2!important}
+.batch-add-form .batch-add-field:nth-child(3){grid-column:2!important;grid-row:2!important}
+@media(max-width:340px){.batch-add-field .modal-input{font-size:12.5px!important;padding:8px 8px!important}}
+.modal-actions.modal-actions-3 .modal-btn{font-size:13.5px!important;letter-spacing:0!important}
+@media(max-width:599px){.modal-actions.modal-actions-3 .modal-btn{font-size:12.5px!important;padding:0 4px!important}}
+/* ===== 下拉 ===== */
+select{appearance:none!important;-webkit-appearance:none!important;pointer-events:none!important;-webkit-tap-highlight-color:transparent;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23808b9c' d='M1 1l5 5 5-5'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 8px center!important;background-size:10px 7px!important;padding-right:24px!important}
+select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255,.14)!important;outline:none!important}
+.picker-mask{display:none;position:fixed;inset:0;z-index:20000;background:rgba(15,23,42,.45);align-items:flex-end;justify-content:center}
+.picker-mask.active{display:flex}
+.picker-box{width:100%;max-width:520px;max-height:72vh;background:#fff;border-radius:18px 18px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;box-shadow:0 -10px 30px rgba(16,24,40,.18);animation:pickerUp .18s ease}
+@keyframes pickerUp{from{transform:translateY(16px);opacity:.6}to{transform:translateY(0);opacity:1}}
+.picker-title{flex:0 0 auto;font-size:var(--fs-14);font-weight:700;color:#0f172a;text-align:center;padding:4px 0 12px}
+.picker-list{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:2px}
+.picker-item{flex:0 0 auto;min-height:48px;border:1px solid #e6ecf5;background:#f8fafc;color:#1e293b;border-radius:12px;font-size:var(--fs-15);font-weight:600;text-align:center;padding:0 12px;cursor:pointer}
+.picker-item:active{background:#eaf3ff}
+.picker-item.on{border-color:#1677ff;background:#eaf3ff;color:#0d5fcc;box-shadow:0 0 0 2px rgba(22,119,255,.16)}
+.picker-item.picker-item-action{border-style:dashed;color:#5856d6;background:#f7f6ff}
+.picker-item.picker-item-danger{color:#e0395b;background:#fff5f6;border-color:#fbd0d5}
+.picker-cancel{flex:0 0 auto;margin-top:10px;min-height:50px;border:1px solid #e2e8f0;background:#f1f4f8;color:#475569;border-radius:12px;font-size:15px;font-weight:700}
+/* ===== Toast ===== */
+/* ===== 字号变量 ===== */
+:root{--fs-10:10px;--fs-11:11px;--fs-12:12px;--fs-13:13px;--fs-14:14px;--fs-15:15px;--fs-16:16px}
+.app-toast{position:fixed!important;left:50%!important;top:calc(16px + env(safe-area-inset-top,0px))!important;transform:translate(-50%,-10px)!important;z-index:40000!important;max-width:calc(100vw - 40px)!important;padding:11px 16px!important;border-radius:12px!important;background:rgba(30,41,59,.94)!important;color:#fff!important;font-size:14px!important;line-height:1.45!important;font-weight:600!important;text-align:center!important;box-shadow:0 8px 24px rgba(16,24,40,.26)!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:opacity .2s ease,transform .2s ease!important;letter-spacing:0!important;font-size:var(--fs-14)!important}
+.app-toast.show{opacity:1!important;visibility:visible!important;transform:translate(-50%,0)!important}
+.app-toast.ok,.app-toast.err,.app-toast.warn{background:rgba(30,41,59,.94)!important}
+.fault-toast{display:none!important}
+</style>
+<script id="ui-js" type="text/plain">
+(function(){
+  if(window.__pickerReady) return;
+  window.__pickerReady=true;
+  var mask=null, list=null, titleEl=null, openedAt=0;
+  function ensure(){
+    if(mask) return;
+    mask=document.createElement('div');
+    mask.className='picker-mask';
+    var box=document.createElement('div');
+    box.className='picker-box';
+    titleEl=document.createElement('div');
+    titleEl.className='picker-title';
+    list=document.createElement('div');
+    list.className='picker-list';
+    var cancel=document.createElement('button');
+    cancel.type='button';
+    cancel.className='picker-cancel';
+    cancel.textContent='取消';
+    box.appendChild(titleEl);
+    box.appendChild(list);
+    box.appendChild(cancel);
+    mask.appendChild(box);
+    document.body.appendChild(mask);
+    cancel.addEventListener('click',close);
+    mask.addEventListener('click',function(e){
+      if(e.target!==mask) return;
+      if(Date.now()-openedAt<250) return;
+      close();
+    });
+  }
+  function close(){
+    if(mask) mask.classList.remove('active');
+  }
+  function labelOf(sel){
+    var field=sel.closest?sel.closest('.field'):null;
+    var label=field&&field.querySelector('label');
+    var text=label?label.textContent:'';
+    text=String(text||'').replace(/^\s*\d+[.、]\s*/,'').replace(/^[:\s]+/,'');
+    return text||sel.getAttribute('aria-label')||'请选择';
+  }
+  function open(sel){
+    ensure();
+    openedAt=Date.now();
+    titleEl.textContent=labelOf(sel);
+    list.innerHTML='';
+    Array.prototype.slice.call(sel.options).forEach(function(opt,index){
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.className='picker-item';
+      if(opt.value==='__add__') btn.className+=' picker-item-action';
+      if(opt.value==='__del__') btn.className+=' picker-item-danger';
+      if(index===sel.selectedIndex) btn.className+=' on';
+      btn.textContent=opt.textContent;
+      btn.addEventListener('click',function(ev){
+        ev.stopPropagation();
+        sel.value=opt.value;
+        sel.dispatchEvent(new Event('change',{bubbles:true}));
+        close();
+      });
+      list.appendChild(btn);
+    });
+    mask.classList.add('active');
+    var current=list.querySelector('.picker-item.on');
+    if(current && current.scrollIntoView) current.scrollIntoView({block:'center'});
+  }
+  function findSelect(target){
+    var sel=target.closest('select');
+    if(sel) return sel;
+    var host=target.closest('.batch-box,.input-group-top,.reason-row,.series-box,.cart-box,.field');
+    return host?host.querySelector('select'):null;
+  }
+  document.addEventListener('click',function(e){
+    var target=e.target;
+    if(!target||!target.closest) return;
+    if(mask&&mask.contains(target)) return;
+    var sel=findSelect(target);
+    if(!sel||sel.disabled) return;
+    e.preventDefault();
+    e.stopPropagation();
+    open(sel);
+  },true);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&mask&&mask.classList.contains('active')) close();
+  });
+  window.__openPicker=open;
+  window.__closePicker=close;
+})();
+(function(){
+  function sync(){
+    var vv=window.visualViewport;
+    var h=vv?vv.height:window.innerHeight;
+    var top=vv?vv.offsetTop:0;
+    document.documentElement.style.setProperty('--kb-view-h', h + 'px');
+    document.documentElement.style.setProperty('--kb-view-top', top + 'px');
+    var list=document.querySelectorAll('.modal-overlay');
+    for(var i=0;i<list.length;i++){
+      var el=list[i];
+      if(el.classList.contains('active')){
+        el.style.top=top+'px';
+        el.style.height=h+'px';
+        el.style.bottom='auto';
+      }else{
+        el.style.top=''; el.style.height=''; el.style.bottom='';
+      }
+    }
+  }
+  window.__syncModal=sync;
+  window.addEventListener('resize',sync);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',sync);
+    window.visualViewport.addEventListener('scroll',sync);
+  }
+  document.addEventListener('focusin',function(){setTimeout(sync,60);setTimeout(sync,300);},true);
+  document.addEventListener('focusout',function(){setTimeout(sync,120);},true);
+  document.addEventListener('click',function(){setTimeout(sync,60);setTimeout(sync,300);},true);
+  sync();
+})();
+(function(){
+  if(window.__toastReady) return;
+  window.__toastReady=true;
+  function toast(msg,kind){
+    var el=document.getElementById('appToast');
+    if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);}
+    el.className='app-toast';
+    el.textContent=msg||'';
+    void el.offsetWidth;
+    el.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t=setTimeout(function(){el.classList.remove('show')},2200);
+  }
+  window.showToast=toast;
+  window.__toast=toast;
+})();
+</script>
 </head>
 <body>
 <div id="loading-mask">加载中，请稍候...</div>
@@ -367,9 +570,11 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
     <div class="modal-box">
         <div class="modal-title">重置数据</div>
         <p style="font-size:13px;color:#666;margin:0 0 15px 0;">请选择重置范围：</p>
-        <button class="modal-btn danger" data-action="reset-current">重置当前模板</button>
-        <button class="modal-btn danger" data-action="reset-all">重置全部模板</button>
-        <button class="modal-btn cancel" data-action="close-modal" data-modal="resetModal">取消</button>
+        <div class="modal-actions modal-actions-3">
+            <button class="modal-btn danger" data-action="reset-current">重置当前</button>
+            <button class="modal-btn danger" data-action="reset-all">重置全部</button>
+            <button class="modal-btn cancel" data-action="close-modal" data-modal="resetModal">取消</button>
+        </div>
     </div>
 </div>
 
@@ -377,7 +582,9 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
     <div class="modal-box" style="max-width:520px;text-align:left;">
         <div class="modal-title" style="text-align:center;">📋 更新日志</div>
         <div id="logContent" style="max-height:60vh;overflow-y:auto;text-align:left;padding:2px;"></div>
-        <button class="modal-btn cancel" style="margin-top:12px;" data-action="close-modal" data-modal="logModal">关闭</button>
+        <div class="modal-actions modal-actions-1">
+            <button class="modal-btn cancel" data-action="close-modal" data-modal="logModal">关闭</button>
+        </div>
     </div>
 </div>
 
@@ -386,8 +593,10 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
         <div class="modal-title">🔒 后台管理登录</div>
         <input type="password" id="adminPassword" class="modal-input" placeholder="请输入管理密码">
         <div class="error-text" id="loginError">密码错误！</div>
-        <button class="modal-btn" data-action="check-password">确认登录</button>
-        <button class="modal-btn cancel" data-action="close-modal" data-modal="loginModal">取消</button>
+        <div class="modal-actions">
+            <button class="modal-btn cancel" data-action="close-modal" data-modal="loginModal">取消</button>
+            <button class="modal-btn" data-action="check-password">确认</button>
+        </div>
     </div>
 </div>
 
@@ -434,7 +643,7 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
                     <div class="admin-section-title">提醒设置</div>
                     <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
                         <input type="checkbox" id="settingMissingTimeHighlight" style="width:18px;height:18px;">
-                        未填写时间红色边框提醒（默认关闭）
+                        未填写时间红色边框提醒（默认开启）
                     </label>
                 </div>
                 <div class="admin-section">
@@ -473,7 +682,7 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.72<br>
+                    满卷时间计算工具 v1.89<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -484,18 +693,28 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 <div class="modal-overlay" id="batchAddModal">
     <div class="modal-box">
         <div class="modal-title">＋ 自定义批号</div>
-        <div style="text-align:left; margin-bottom:15px;">
-            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">批号名称 *</label>
-            <input type="text" id="batchAddName" class="modal-input" style="margin-bottom:10px;text-align:left;letter-spacing:0;" placeholder="请输入批号">
-            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">旦数（可留空）</label>
-            <input type="text" id="batchAddDenier" class="modal-input" style="margin-bottom:10px;text-align:left;letter-spacing:0;" placeholder="例如 470">
-            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">工艺时间（时:分:秒，可留空）</label>
-            <input type="text" id="batchAddPT" class="modal-input" style="margin-bottom:10px;text-align:left;letter-spacing:0;" placeholder="例如 1:18:51">
-            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">个数（可留空）</label>
-            <input type="text" id="batchAddCount" class="modal-input" style="margin-bottom:10px;text-align:left;letter-spacing:0;" placeholder="例如 288 或 48">
+        <div class="batch-add-form">
+            <div class="batch-add-field">
+                <label>批号名称 *</label>
+                <input type="text" id="batchAddName" class="modal-input" placeholder="请输入批号">
+            </div>
+            <div class="batch-add-field">
+                <label>旦数（可留空）</label>
+                <input type="text" id="batchAddDenier" class="modal-input" placeholder="例如 470">
+            </div>
+            <div class="batch-add-field">
+                <label>工艺时间（时:分:秒，可留空）</label>
+                <input type="text" id="batchAddPT" class="modal-input" placeholder="例如 1:18:51">
+            </div>
+            <div class="batch-add-field">
+                <label>个数（可留空）</label>
+                <input type="text" id="batchAddCount" class="modal-input" placeholder="例如 288 或 48">
+            </div>
         </div>
-        <button class="modal-btn" data-action="batch-add-ok">确定</button>
-        <button class="modal-btn cancel" data-action="batch-add-cancel">取消</button>
+        <div class="modal-actions">
+            <button class="modal-btn cancel" data-action="batch-add-cancel">取消</button>
+            <button class="modal-btn" data-action="batch-add-ok">确认</button>
+        </div>
     </div>
 </div>
 
@@ -503,11 +722,335 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
     <div class="modal-box">
         <div class="modal-title" id="confirmModalTitle">确认</div>
         <p id="confirmModalText" style="font-size:14px;color:#444;line-height:1.6;margin:0 0 18px 0;white-space:pre-line;"></p>
-        <button class="modal-btn danger" data-action="confirm-modal-ok">确定</button>
-        <button class="modal-btn cancel" data-action="confirm-modal-cancel">取消</button>
+        <div class="modal-actions">
+            <button class="modal-btn cancel" data-action="confirm-modal-cancel">取消</button>
+            <button class="modal-btn danger" data-action="confirm-modal-ok">确认</button>
+        </div>
     </div>
 </div>
 
+<template id="fault-template-source">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>落筒故障录入</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f5f9;color:#243044;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px}
+header{background:linear-gradient(135deg,#1677ff,#365ee8);color:white;padding:20px 16px 24px}
+header h1{font-size:22px;margin:0 0 6px}header p{margin:0;font-size:13px;opacity:.9}
+main{width:100%;max-width:none;margin:0;padding:18px clamp(12px,2vw,30px) 32px}.panel{width:100%;background:white;border-radius:14px;padding:clamp(18px,2vw,28px);box-shadow:0 4px 18px #1c31500d}
+.field{margin-bottom:18px}.field:last-child{margin-bottom:0}.field label{display:block;font-weight:650;margin-bottom:8px;color:#35445a}
+input,select{font:inherit;width:100%;min-height:44px;border:1px solid #d6dce7;border-radius:9px;padding:10px 12px;background:#fff;color:#243044;outline:none}
+input:focus,select:focus{border-color:#1677ff;box-shadow:0 0 0 3px #1677ff1a}
+.time-row{display:flex;gap:8px}.time-row input{min-width:0;flex:1}.btn{border:0;border-radius:9px;padding:11px 14px;font:inherit;font-weight:650;cursor:pointer;white-space:nowrap}.now{background:#eaf2ff;color:#1768d5}.toggle{background:#eef2f7;color:#526176;border:1px solid #dce2ec;min-width:90px}.toggle.active{background:#e5f8ed;border-color:#8ed6ab;color:#168348}
+.reason-row{display:flex;gap:8px}.reason-row select{flex:1;min-width:0}
+.toggle-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}.toggle-field{min-width:0}.toggle-field label{display:block;font-weight:650;margin-bottom:8px;color:#35445a}.toggle-field .toggle{width:100%}.number-row{display:flex;gap:8px}.number-row input{flex:1;min-width:0}.number-row button{min-width:100px;background:#eaf8ef;color:#168348;border:1px solid #bce8ca}
+.actions{display:flex;gap:10px;margin-top:22px}.primary{flex:1;background:#1677ff;color:white}.secondary{background:#eef2f7;color:#4b5870}
+.records{margin-top:16px}.records h2{font-size:16px;margin:0 0 12px}.record{border:1px solid #e4e8f0;border-radius:10px;padding:12px;margin-bottom:8px}.record-top{display:flex;justify-content:space-between;gap:8px;font-weight:700}.record small{display:block;color:#6c788b;margin-top:6px;line-height:1.6}.record button{border:0;background:#fff0ef;color:#c43c36;border-radius:6px;padding:5px 8px}
+.empty{color:#7a8495;font-size:13px;text-align:center;padding:14px 0}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 8px}
+.field{margin-bottom:10px;min-width:0}
+.field.full{grid-column:1 / -1}
+.field>input,.field>select,.field .time-row,.field .reason-row,.field .number-row{min-width:0}
+.time-row .now{padding:7px 8px;min-width:52px}
+.time-row{gap:4px}.time-row input{flex:1 1 auto;min-width:0;padding:6px 4px;font-size:12px}.time-row .now{flex:0 0 auto;min-width:46px;padding:6px 6px;font-size:12px}
+.reason-row select{width:100%;min-width:0}
+@media(max-width:599px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.field label{font-size:11px}.time-row input{font-size:11px}.time-row .now{min-width:42px;padding:6px 4px;font-size:11px}}
+
+:root{--blue:#007aff;--green:#34c759;--purple:#5856d6;--orange:#ff9500;--line:#e0e0e0;--muted:#666;--page:#f2f2f7}
+body{background:var(--page);color:#333;font-size:13px;overflow-y:auto}
+header{background:#fff;color:#333;padding:12px 12px 10px;border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.08)}
+header h1{font-size:16px;color:var(--blue);margin:0 0 4px;padding-left:6px;border-left:3px solid var(--blue)}
+header p{margin:0;font-size:12px;color:var(--muted);opacity:1}
+main{padding:12px 10px 24px}
+.panel{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.field{margin-bottom:12px}.field label{font-size:12px;font-weight:bold;margin-bottom:5px;color:var(--muted)}
+input,select{min-height:32px;border:1px solid #ccc;border-radius:6px;padding:6px 8px;background:#fff;color:#333;font-size:13px}
+input:focus,select:focus{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.time-row,.reason-row,.number-row{gap:6px}.btn{border:1px solid #ccc;border-radius:5px;padding:7px 10px;font-size:13px;font-weight:bold;color:#333;background:#fff}.now{background:#e6f0ff;color:var(--blue);border-color:#cce0ff}.toggle{background:#f2f2f7;color:#666;border-color:#d5dbe2}.toggle.active{background:#e8f8ee;border-color:#8ed6ab;color:#218838}.reason-row button{background:#f0efff;color:var(--purple);border-color:#d8d3ff}.number-row button{background:#e8f8ee;color:#218838;border-color:#bce8ca}
+.actions{margin-top:16px}.primary{background:var(--blue);color:#fff;border-color:var(--blue)}.secondary{background:#eef2f7;color:#4b5870;border-color:#d5dbe2}
+.records{margin-top:12px}.records h2{font-size:14px;color:var(--blue);padding-left:5px;border-left:3px solid var(--blue);margin:0 0 10px}.record{border:1px solid #eee;border-radius:6px;padding:10px;margin-bottom:6px;background:#fafafa}.record-top{font-size:13px}.record small{color:#666}.record button{border:1px solid #f2b8b5;background:#fff0ef;color:#c43c36;border-radius:4px;padding:4px 7px}.empty{color:#888}
+@media(min-width:600px){main{padding:16px}.panel{padding:14px}}
+@media(max-width:599px){main{padding:10px}.panel{padding:12px;border-radius:10px}.toggle-pair{gap:8px}.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 8px}.field{margin-bottom:10px;min-width:0}.field.full{grid-column:1 / -1}}
+:root{--blue:#007aff;--green:#34c759;--purple:#5856d6;--line:#e5e7eb;--muted:#6b7280;--page:#f2f2f7;--card:#fff}
+body{background:var(--page);color:#1f2937;font-size:13px}
+header{background:#fff;padding:14px 14px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+header h1{font-size:17px;color:var(--blue);margin:0 0 6px;padding-left:8px;border-left:3px solid var(--blue);line-height:1.2}
+header p{margin:0;font-size:12px;color:var(--muted);line-height:1.5}
+main{padding:12px 10px 28px}
+.panel{border:none;border-radius:12px;padding:14px;background:var(--card);box-shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.1)}
+label,.field label,.toggle-field label{font-size:12px;font-weight:600;color:#475569;margin-bottom:6px;letter-spacing:.2px}
+input,select{min-height:40px;border:1px solid #d7dce3;border-radius:9px;padding:8px 10px;background:#fff;color:#111827;font-size:14px;transition:border-color .15s,box-shadow .15s}
+input::placeholder{color:#9aa4b2;font-size:13px}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,122,255,.12)}
+.field{margin-bottom:12px}
+.time-row{gap:6px}.time-row input{flex:1 1 auto;min-width:0;min-height:40px;padding:8px 8px;font-size:13px}
+.time-row .now{flex:0 0 auto;min-width:56px;min-height:40px;padding:0 10px;border-radius:9px;border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;font-weight:600;font-size:13px}
+.time-row .now:active{background:#dbeafe}
+.number-row{gap:6px}.number-row input{flex:1 1 auto;min-width:0}.number-row button{min-width:0;flex:0 0 auto;padding:0 10px;min-height:40px;border-radius:9px;border:1px solid #bbf7d0;background:#f0fdf4;color:#15803d;font-weight:600;font-size:13px}
+.reason-row select{width:100%}
+.toggle-pair{gap:10px}
+.triple-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,0.9fr);gap:8px}
+.triple-pair .toggle-field{min-width:0}
+.triple-pair .toggle-field>label{display:block;font-size:11px;font-weight:600;color:#475569;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.triple-pair .toggle-field .toggle,.triple-pair .toggle-field input{width:100%;min-width:0;min-height:40px;font-size:13px;padding:0 6px}
+.triple-pair .toggle-field input{text-align:center}
+.rec-wide{grid-column:1 / -1}
+@media(max-width:599px){.triple-pair{gap:5px}.triple-pair .toggle-field>label{font-size:10px;margin-bottom:4px}.triple-pair .toggle-field .toggle,.triple-pair .toggle-field input{min-height:38px;font-size:12px;padding:0 4px}}
+.toggle{min-height:40px;border-radius:9px;font-size:14px;font-weight:600;border:1px solid #fecdd3;background:#fff1f2;color:#e11d48}
+.toggle.active{border-color:#86efac;background:#f0fdf4;color:#15803d}
+.btn{border-radius:9px;font-size:14px;font-weight:600}
+.actions{margin-top:6px}
+.primary{min-height:46px;border-radius:10px;background:linear-gradient(180deg,#2b8cff,#007aff);border:1px solid #007aff;color:#fff;font-size:15px;box-shadow:0 2px 6px rgba(0,122,255,.28)}
+.primary:active{background:#0069db}
+.records{margin-top:12px;border-radius:12px;border:none;box-shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.1)}
+.records h2{font-size:15px;color:#0f172a;padding:0 0 0 8px;border-left:3px solid var(--blue);margin:0 0 12px;line-height:1.2}
+.record{border:1px solid #eef1f5;border-radius:10px;padding:12px;margin-bottom:10px;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.record-top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;font-weight:600;color:#0f172a;margin-bottom:10px}
+.rec-del{border:1px solid #fecdd3;background:#fff1f2;color:#e11d48;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600}
+.rec-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.rec-cell{display:flex;flex-direction:column;gap:2px;background:#f8fafc;border-radius:8px;padding:7px 9px;min-width:0}
+.rec-k{font-size:11px;color:#8b95a5;letter-spacing:.2px}
+.rec-v{font-size:13px;color:#1f2937;font-weight:600;word-break:break-all}
+.empty{color:#94a3b8;font-size:13px;text-align:center;padding:20px 0}
+@media(max-width:599px){main{padding:10px 8px 24px}.panel{padding:12px;border-radius:12px}.field{margin-bottom:10px}.field label{font-size:11px}input,select{font-size:13px;min-height:38px}.time-row input{font-size:12px;min-height:38px}.time-row .now{font-size:12px;min-height:38px;min-width:50px;padding:0 8px}.rec-grid{gap:6px}.rec-cell{padding:6px 8px}.rec-k{font-size:10px}.rec-v{font-size:12px}.primary{min-height:44px;font-size:14px}}
+header{display:none!important}
+main{padding:12px 10px 28px}
+.time-row{display:flex;gap:0;align-items:stretch;border:1px solid #dbe3ee;border-radius:11px;background:#f8fafc;overflow:hidden;transition:border-color .16s,box-shadow .16s,background .16s}
+.time-row input{flex:1 1 auto;min-width:0;border:none;background:transparent;box-shadow:none;border-radius:0;min-height:44px;padding:0 4px 0 12px;font-size:13px;text-align:left}
+.time-row input:focus{background:transparent;border:none;box-shadow:none}
+.time-row .now{flex:0 0 auto;width:auto;min-width:0;min-height:44px;margin:0;padding:0 12px;border:none;border-left:1px solid #e3ebf5;border-radius:0;background:linear-gradient(180deg,#f5f9ff,#e9f2ff);color:#1263d2;font-size:12px;font-weight:700;box-shadow:none;white-space:nowrap}
+.time-row .now:active{background:#d7e8ff}
+.time-row:focus-within{background:#fff;border-color:#1677ff;box-shadow:0 0 0 3px rgba(22,119,255,.14)}
+@media(max-width:599px){.time-row input{min-height:42px;font-size:12px;padding-left:10px}.time-row .now{min-height:42px;padding:0 10px;font-size:11px}}
+body{background:#f4f6fa!important;color:#0f172a!important;-webkit-font-smoothing:antialiased}
+main{padding:10px 10px 26px!important}
+.panel{background:#fff!important;border-radius:16px!important;border:none!important;box-shadow:0 1px 2px rgba(16,24,40,.04),0 10px 28px rgba(16,24,40,.06)!important;padding:14px!important}
+.field{margin-bottom:8px!important}
+.field label,.toggle-field label{font-size:12.5px!important;font-weight:600!important;color:#5a6b86!important;margin-bottom:6px!important;letter-spacing:.2px}
+input,select{width:100%!important;min-height:46px!important;border:1px solid #dfe5ee!important;border-radius:12px!important;background:#f8fafc!important;color:#0f172a!important;font-size:14px!important;font-weight:500!important;padding:9px 12px!important}
+input::placeholder{color:#aab4c5!important;font-size:13px!important;font-weight:400!important}
+input:focus,select:focus{background:#fff!important;border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255,.14)!important;outline:none!important}
+select{appearance:none!important;-webkit-appearance:none!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23808b9c' d='M1 1l5 5 5-5'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 12px center!important;padding-right:34px!important}
+.time-row{display:flex!important;gap:0!important;align-items:stretch!important;border:1px solid #dfe5ee!important;border-radius:12px!important;background:#f8fafc!important;overflow:hidden!important}
+.time-row input{flex:1 1 auto!important;min-width:0!important;border:none!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;min-height:46px!important;padding:0 4px 0 12px!important;font-size:12.5px!important;text-align:left!important;letter-spacing:-.2px!important}
+.time-row input:focus{background:transparent!important;border:none!important;box-shadow:none!important}
+.time-row .now{flex:0 0 auto!important;width:auto!important;min-width:0!important;min-height:46px!important;margin:0!important;padding:0 11px!important;border:none!important;border-left:1px solid #e3ebf5!important;border-radius:0!important;background:linear-gradient(180deg,#f6faff,#eaf3ff)!important;color:#1668d6!important;font-size:12px!important;font-weight:700!important;box-shadow:none!important;white-space:nowrap!important}
+.time-row .now:active{background:#d9e9ff!important}
+.time-row:focus-within{background:#fff!important;border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255,.14)!important}
+.triple-pair{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.78fr)!important;gap:8px!important;align-items:end!important}
+.triple-pair .toggle-field{min-width:0!important}
+.triple-pair .toggle-field>label{font-size:12px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px!important}
+.triple-pair .toggle-field .toggle,.triple-pair .toggle-field input{min-height:46px!important;border-radius:12px!important}
+.toggle{display:flex!important;align-items:center!important;justify-content:center!important;border:1px solid #fbd0d5!important;background:#fff5f6!important;color:#e0395b!important;font-size:14px!important;font-weight:700!important}
+.toggle.active{border-color:#8fe0ae!important;background:#f0fdf4!important;color:#12894a!important}
+.number-row input{min-height:46px!important;text-align:center!important;font-size:15px!important;font-weight:600!important;border-radius:12px!important}
+.actions{margin-top:12px!important}
+.primary{width:100%!important;min-height:52px!important;border-radius:14px!important;border:none!important;background:linear-gradient(135deg,#3189ff,#1677ff 55%,#0d63d6)!important;color:#fff!important;font-size:16.5px!important;font-weight:700!important;letter-spacing:3px!important;box-shadow:0 8px 20px rgba(22,119,255,.3)!important}
+.primary:active{transform:translateY(1px)!important;box-shadow:0 4px 12px rgba(22,119,255,.26)!important}
+.records{background:#fff!important;border-radius:16px!important;padding:14px!important;border:none!important;box-shadow:0 1px 2px rgba(16,24,40,.04),0 10px 28px rgba(16,24,40,.06)!important;margin-top:12px!important}
+.records h2{font-size:15.5px!important;color:#0f172a!important;margin:0 0 12px!important;padding-left:9px!important;border-left:4px solid #1677ff!important;line-height:1.2!important}
+.record{border:1px solid #eef2f7!important;border-radius:14px!important;padding:12px!important;margin-bottom:10px!important;background:#fff!important;box-shadow:0 1px 3px rgba(16,24,40,.05)!important}
+.record-top{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin-bottom:10px!important}
+.record-top>span{font-size:15.5px!important;font-weight:700!important;color:#0f172a!important;letter-spacing:.2px}
+.rec-del{border:1px solid #fbd0d5!important;background:#fff5f6!important;color:#e0395b!important;border-radius:10px!important;padding:7px 12px!important;font-size:12.5px!important;font-weight:700!important}
+.rec-del:active{background:#ffe9ec!important}
+.rec-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important}
+.rec-cell{display:flex!important;flex-direction:column!important;gap:3px!important;background:#f6f8fb!important;border:1px solid #eef2f7!important;border-radius:11px!important;padding:9px 11px!important;min-width:0!important}
+.rec-k{font-size:var(--fs-11)!important;color:#8e9bb0!important;letter-spacing:.3px}
+.rec-v{font-size:14px!important;color:#1e293b!important;font-weight:600!important;word-break:break-all;line-height:1.35}
+.empty{color:#9aa6b8!important;font-size:13px!important;text-align:center;padding:22px 0!important}
+@media(max-width:599px){main{padding:8px 8px 22px!important}.panel,.records{padding:12px!important;border-radius:14px!important}.field label,.toggle-field label{font-size:11.5px!important;margin-bottom:5px!important}input,select{min-height:44px!important;font-size:13px!important;border-radius:11px!important}.triple-pair{gap:6px!important}.triple-pair .toggle-field>label{font-size:11px!important}.triple-pair .toggle-field .toggle,.triple-pair .toggle-field input{min-height:44px!important;font-size:13px!important}.time-row input{min-height:44px!important;font-size:11.5px!important;padding-left:9px!important}.time-row .now{min-height:44px!important;padding:0 8px!important;font-size:11px!important}.primary{min-height:50px!important;font-size:15.5px!important}.record-top>span{font-size:14.5px!important}.rec-grid{gap:6px!important}.rec-cell{padding:8px 9px!important}.rec-k{font-size:10.5px!important}.rec-v{font-size:12.5px!important}}
+.rec-head{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 auto}
+.rec-seq{flex:0 0 auto;min-width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;background:#eef4ff;color:#1668d6;font-size:11.5px;font-weight:700;padding:0 5px}
+.rec-title{font-size:var(--fs-15)!important;font-weight:700!important;color:#0f172a!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.record.done .rec-seq{background:#eceff3;color:#8b95a5}
+.rec-cell.rec-edit{padding:6px 8px!important}
+.rec-time{width:100%!important;min-height:32px!important;height:32px!important;border:1px solid #c9d5e4!important;border-radius:8px!important;background:#fff!important;color:#1e293b!important;font-size:var(--fs-12)!important;font-weight:600!important;padding:0 6px!important;text-align:center!important;transition:border-color .15s,box-shadow .15s}
+.rec-time:focus{border-style:solid!important;border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255,.13)!important;outline:none!important}
+@media(max-width:599px){.rec-seq{min-width:20px;height:20px;font-size:11px}.rec-title{font-size:14px!important}.rec-time{height:30px!important;min-height:30px!important;font-size:12px!important}}
+.record.done{opacity:.55;filter:grayscale(.35);background:#f4f6f9!important}
+.record.done .record-top>span{color:#64748b!important;text-decoration:line-through}
+.rec-acts{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.rec-done{border:1px solid #c7e2ff!important;background:#f0f7ff!important;color:#1668d6!important;border-radius:10px!important;padding:7px 11px!important;font-size:12.5px!important;font-weight:700!important}
+.rec-done.on{border-color:#a7d8b9!important;background:#effcf3!important;color:#12894a!important}
+.time-row .now{background:transparent!important;border:none!important;border-left:1px solid #e6ecf5!important;color:#1677ff!important;font-weight:600!important;box-shadow:none!important}
+.time-row .now:active{background:rgba(22,119,255,.07)!important;color:#0d5fcc!important}
+@media(max-width:599px){.rec-done{padding:6px 9px!important;font-size:11.5px!important}.rec-acts{gap:5px!important}}
+.rec-time-row{display:flex;gap:4px;align-items:center}
+.rec-time-row .rec-time{flex:1 1 auto;min-width:0}
+.rec-now{flex:0 0 auto;border:1px solid #cfe3ff!important;background:transparent!important;color:#1677ff!important;border-radius:8px!important;padding:0 8px!important;height:32px!important;font-size:11.5px!important;font-weight:700!important;white-space:nowrap}
+.rec-now:active{background:rgba(22,119,255,.08)!important}
+@media(max-width:599px){.rec-now{height:30px!important;font-size:11px!important;padding:0 6px!important}}
+/*__UI_CSS__*/
+</style>
+</head>
+<body>
+<main>
+<section class="panel">
+<form id="entryForm">
+<div class="grid">
+<div class="field"><label for="position">1. 位号</label><input id="position" type="text" required inputmode="text" placeholder="请输入位号" autocomplete="off" data-next="reason" enterkeyhint="next"></div>
+<div class="field"><label for="reason">2. 故障原因</label><div class="reason-row"><select id="reason" required data-next="occurred" enterkeyhint="next"><option value="">请选择故障原因</option><option>并丝</option><option>断丝</option></select></div></div>
+<div class="field"><label for="occurred">3. 故障发生时间</label><div class="time-row"><input id="occurred" type="text" required inputmode="numeric" placeholder="11-02 12:30" autocomplete="off" data-next="completed" enterkeyhint="next"><button class="btn now" type="button" data-now="occurred">此刻</button></div></div>
+<div class="field"><label for="completed">4. 处理完成时间</label><div class="time-row"><input id="completed" type="text" inputmode="numeric" placeholder="11-02 12:30" autocomplete="off" data-next="smallRolls" enterkeyhint="next"><button class="btn now" type="button" data-now="completed">此刻</button></div></div>
+<div class="field full"><div class="triple-pair"><div class="toggle-field"><label>组件检查结果</label><button class="btn toggle" type="button" id="inspection" data-value="否">✕ 否</button></div><div class="toggle-field"><label>并丝品追查</label><button class="btn toggle" type="button" id="trace" data-value="否">✕ 否</button></div><div class="toggle-field"><label for="smallRolls">小卷数</label><div class="number-row"><input id="smallRolls" type="number" min="0" step="1" placeholder="数量" data-next="saveRecordBtn" enterkeyhint="next"></div></div></div></div>
+</div>
+<div class="actions"><button class="btn primary" type="button" id="saveRecordBtn">保存记录</button></div>
+</form>
+</section>
+<section class="panel records"><h2>已录入记录</h2><div id="records"></div></section>
+</main>
+<div class="modal-overlay" id="reasonModal" aria-hidden="true"><div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="reasonModalTitle"><div class="modal-title" id="reasonModalTitle">添加故障原因选项</div><label for="customReason" style="display:block;text-align:left;font-weight:600;margin-bottom:8px">选项名称</label><input id="customReason" class="modal-input" placeholder="请输入故障原因" maxlength="40"><div class="modal-actions" style="display:flex;gap:10px;margin-top:14px"><button class="btn" type="button" id="cancelReason" style="flex:1">取消</button><button class="btn primary" type="button" id="saveReason" style="flex:1">确认</button></div></div></div>
+<div class="modal-overlay" id="noticeModal" aria-hidden="true"><div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="noticeTitle"><div class="modal-title" id="noticeTitle">提示</div><div id="noticeText" style="text-align:left;line-height:1.6;margin-bottom:18px;white-space:pre-line"></div><div class="modal-actions" style="display:flex;gap:10px;margin-top:14px"><button class="btn primary" type="button" id="noticeOk" style="flex:1">确认</button></div></div></div>
+<script>
+(()=> {
+const $=id=>document.getElementById(id);
+const recordsKey='luotong_fault_records_v1', reasonsKey='luotong_fault_reasons_v1';
+const memStore=Object.create(null);
+const safeStore={getItem(k){try{return window.localStorage.getItem(k)}catch(e){return Object.prototype.hasOwnProperty.call(memStore,k)?memStore[k]:null}},setItem(k,v){try{window.localStorage.setItem(k,v)}catch(e){memStore[k]=String(v)}}};
+function localDateTime(d=new Date()){const pad=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`}
+document.querySelectorAll('[data-now]').forEach(b=>b.addEventListener('click',()=>{$(b.dataset.now).value=localDateTime();$(b.dataset.now).dispatchEvent(new Event('change',{bubbles:true}))}));
+function paintToggle(el){const yes=el.dataset.value==='是';el.textContent=(yes?'✓':'✕')+' '+(yes?'是':'否');el.classList.toggle('active',yes);el.style.background=yes?'#e5f8ed':'#fff0ef';el.style.borderColor=yes?'#8ed6ab':'#f2b8b5';el.style.color=yes?'#168348':'#c43c36'}
+/* 绑定是/否开关的点击切换与外观同步 */
+function setupToggle(id){const el=$(id);paintToggle(el);el.addEventListener('click',()=>{el.dataset.value=el.dataset.value==='是'?'否':'是';paintToggle(el)})}
+setupToggle('inspection');setupToggle('trace');
+function getReasons(){try{return JSON.parse(safeStore.getItem(reasonsKey)||'[]')}catch{return []}}
+function saveReasons(list){safeStore.setItem(reasonsKey,JSON.stringify(list))}
+/* 用基础选项加自定义选项重建故障原因下拉 */
+function populateReasons(){const s=$('reason'),v=s.value;[...s.querySelectorAll('option[data-custom="1"]')].forEach(o=>o.remove());getReasons().forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;o.dataset.custom='1';s.append(o)});if([...s.options].some(o=>o.value===v))s.value=v}
+function openReasonModal(){$('reasonModal').classList.add('active');$('reasonModal').setAttribute('aria-hidden','false');$('customReason').value='';$('customReason').focus()}
+function closeReasonModal(){$('reasonModal').classList.remove('active');$('reasonModal').setAttribute('aria-hidden','true')}
+/* 故障页统一提示：转发共用 toast，未就绪时本地兜底 */
+function showNotice(message,kind){ if(window.__toast){window.__toast(message,kind||'');return;} var el=document.getElementById('appToast'); if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);} el.className='app-toast'; el.textContent=message||''; window.requestAnimationFrame(function(){el.classList.add('show');}); setTimeout(function(){el.classList.remove('show');},2200); }
+function closeNotice(){$('noticeModal').classList.remove('active');$('noticeModal').setAttribute('aria-hidden','true')}
+$('noticeOk').addEventListener('click',closeNotice);$('noticeModal').addEventListener('click',e=>{if(e.target===$('noticeModal'))closeNotice()});
+$('reason').addEventListener('change',()=>{if($('reason').value==='__add__'){openReasonModal();$('reason').value=''}});
+
+$('reason').insertAdjacentHTML('beforeend','<option value="__add__">＋ 添加选项…</option>');
+$('cancelReason').addEventListener('click',closeReasonModal);
+$('reasonModal').addEventListener('click',e=>{if(e.target===$('reasonModal'))closeReasonModal()});
+$('saveReason').addEventListener('click',()=>{const v=$('customReason').value.trim();if(!v)return showNotice('请先输入故障原因');if(['并丝','断丝',...getReasons()].includes(v))return showNotice('该选项已存在');saveReasons([...getReasons(),v]);populateReasons();$('reason').value=v;closeReasonModal()});
+$('customReason').addEventListener('keydown',e=>{if(e.key==='Enter')$('saveReason').click();if(e.key==='Escape')closeReasonModal()});
+/* 读取本机存储中的故障记录，解析失败返回空数组 */
+function loadRecords(){try{return JSON.parse(safeStore.getItem(recordsKey)||'[]')}catch{return []}}
+/* 将故障记录数组写回本机存储 */
+function saveRecords(data){safeStore.setItem(recordsKey,JSON.stringify(data))}
+/* 时间裁掉年份，2026-11-02 12:30 → 11-02 12:30 */
+function shortTime(v){if(!v) return '—'; var s=String(v).trim(); s=s.replace(/^[0-9]{4}-/,''); return s;}
+function displayTime(v){return v?v.replace('T',' '):'—'}
+/* 渲染已录入记录：倒序、带序号、已填标记、可就地改完成时间 */
+function render(){
+  const list=loadRecords(), root=$('records');
+  root.innerHTML='';
+  if(!list.length){ root.innerHTML='<div class="empty">暂无记录，保存后会显示在这里。</div>'; return }
+  list.slice().reverse().forEach((r,idx)=>{
+    const el=document.createElement('div'); el.className='record'+(r.done?' done':'');
+    const top=document.createElement('div'); top.className='record-top';
+    const head=document.createElement('div'); head.className='rec-head';
+    const seq=document.createElement('span'); seq.className='rec-seq'; seq.textContent=String(list.length-idx);
+    const title=document.createElement('span'); title.className='rec-title'; const parts=[r.position,r.reason]; if(String(r.smallRolls||'').trim()!=='') parts.push(r.smallRolls); title.textContent=parts.filter(v=>v!==undefined&&v!==null&&String(v).trim()!=='').join(' · ');
+    head.append(seq,title);
+    const acts=document.createElement('div'); acts.className='rec-acts';
+    const doneBtn=document.createElement('button'); doneBtn.type='button'; doneBtn.className='rec-done'+(r.done?' on':''); doneBtn.textContent=r.done?'已填':'标记已填';
+    doneBtn.addEventListener('click',()=>{
+      try{
+        const a=loadRecords(); let at=-1;
+        if(r.createdAt) at=a.findIndex(x=>x.createdAt===r.createdAt);
+        if(at<0) at=a.findIndex(x=>x.position===r.position&&x.occurred===r.occurred&&x.reason===r.reason);
+        if(at<0){ showNotice('未找到这条记录，列表已刷新'); render(); return }
+        a[at].done=!a[at].done; saveRecords(a); render();
+      }catch(err){ showNotice('操作失败：本地存储不可用。'); console.error(err) }
+    });
+    const del=document.createElement('button'); del.textContent='删除'; del.type='button'; del.className='rec-del';
+    del.addEventListener('click',()=>{
+      try{
+        const a=loadRecords(); let at=-1;
+        if(r.createdAt) at=a.findIndex(x=>x.createdAt===r.createdAt);
+        if(at<0) at=a.findIndex(x=>x.position===r.position&&x.occurred===r.occurred&&x.reason===r.reason);
+        if(at<0){ showNotice('未找到这条记录，列表已刷新'); render(); return }
+        a.splice(at,1); saveRecords(a); render();
+      }catch(err){ showNotice('删除失败：浏览器本地存储不可用，请检查浏览器设置。'); console.error(err) }
+    });
+    acts.append(doneBtn,del);
+    top.append(head,acts);
+    const grid=document.createElement('div'); grid.className='rec-grid';
+    const rows=[['故障发生',shortTime(r.occurred)],['处理完成',r.completed],['组件检查',r.inspection],['并丝追查',r.trace]];
+    rows.forEach(([k,v])=>{
+      const cell=document.createElement('div');
+      const isDone=(k==='处理完成');
+      cell.className='rec-cell'+(isDone?' rec-edit':'');
+      const kk=document.createElement('span'); kk.className='rec-k'; kk.textContent=k;
+      const vv=document.createElement('span'); vv.className='rec-v';
+      if(isDone){
+        vv.textContent='';
+        const wrap=document.createElement('div'); wrap.className='rec-time-row';
+        const inp=document.createElement('input'); inp.type='text'; inp.className='rec-time'; inp.value=shortTime(v); inp.placeholder='11-02 12:30';
+        const nowBtn=document.createElement('button'); nowBtn.type='button'; nowBtn.className='rec-now'; nowBtn.textContent='此刻';
+        const save=()=>{
+          try{
+            const a=loadRecords(); let at=-1;
+            if(r.createdAt) at=a.findIndex(x=>x.createdAt===r.createdAt);
+            if(at<0) at=a.findIndex(x=>x.position===r.position&&x.occurred===r.occurred&&x.reason===r.reason);
+            if(at<0) return;
+            if(String(a[at].completed||'').replace(/^[0-9]{4}-/,'')===inp.value) return;
+            a[at].completed=inp.value; saveRecords(a);
+          }catch(err){ console.error(err) }
+        };
+        nowBtn.addEventListener('click',()=>{inp.value=shortTime(localDateTime());save()});
+        inp.addEventListener('change',save);
+        inp.addEventListener('blur',save);
+        inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();inp.blur()} });
+        wrap.append(inp,nowBtn);
+        vv.append(wrap);
+      }else{
+        vv.textContent=(v===undefined||v===null||v==='')?'—':v;
+      }
+      cell.append(kk,vv); grid.append(cell);
+    });
+    el.append(top,grid); root.append(el);
+  });
+}
+/* 校验必填项并保存一条记录，成功后清空表单并重置开关 */
+function saveCurrentRecord(){
+  const r={position:$('position').value.trim(),reason:$('reason').value,occurred:$('occurred').value,completed:$('completed').value,smallRolls:$('smallRolls').value,inspection:$('inspection').dataset.value||'否',trace:$('trace').dataset.value||'否',createdAt:new Date().toISOString()};
+  if(!r.position||!r.reason||!r.occurred||String(r.smallRolls||'').trim()===''){showNotice('请填写位号、故障原因、故障时间和小卷数');return;}
+  try{
+    const a=loadRecords(); a.push(r); saveRecords(a); render();
+    $('entryForm').reset();
+    ['inspection','trace'].forEach(id=>{const b=$(id);b.dataset.value='否';paintToggle(b)});
+  }catch(err){showNotice('保存失败，请检查浏览器是否允许本地存储。');console.error(err)}
+}
+$('saveRecordBtn').addEventListener('click', saveCurrentRecord);
+$('entryForm').addEventListener('submit',e=>{e.preventDefault();saveCurrentRecord()});
+/* 回车跳到 data-next 指定的输入框，无目标返回 false */
+function focusNext(current){
+  const nextId=current&&current.dataset?current.dataset.next:null;
+  if(!nextId) return false;
+  const next=$(nextId);
+  if(!next) return false;
+  next.focus();
+  if(next.select){try{next.select()}catch(e){}}
+  return true;
+}
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.keyCode!==13) return;
+  if(e.isComposing||e.keyCode===229) return;
+  const el=e.target;
+  if(!el||!el.id) return;
+  if(el.tagName==='TEXTAREA') return;
+  if(!focusNext(el)) return;
+  e.preventDefault();
+},{capture:true});
+render();
+})();
+/*__UI_JS__*/
+</script>
+</body>
+</html>
+</template>
 <script>
 (function(){
 'use strict';
@@ -539,20 +1082,61 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
-  { version: 'v34', date: '2026-11-01', items: [
-    '修复：时间输入未补冒号时（如 2350、850）也能正确参与跨午夜判断，日期不会在输入过程中和失焦后显示不一致'
+  { version: 'v1.89', date: '2026-11-03', items: [
+    '新增：位号与默认编号不一致时，该排位号显示红色加粗',
+    '说明：默认编号按当前模板与排号自动计算（第1排6#、第2排5#…），位号为空不标红',
+    '说明：比较时忽略末尾的 #，输入 6 与 6# 视为一致，输入过程中不会闪红',
+    '说明：故障、实验、ST-48 等无默认编号的模板不标红；位号输入、失焦、切换模板、空位填充、撤销填充、清除卡片时实时刷新',
+    '调整：未填时间红色边框提醒改为默认开启，后台设置项文字同步改为默认开启',
+    '新增：车头栏个数低于当前批号预设个数时，数字标红加粗提示',
+    '说明：个数比较仅在预设个数为纯数字时生效，非数字或未设置批号、个数为空时不标红',
+    '说明：标红在个数输入、切换批号、切换模板三种时机实时刷新',
+    '说明：标红只改数字颜色与字重，不改输入框描边'
   ]},
-  { version: 'v33', date: '2026-11-01', items: [
-    '修复：位号时间跨午夜的日期判定统一按 08:39 班次分界；参考点改用本车本排起始时间，不再拿 0 号车的起始时间判断其他车，日期不再凭空多加一天',
-    '优化：离屏车块跳过布局与绘制，滚动与切换模板更顺；备注跳转、上下切车前先临时恢复渲染以保证定位准确',
-    '优化：空值不再写入本地存储，内容未变化时跳过写盘，减少卡顿与存储占用；位号留空仍按原样保存',
-    '修复：本地存储写满时给出提示，不再静默丢失输入；批号、模板名称等写入失败也会提示',
-    '修复：切到后台、下拉刷新、页面被回收前自动补存，减少手机端丢数据',
-    '优化：关闭输入法自动大写、自动更正与拼写检查，避免车次、班次被输入法改写',
-    '整理：默认位号规则合并为一处，重置模板、清空模板与初始化使用同一份规则',
-    '整理：故障记录子页面由 base64 编码改为可读原文，文件体积减少约 4KB，便于直接阅读与修改'
+  { version: 'v1.88', date: '2026-11-02', items: [
+    '整理：日志版本号顺延一位补齐 v1.87 空号，原 v1.86→v1.87、v1.85→v1.86、v1.84→v1.85、v1.83→v1.84、v1.82→v1.83、v1.81→v1.82，条目文字未改动',
+    '整理：撤回 v1.87 中精简 !important 的改动，弹窗样式恢复为显式强制覆盖',
+    '优化：导出备份 JSON 的版本号改为跟随当前版本，不再写死 v1.73',
+    '优化：弹窗高度跟随可视区域（--kb-view-h），键盘弹出时标题与首行输入不被顶出屏幕',
+    '优化：记录卡片的时间输入框改为常规描边，聚焦时才显示蓝色高亮，不再常驻虚线',
+    '整理：移除失效样式 .subrow 与 .hint，精简故障页样式规则',
+    '整理：字号抽成 CSS 变量 --fs-10 至 --fs-16，故障页关键样式改为引用变量',
+    '整理：为记录读写、渲染、保存校验、导入导出等关键函数补充用途注释'
   ]},
-  { version: 'v1.77', date: '2026-10-28', items: [
+  { version: 'v1.87', date: '2026-11-02', items: [
+    '整理：日志版本号统一重排为从 v1.86 起连续的序列，原 v1.84、v1.82、v1.81、v1.80、v1.77 依次顺延一位，历史条目文字内容未作改动',
+    '修改：故障记录页的「个数」字段改名为「小卷数」，与组件检查结果、并丝品追查同排',
+    '修改：保存故障记录时的必填提示同步改为「请填写位号、故障原因、故障时间和小卷数」',
+    '说明：字段 id smallRolls 与已存记录的数据结构保持不变，历史记录不受影响'
+  ]},
+  { version: 'v1.86', date: '2026-11-02', items: [
+    '优化：自定义批号弹窗重排为三行两列，批号名称与个数同一行，旦数与工艺时间同一行',
+    '优化：个数从原来的半列空白位提到第一行右列，与批号名称并排，弹窗高度减少约 60px',
+    '统一：四字段仍沿用共用网格与输入框样式，校验、回车提交、保存逻辑未改动'
+  ]},
+  { version: 'v1.85', date: '2026-11-02', items: [
+    '优化：自定义批号弹窗改为两列布局，批号名称占整行，旦数与工艺时间并排，个数单独一行右侧',
+    '优化：弹窗内字段标签与输入框改用网格控制，窄屏下自动缩小字号避免文字截断',
+    '统一：批号弹窗字段结构与共用弹窗样式对齐，不改动原有校验与保存逻辑'
+  ]},
+  { version: 'v1.84', date: '2026-11-02', items: [
+    '统一：修复弹窗内单个按钮不撑满整行的问题，关闭类按钮统一为整行灰色圆角样式',
+    '统一：更新日志弹窗的关闭按钮改用与其他弹窗一致的按钮组结构',
+    '统一：弹窗按钮宽度、高度、圆角、字号统一由共用样式控制，后续新增弹窗自动继承'
+  ]},
+  { version: 'v1.83', date: '2026-11-02', items: [
+    '新增：第7个模板页「故障记录」，可独立记录位号、故障原因、发生时间、处理完成时间、小卷数、组件检查、并丝追查、个数',
+    '新增：故障记录列表按录入顺序显示序号，可标记已填（卡片变淡、标题划线），支持就地修改处理完成时间',
+    '新增：故障页时间输入支持「此刻」一键填入，显示格式为月日时分，不显示年份',
+    '统一：下拉选择改为自建底部面板，不再弹出系统原生列表，批号与故障原因交互一致',
+    '统一：弹窗外观统一为圆角、蓝色居中标题、灰底输入框、两列按钮组',
+    '统一：提示统一为顶部单色提示条，2.2 秒自动消失，不再弹带按钮的对话框',
+    '统一：故障页与主页面共用同一份 UI 样式与脚本源码，后续新增功能只维护一处',
+    '优化：保存故障记录需填写位号、故障原因、故障时间和个数，缺项时顶部提示，不阻塞录入',
+    '优化：故障页去掉了顶部标题栏，表单直接上移，手机端两列排版',
+    '修复：删除字段后残留的脚本引用导致「保存记录」点击无反应的问题'
+  ]},
+  { version: 'v1.82', date: '2026-10-28', items: [
     '修复：电脑端车头栏批号、工艺时间等字段文字显示被遮挡的问题，调整字段布局与可用宽度',
     '优化：车头栏其他输入内容的字体大小与姓名显示统一，避免桌面端内容拥挤',
     '优化：继续保留模板切换定位修复及夜班日期显示规则'
@@ -688,39 +1272,10 @@ function resetBatchBaseDate(tab){
 const $ = id => document.getElementById(id);
 const $$ = (sel, root) => (root || document).querySelectorAll(sel);
 let toastTimer = null;
-function showToast(message){
-  let el = $('appToast');
-  if(!el){
-    el = document.createElement('div');
-    el.id = 'appToast';
-    el.className = 'app-toast';
-    el.setAttribute('role', 'status');
-    el.setAttribute('aria-live', 'polite');
-    document.body.appendChild(el);
-  }
-  el.textContent = message;
-  el.classList.add('show');
-  if(toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.classList.remove('show'); }, 2600);
-}
+function showToast(message,kind){ if(window.__toast){window.__toast(message,kind||'');return;} var el=document.getElementById('appToast'); if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);} el.className='app-toast'; el.textContent=message||''; window.requestAnimationFrame(function(){el.classList.add('show');}); setTimeout(function(){el.classList.remove('show');},2200); }
 const pref = c => 'v' + c;
 function getAllFields(){ return $$('#main_content input, #main_content textarea, #main_content select'); }
 function defaultTabName(t){ return CFG.TEMPLATE_NAMES[t] || ('模板' + (t + 1)); }
-// 日内分界：08:39（由 CFG.SHIFT_840 推导）。车次绝对时间与日期跨日判定共用这一处边界。
-function isBeforeShiftCutoff(m){ return m !== null && m !== undefined && m < Math.floor(CFG.SHIFT_840 / 60); }
-// 默认位号：只有 0-3 号模板预置 6#..1#，其余留空。原先三处重置各写一遍，现在统一从这里取。
-function defaultTitles(tab){
-  const out = {};
-  for(let c = 0; c < CFG.CARS; c++){
-    const v = pref(c);
-    for(let s = 0; s < CFG.SUBS; s++){
-      for(let i = 1; i <= 6; i++){
-        out[`title_${v}_s${s}_i${i}`] = tab <= 3 ? ((6 - s + tab * 6) + '#') : '';
-      }
-    }
-  }
-  return out;
-}
 
 const U = {
   esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
@@ -823,26 +1378,8 @@ const U = {
   },
   toHM(sec){ if(sec === null || isNaN(sec)) return ''; const tm = Math.floor(sec/60); const h = Math.floor(tm/60) % 24; const m = tm % 60; return h + ':' + U.pad(m); },
   fmtTime(sec){ if(sec === null || sec === undefined || isNaN(sec)) return ''; const tm = Math.round(sec / 60); const h = Math.floor(tm / 60) % 24; const m = tm % 60; return h + ':' + U.pad(m); },
-  // 纯数字输入（如 2350、850）按 HHMM 解析，与 isValidClockInput 的规则一致；
-  // 避免输入过程中 toMins 返回 null 导致跨午夜判定失效、日期在失焦前后跳变。
-  toMins(str){
-    if(str === null || str === undefined) return null;
-    const s = String(str).replace('：', ':').trim();
-    if(!s) return null;
-    let h, m;
-    if(s.includes(':')){
-      const p = s.split(':');
-      h = parseInt(p[0], 10); m = parseInt(p[1], 10);
-      if(isNaN(h) || isNaN(m)) return null;
-    } else {
-      if(!/^\d+$/.test(s)) return null;
-      if(s.length >= 3){ h = Number(s.slice(0, -2)); m = Number(s.slice(-2)); }
-      else { h = Number(s); m = 0; }
-    }
-    if(h < 0 || h > 23 || m < 0 || m > 59) return null;
-    return h * 60 + m;
-  },
-  absMins(str){ if(!str) return null; const sec = U.toSec(str); if(sec === null) return null; const m = Math.floor(sec/60); return isBeforeShiftCutoff(m) ? m + 1440 : m; },
+  toMins(str){ if(!str || !str.includes(':')) return null; const p = str.split(':'); const h = parseInt(p[0], 10), m = parseInt(p[1], 10); return (isNaN(h) || isNaN(m)) ? null : h*60 + m; },
+  absMins(str){ if(!str) return null; const sec = U.toSec(str); if(sec === null) return null; const m = Math.floor(sec/60); return m < 520 ? m + 1440 : m; },
   shiftBoundary(sec){
     if(sec === null || sec === undefined || isNaN(sec)) return null;
     const d = Math.floor(sec / CFG.DAY);
@@ -923,22 +1460,11 @@ const Store = {
     const d = T();
     getAllFields().forEach(el => {
       if(el.id && !el.id.startsWith('setting') && el.id !== 'adminPassword'){
-        const val = el.value;
-        if(val === ''){
-          // 位号留空必须显式保留：initDefaults 会把缺失的 title_* 补回默认“3#”。
-          if(el.id.indexOf('title_') === 0) d[el.id] = '';
-          else delete d[el.id];
-        } else {
-          d[el.id] = val;
-        }
+        d[el.id] = el.value;
       }
     });
-    let json;
-    try { json = JSON.stringify(S.data); }
-    catch(e){ console.warn('[save] serialize failed', e); return; }
-    if(json === Store._lastJson) return;   // 内容没变就不写盘，省掉一次主线程写入
-    try { localStorage.setItem(CFG.KEY.ALL, json); Store._lastJson = json; }
-    catch(e){ console.warn('[save] failed', e); Store._warnQuota(); }
+    try { localStorage.setItem(CFG.KEY.ALL, JSON.stringify(S.data)); }
+    catch(e){ console.warn('[save] failed', e); }
   },
   saveDebounced(delay){
     clearTimeout(Store._timer);
@@ -970,9 +1496,13 @@ const Store = {
       for(let c = 0; c < CFG.CARS; c++){
         const v = pref(c);
         if(d['date_'+v] === undefined) d['date_'+v] = todayStr;
+        for(let s = 0; s < CFG.SUBS; s++){
+          for(let i = 1; i <= 6; i++){
+            const k = `title_${v}_s${s}_i${i}`;
+            if(d[k] === undefined) d[k] = t <= 3 ? ((6-s + t*6) + '#') : '';
+          }
+        }
       }
-      const defaults = defaultTitles(t);
-      Object.keys(defaults).forEach(k => { if(d[k] === undefined) d[k] = defaults[k]; });
     }
   },
   loadTabNames(){
@@ -996,7 +1526,7 @@ const Store = {
       const out = [];
       for(let t = 0; t < 4; t++) out[t] = S.tabNames[t] || defaultTabName(t);
       localStorage.setItem(CFG.KEY.TAB_NAMES, JSON.stringify(out));
-    } catch(e){ console.warn('[saveTabNames]', e); Store._warnQuota(); }
+    } catch(e){ console.warn('[saveTabNames]', e); }
   },
   loadBatch(){
     try { const a = JSON.parse(localStorage.getItem(CFG.KEY.BATCH_OPTS) || '[]'); if(Array.isArray(a)) S.batchOpts = a.filter(x => typeof x === 'string' && x.trim() !== ''); }
@@ -1005,20 +1535,10 @@ const Store = {
     try { S.batchPT = JSON.parse(localStorage.getItem(CFG.KEY.BATCH_PT) || '{}') || {}; } catch(e){ S.batchPT = {}; }
     try { S.batchCounts = JSON.parse(localStorage.getItem(CFG.KEY.BATCH_COUNTS) || '{}') || {}; } catch(e){ S.batchCounts = {}; }
   },
-  saveBatchOpts(){ Store._setJSON(CFG.KEY.BATCH_OPTS, S.batchOpts); },
-  saveBatchDeniers(){ Store._setJSON(CFG.KEY.BATCH_DENIERS, S.batchDeniers); },
-  saveBatchPT(){ Store._setJSON(CFG.KEY.BATCH_PT, S.batchPT); },
-  saveBatchCounts(){ Store._setJSON(CFG.KEY.BATCH_COUNTS, S.batchCounts); },
-  // 统一写盘入口：配额满时给出可见提示，不再静默丢数据。
-  _setJSON(key, value){
-    try { localStorage.setItem(key, JSON.stringify(value)); return true; }
-    catch(e){ console.warn('[save] failed', key, e); Store._warnQuota(); return false; }
-  },
-  _warnQuota(){
-    if(Store._warnedAt && Date.now() - Store._warnedAt < 8000) return;
-    Store._warnedAt = Date.now();
-    showToast('存储已满，本次未保存，请先导出备份再清理数据');
-  }
+  saveBatchOpts(){ localStorage.setItem(CFG.KEY.BATCH_OPTS, JSON.stringify(S.batchOpts)); },
+  saveBatchDeniers(){ localStorage.setItem(CFG.KEY.BATCH_DENIERS, JSON.stringify(S.batchDeniers)); },
+  saveBatchPT(){ localStorage.setItem(CFG.KEY.BATCH_PT, JSON.stringify(S.batchPT)); },
+  saveBatchCounts(){ localStorage.setItem(CFG.KEY.BATCH_COUNTS, JSON.stringify(S.batchCounts)); }
 };
 
 const AdminPassword = {
@@ -1072,16 +1592,19 @@ const Sync = {
   dates(){
     for(let c = 0; c < CFG.CARS; c++){
       const v = pref(c);
-      // 逐排比较：参考点用本车该排自己的起始时间（原先是写死 0 号车的起始时间，非 0 号车的起始更早时会误判次日）。
       let cross = false;
       for(let s = 0; s < CFG.SUBS && !cross; s++){
-        const startEl = $(`start_${v}_s${s}_i1`);
+        const startEl = $(`start_v0_s${s}_i1`);
         const startM = startEl ? U.toMins(startEl.value) : null;
         if(startM === null) continue;
         for(let col = 1; col <= 6; col++){
-          const el = col === 1 ? startEl : $(`time_${v}_s${s}_i${col}`);
-          const cm = el && el.value ? U.toMins(el.value) : null;
-          if(cm !== null && cm < startM){ cross = true; break; }
+          let tv = '';
+          if(col === 1){ const el = $(`start_${v}_s${s}_i1`); if(el) tv = el.value; }
+          else { const el = $(`time_${v}_s${s}_i${col}`); if(el) tv = el.value; }
+          if(tv){
+            const cm = U.toMins(tv);
+            if(cm !== null && cm < startM){ cross = true; break; }
+          }
         }
       }
       const dateEl = $(`date_${v}`);
@@ -1254,6 +1777,7 @@ const Scheduler = {
       Sync.titles(v, slot.sIdx);
       Sync.rowToB_F(v, slot.sIdx, true);
     }
+    updateTitleCustomMarks();
   },
   clearAutoFill(carIdx){
     const d = T();
@@ -1277,6 +1801,7 @@ const Scheduler = {
       Flags.manualClear(carIdx, s, false);
       Sync.titles(`v${carIdx}`, s);
     }
+    updateTitleCustomMarks();
   }
 };
 
@@ -1307,6 +1832,7 @@ const Batch = {
     if(!skipCount && val && S.batchCounts[val] !== undefined){
       for(let c = 0; c < CFG.CARS; c++){ if(CarLock.isLocked(c)) continue; const el = $(`count_v${c}`); if(el) el.value = S.batchCounts[val]; }
     }
+    if(!skipCount) updateCountWarnings();
     let ptChanged = false;
     if(!skipPT && val && S.batchPT[val] !== undefined){
       const pt0 = $('processTime_v0');
@@ -1421,7 +1947,7 @@ const Layout = {
     const wm = localStorage.getItem(CFG.KEY.W_MOBILE);
     const ih = localStorage.getItem(CFG.KEY.ITEM_H);
     const root = document.documentElement.style;
-    document.documentElement.classList.toggle('missing-time-highlight', localStorage.getItem('luotong_missing_time_highlight_v1') === 'true');
+    document.documentElement.classList.toggle('missing-time-highlight', localStorage.getItem('luotong_missing_time_highlight_v1') !== 'false');
     root.setProperty('--car-width-desktop', wd ? wd+'px' : '');
     root.setProperty('--car-width-mobile', wm ? wm+'px' : '');
     root.setProperty('--item-height', ih ? ih+'px' : '');
@@ -1443,14 +1969,6 @@ const Layout = {
   adjustCarHeightsThrottled(){
     if(Layout._raf) return;
     Layout._raf = requestAnimationFrame(() => { Layout._raf = null; Layout.adjustCarHeights(); });
-  },
-  // 临时取消离屏跳过，保证 scrollWidth / offsetTop 等测量拿到真实值，两帧后恢复。
-  forceRender(block){
-    if(!block) return;
-    block.classList.add('force-render');
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      block.classList.remove('force-render');
-    }));
   }
 };
 
@@ -1570,15 +2088,6 @@ const Renderer = {
       for(let s = 0; s < CFG.SUBS; s++) Renderer.buildGrid(c, s);
     }
     Renderer.initScrollSync();
-    Renderer.applyInputHints();
-  },
-  // 关掉输入法的自动大写、自动更正与拼写检查，避免车次、班次被输入法改写。
-  applyInputHints(){
-    document.querySelectorAll('input, textarea, select').forEach(el => {
-      el.setAttribute('autocapitalize', 'off');
-      el.setAttribute('autocorrect', 'off');
-      el.setAttribute('spellcheck', 'false');
-    });
   },
   initScrollSync(){
     for(let c = 0; c < CFG.CARS; c++){
@@ -1740,6 +2249,8 @@ const App = {
     Scheduler.updateAll();
     Layout.adjustCarHeightsThrottled();
     AutoSize.allHeaders();
+    updateCountWarnings();
+    updateTitleCustomMarks();
   },
   toggleEmptySlot(carIdx){
     if(S.locked) return;
@@ -1759,7 +2270,6 @@ const App = {
     const v = pref(carIdx);
     const block = $(`block_${v}`);
     if(!block || !container) return;
-    Layout.forceRender(block);
     let wasCollapsed = false;
     if(block.classList.contains('collapsed')){
       block.classList.remove('collapsed');
@@ -1806,7 +2316,6 @@ const App = {
     S.navIdx = target;
     if(S.navTimer) clearTimeout(S.navTimer);
     S.navTimer = setTimeout(() => { S.navIdx = null; }, 450);
-    Layout.forceRender(blocks[target]);
     const top = blocks[target].offsetTop - container.offsetTop;
     container.scrollTo({top, behavior: 'smooth'});
   },
@@ -1902,6 +2411,7 @@ const App = {
     }
     Sync.dates();
     Store.saveDebounced();
+    updateTitleCustomMarks();
   },
   resetCurrent(){
     if(S.locked) return;
@@ -1912,8 +2422,15 @@ const App = {
     });
     const d = S.data[S.tab];
     resetBatchBaseDate(S.tab);
-    for(let c = 0; c < CFG.CARS; c++) d[`date_${pref(c)}`] = todayStr;
-    Object.assign(d, defaultTitles(S.tab));
+    for(let c = 0; c < CFG.CARS; c++){
+      const v = pref(c);
+      d[`date_${v}`] = todayStr;
+      for(let s = 0; s < CFG.SUBS; s++){
+        for(let i = 1; i <= 6; i++){
+          d[`title_${v}_s${s}_i${i}`] = S.tab <= 3 ? ((6-s + S.tab*6) + '#') : '';
+        }
+      }
+    }
     if(S.tab < 4){
       S.tabNames[S.tab] = defaultTabName(S.tab);
       Store.saveTabNames();
@@ -1948,6 +2465,7 @@ const Modals = {
   _confirmCancel: null,
   open(id){ $(id).classList.add('active'); },
   close(id){ $(id).classList.remove('active'); },
+  /* 打开自定义批号弹窗并清空各字段 */
   openBatchAdd(){
     $('batchAddName').value = '';
     $('batchAddDenier').value = '';
@@ -1956,13 +2474,14 @@ const Modals = {
     Modals.open('batchAddModal');
     setTimeout(() => { try{ $('batchAddName').focus(); }catch(e){} }, 100);
   },
+  /* 校验并保存自定义批号，刷新各车头批号下拉 */
   submitBatchAdd(){
     const name = $('batchAddName').value.trim();
-    if(!name){ alert('批号名称不能为空'); $('batchAddName').focus(); return; }
+    if(!name){ showToast('批号名称不能为空','err'); $('batchAddName').focus(); return; }
     const denier = $('batchAddDenier').value.trim();
     const ptRaw = $('batchAddPT').value.trim();
     if(ptRaw && !U.isValidDurationInput(ptRaw)){
-      showToast('时间错误：小时须在 0-23 之间，分钟和秒须在 0-59 之间。');
+      showToast('时间错误：小时须在 0-23 之间，分钟和秒须在 0-59 之间。','err');
       $('batchAddPT').focus();
       return;
     }
@@ -1988,6 +2507,7 @@ const Modals = {
       Modals._confirmCancel = () => { modal.classList.remove('active'); Modals._confirmOk = null; Modals._confirmCancel = null; resolve(false); };
     });
   },
+  /* 打开更新日志弹窗，按版本顺序渲染 */
   openLog(){
     let html = '';
     UPDATE_LOGS.forEach((log, idx) => {
@@ -2194,7 +2714,7 @@ const AdminPanel = {
     $('settingCarWidthDesktop').value = localStorage.getItem(CFG.KEY.W_DESKTOP) || '';
     $('settingCarWidthMobile').value = localStorage.getItem(CFG.KEY.W_MOBILE) || '';
     $('settingItemHeight').value = localStorage.getItem(CFG.KEY.ITEM_H) || '';
-    $('settingMissingTimeHighlight').checked = localStorage.getItem('luotong_missing_time_highlight_v1') === 'true';
+    $('settingMissingTimeHighlight').checked = localStorage.getItem('luotong_missing_time_highlight_v1') !== 'false';
     $('newPassword').value = '';
     $('confirmPassword').value = '';
     const btn = $('lockToggleBtn');
@@ -2203,11 +2723,12 @@ const AdminPanel = {
       btn.className = 'admin-btn ' + (S.locked ? 'success' : 'danger');
     }
   },
+  /* 导出全部模板数据为备份 JSON */
   exportAll(){
     Store.flush();
     const backup = {
       app: '满卷时间计算工具',
-      version: 'v1.73-sync1',
+      version: 'v1.87',
       type: 'full',
       exportTime: new Date().toISOString(),
       data: S.data,
@@ -2226,11 +2747,12 @@ const AdminPanel = {
     };
     AdminPanel._download(backup, '满卷备份_全部_');
   },
+  /* 导出当前模板数据为备份 JSON */
   exportCurrent(){
     Store.flush();
     const backup = {
       app: '满卷时间计算工具',
-      version: 'v1.73',
+      version: 'v1.87',
       type: 'single',
       templateIndex: S.tab,
       templateName: S.tabNames[S.tab] || defaultTabName(S.tab),
@@ -2270,8 +2792,8 @@ const AdminPanel = {
             AdminPanel._download({app:'落筒录入同步恢复备份',type:'recovery',exportTime:new Date().toISOString(),localStorage:Object.fromEntries(Array.from({length:localStorage.length},(_,i)=>localStorage.key(i)).filter(k=>k!==null).map(k=>[k,localStorage.getItem(k)]))}, '导入前自动恢复备份_');
             S.data[idx] = backup.data;
             Store.save();
-            alert('导入成功，页面即将刷新');
-            location.reload();
+            showToast('导入成功，正在刷新','ok');
+            setTimeout(function(){location.reload()},900);
           });
         } else if(Array.isArray(backup.data) && backup.data.length === CFG.TEMPLATES){
           Modals.askConfirm('导入全部数据',
@@ -2299,14 +2821,14 @@ const AdminPanel = {
             Store.saveBatchOpts(); Store.saveBatchDeniers(); Store.saveBatchPT(); Store.saveBatchCounts();
             if(backup.faultRecords != null) localStorage.setItem('luotong_fault_records_v1', typeof backup.faultRecords === 'string' ? backup.faultRecords : JSON.stringify(backup.faultRecords));
             if(backup.faultReasons != null) localStorage.setItem('luotong_fault_reasons_v1', typeof backup.faultReasons === 'string' ? backup.faultReasons : JSON.stringify(backup.faultReasons));
-            alert('导入成功，页面即将刷新');
-            location.reload();
+            showToast('导入成功，正在刷新','ok');
+            setTimeout(function(){location.reload()},900);
           });
         } else {
           throw new Error('无法识别的文件格式');
         }
       } catch(err) {
-        alert('导入失败：' + err.message);
+        showToast('导入失败：' + err.message,'err');
       }
     };
     reader.readAsText(file);
@@ -2319,12 +2841,19 @@ const AdminPanel = {
       S.data[idx] = {};
       resetBatchBaseDate(idx);
       const d = S.data[idx];
-      for(let c = 0; c < CFG.CARS; c++) d[`date_${pref(c)}`] = todayStr;
-      Object.assign(d, defaultTitles(idx));
+      for(let c = 0; c < CFG.CARS; c++){
+        const v = pref(c);
+        d[`date_${v}`] = todayStr;
+        for(let s = 0; s < CFG.SUBS; s++){
+          for(let i = 1; i <= 6; i++){
+            d[`title_${v}_s${s}_i${i}`] = idx <= 3 ? ((6-s + idx*6) + '#') : '';
+          }
+        }
+      }
       Store.save();
       AdminPanel.renderAll();
       if(idx === S.tab){ App.loadTab(); }
-      alert(`「${S.tabNames[idx] || defaultTabName(idx)}」已清空`);
+      showToast('模板已清空','ok');
     });
   },
   saveLayout(){
@@ -2332,19 +2861,19 @@ const AdminPanel = {
     localStorage.setItem(CFG.KEY.W_MOBILE, $('settingCarWidthMobile').value);
     localStorage.setItem(CFG.KEY.ITEM_H, $('settingItemHeight').value);
     localStorage.setItem('luotong_missing_time_highlight_v1', $('settingMissingTimeHighlight').checked ? 'true' : 'false');
-    alert('设置已保存，页面即将刷新');
-    location.reload();
+    showToast('设置已保存，正在刷新','ok');
+    setTimeout(function(){location.reload()},900);
   },
   changePassword(){
     const np = $('newPassword').value.trim();
     const cp = $('confirmPassword').value.trim();
-    if(!np){ alert('请输入新密码'); $('newPassword').focus(); return; }
-    if(np !== cp){ alert('两次输入的密码不一致'); $('confirmPassword').focus(); return; }
+    if(!np){ showToast('请输入新密码','err'); $('newPassword').focus(); return; }
+    if(np !== cp){ showToast('两次输入的密码不一致','err'); $('confirmPassword').focus(); return; }
     const r = AdminPassword.set(np);
-    if(!r.ok){ alert(r.msg); return; }
+    if(!r.ok){ showToast(r.msg,'err'); return; }
     $('newPassword').value = '';
     $('confirmPassword').value = '';
-    alert('密码已修改，下次登录请使用新密码');
+    showToast('密码已修改','ok');
   },
   toggleLock(){
     Auth.toggleLock();
@@ -2372,8 +2901,6 @@ const Events = {
       window.visualViewport.addEventListener('scroll', Events.onViewportResize, {passive:true});
     }
     window.addEventListener('beforeunload', () => Store.flush());
-    window.addEventListener('pagehide', () => Store.flush());
-    document.addEventListener('visibilitychange', () => { if(document.hidden) Store.flush(); });
   },
   onClick(e){
     const t = e.target.closest('[data-action]');
@@ -2432,7 +2959,7 @@ const Events = {
   },
   renameTab(idx){
     if(idx < 0 || idx >= 4) return;
-    if(S.locked){ alert('系统已锁定，无法修改模板名称'); return; }
+    if(S.locked){ showToast('系统已锁定，无法修改模板名称','err'); return; }
     const def = defaultTabName(idx);
     const cur = S.tabNames[idx] || def;
     const input = prompt(`修改「${def}」名称：\n（留空则恢复默认「${def}」）`, cur);
@@ -2472,6 +2999,7 @@ const Events = {
     }
     if(!isManualOnlyTab()) Scheduler.updateAllDebounced();
     Store.saveDebounced();
+    updateTitleCustomMarks();
   },
   onHeaderInput(el){
     const field = el.dataset.field;
@@ -2493,6 +3021,7 @@ const Events = {
     if(field === 'headerName' && carIdx === 0){
       syncHeaderFieldFromV0('headerName', el.value); Store.saveDebounced(); return;
     }
+    if(field === 'count'){ updateCountWarnings(); }
     Store.saveDebounced();
   },
   onChange(e){
@@ -2509,7 +3038,7 @@ const Events = {
       if(el.dataset.field === 'processTime' && el.id === 'processTime_v0'){
         const raw = el.value.trim();
         if(raw && !U.isValidDurationInput(raw)){
-          showToast('时间错误：小时须在 0-23 之间，分钟和秒须在 0-59 之间。');
+          showToast('时间错误：小时须在 0-23 之间，分钟和秒须在 0-59 之间。','err');
           el.value = '';
         } else {
           el.value = U.autoFormatDuration(raw);
@@ -2526,7 +3055,7 @@ const Events = {
     if(el.readOnly) return;
     const raw = el.value.trim();
     if(raw && !U.isValidClockInput(raw)){
-      showToast('时间错误：小时须在 0-23 之间，分钟须在 0-59 之间。');
+      showToast('时间错误：小时须在 0-23 之间，分钟须在 0-59 之间。','err');
       el.value = '';
     } else {
       el.value = U.autoFormat(raw);
@@ -2549,6 +3078,7 @@ const Events = {
     if(c === 0){ syncTitleFromV0(formatted, s); }
     else { Sync.titles(pref(c), s); }
     if(!isManualOnlyTab()) Scheduler.updateAll();
+    updateTitleCustomMarks();
     Store.save();
   },
   onFocusIn(e){
@@ -2698,99 +3228,16 @@ document.addEventListener('change', e => {
   }
 });
 
-
 // 故障记录模板：以独立 iframe 嵌入，隔离样式和脚本，不影响原有录入功能
-const FAULT_TEMPLATE_HTML = `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>落筒故障录入</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#f3f5f9;color:#243044;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px}
-header{background:linear-gradient(135deg,#1677ff,#365ee8);color:white;padding:20px 16px 24px}
-header h1{font-size:22px;margin:0 0 6px}header p{margin:0;font-size:13px;opacity:.9}
-main{width:100%;max-width:none;margin:0;padding:18px clamp(12px,2vw,30px) 32px}.panel{width:100%;background:white;border-radius:14px;padding:clamp(18px,2vw,28px);box-shadow:0 4px 18px #1c31500d}
-.field{margin-bottom:18px}.field:last-child{margin-bottom:0}.field label{display:block;font-weight:650;margin-bottom:8px;color:#35445a}
-input,select{font:inherit;width:100%;min-height:44px;border:1px solid #d6dce7;border-radius:9px;padding:10px 12px;background:#fff;color:#243044;outline:none}
-input:focus,select:focus{border-color:#1677ff;box-shadow:0 0 0 3px #1677ff1a}
-.time-row{display:flex;gap:8px}.time-row input{min-width:0;flex:1}.btn{border:0;border-radius:9px;padding:11px 14px;font:inherit;font-weight:650;cursor:pointer;white-space:nowrap}.now{background:#eaf2ff;color:#1768d5}.toggle{background:#eef2f7;color:#526176;border:1px solid #dce2ec;min-width:90px}.toggle.active{background:#e5f8ed;border-color:#8ed6ab;color:#168348}
-.reason-row{display:flex;gap:8px}.reason-row select{flex:1;min-width:0}.reason-row button{background:#f0edff;color:#6250c7;min-width:94px}.subrow{display:flex;gap:8px;margin-top:8px}.subrow input{flex:1;min-width:0}.subrow button{background:#eef2f7;color:#44516a}
-.toggle-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}.toggle-field{min-width:0}.toggle-field label{display:block;font-weight:650;margin-bottom:8px;color:#35445a}.toggle-field .toggle{width:100%}.number-row{display:flex;gap:8px}.number-row input{flex:1;min-width:0}.number-row button{min-width:100px;background:#eaf8ef;color:#168348;border:1px solid #bce8ca}
-.actions{display:flex;gap:10px;margin-top:22px}.primary{flex:1;background:#1677ff;color:white}.secondary{background:#eef2f7;color:#4b5870}
-.records{margin-top:16px}.records h2{font-size:16px;margin:0 0 12px}.record{border:1px solid #e4e8f0;border-radius:10px;padding:12px;margin-bottom:8px}.record-top{display:flex;justify-content:space-between;gap:8px;font-weight:700}.record small{display:block;color:#6c788b;margin-top:6px;line-height:1.6}.record button{border:0;background:#fff0ef;color:#c43c36;border-radius:6px;padding:5px 8px}
-.empty{color:#7a8495;font-size:13px;text-align:center;padding:14px 0}.hint{font-size:12px;color:#7b8798;margin-top:6px}
-@media(min-width:600px){.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 22px}.field.full{grid-column:auto}}@media(min-width:1100px){main{padding:22px clamp(20px,2.2vw,36px) 36px}.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:28px}.field{margin-bottom:20px}.panel{border-radius:12px}}@media(max-width:599px){.toggle-pair{gap:10px}.toggle-field label{font-size:13px}header{padding:18px 14px 20px}main{padding:12px 10px 24px}.panel{padding:16px;border-radius:12px}.grid{display:block}}
-
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.48);z-index:9999;align-items:center;justify-content:center;padding:16px}.modal-overlay.active{display:flex}.modal-box{background:#fff;width:min(100%,400px);padding:22px;border-radius:14px;box-shadow:0 18px 50px #17203330}.modal-title{font-size:18px;font-weight:700;margin-bottom:18px;color:#243044}.modal-input{margin-top:0}.modal-actions .btn{min-height:42px}.modal-actions .primary{background:#1677ff;color:#fff;border-color:#1677ff}
-</style>
-</head>
-<body>
-<header><h1>落筒故障录入</h1><p>填写故障信息，支持快捷时间、选项切换与本机自动保存</p></header>
-<main>
-<section class="panel">
-<form id="entryForm">
-<div class="grid">
-<div class="field"><label for="position">1. 位号</label><select id="position" required><option value="">请选择位号</option></select></div>
-<div class="field full"><label for="occurred">2. 故障发生时间</label><div class="time-row"><input id="occurred" type="datetime-local" required><button class="btn now" type="button" data-now="occurred">此刻</button></div></div>
-<div class="field full"><label for="reason">3. 故障位置</label><div class="reason-row"><select id="reason" required><option value="">请选择故障原因</option><option>并丝</option><option>断丝</option></select></div></div>
-<div class="field"><label for="completed">5. 处理完成时间</label><div class="time-row"><input id="completed" type="datetime-local"><button class="btn now" type="button" data-now="completed">此刻</button></div></div>
-<div class="field"><label for="smallRolls">6. 小卷数</label><div class="number-row"><input id="smallRolls" type="number" min="0" step="1" placeholder="输入数量"><button class="btn" type="button" id="rollToggle">切换：8</button></div></div>
-<div class="field full"><div class="toggle-pair"><div class="toggle-field"><label>组件检查结果</label><button class="btn toggle" type="button" id="inspection" data-value="否">✕ 否</button></div><div class="toggle-field"><label>并丝品追查</label><button class="btn toggle" type="button" id="trace" data-value="否">✕ 否</button></div></div></div>
-<div class="field"><label for="operator">8. 操作员</label><input id="operator" type="text" placeholder="请输入操作员姓名" autocomplete="name"></div>
-</div>
-<div class="actions"><button class="btn primary" type="button" id="saveRecordBtn">保存记录</button></div>
-</form>
-</section>
-<section class="panel records"><h2>已录入记录</h2><div id="records"></div></section>
-</main>
-<div class="modal-overlay" id="reasonModal" aria-hidden="true"><div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="reasonModalTitle"><div class="modal-title" id="reasonModalTitle">添加故障位置选项</div><label for="customReason" style="display:block;text-align:left;font-weight:600;margin-bottom:8px">选项名称</label><input id="customReason" class="modal-input" placeholder="请输入故障位置/原因" maxlength="40"><div class="modal-actions" style="display:flex;gap:10px;margin-top:14px"><button class="btn" type="button" id="cancelReason" style="flex:1">取消</button><button class="btn primary" type="button" id="saveReason" style="flex:1">添加选项</button></div></div></div>
-<script>
-(()=> {
-const $=id=>document.getElementById(id);
-const recordsKey='luotong_fault_records_v1', reasonsKey='luotong_fault_reasons_v1';
-const memStore=Object.create(null);
-const safeStore={getItem(k){try{return window.localStorage.getItem(k)}catch(e){return Object.prototype.hasOwnProperty.call(memStore,k)?memStore[k]:null}},setItem(k,v){try{window.localStorage.setItem(k,v)}catch(e){memStore[k]=String(v)}}};
-const rollValues=[8,48,60];let rollIndex=0;
-for(let i=1;i<=24;i++){const o=document.createElement('option');o.value=String(i);o.textContent=String(i);$('position').append(o)}
-function localDateTime(d=new Date()){const pad=n=>String(n).padStart(2,'0');return \`\${d.getFullYear()}-\${pad(d.getMonth()+1)}-\${pad(d.getDate())}T\${pad(d.getHours())}:\${pad(d.getMinutes())}\`}
-document.querySelectorAll('[data-now]').forEach(b=>b.addEventListener('click',()=>{$(b.dataset.now).value=localDateTime();$(b.dataset.now).dispatchEvent(new Event('change',{bubbles:true}))}));
-function paintToggle(el){const yes=el.dataset.value==='是';el.textContent=(yes?'✓':'✕')+' '+(yes?'是':'否');el.classList.toggle('active',yes);el.style.background=yes?'#e5f8ed':'#fff0ef';el.style.borderColor=yes?'#8ed6ab':'#f2b8b5';el.style.color=yes?'#168348':'#c43c36'}
-function setupToggle(id){const el=$(id);paintToggle(el);el.addEventListener('click',()=>{el.dataset.value=el.dataset.value==='是'?'否':'是';paintToggle(el)})}
-setupToggle('inspection');setupToggle('trace');
-$('rollToggle').addEventListener('click',()=>{rollIndex=(rollIndex+1)%rollValues.length;$('smallRolls').value=rollValues[rollIndex];$('rollToggle').textContent='切换：'+rollValues[rollIndex]});
-function getReasons(){try{return JSON.parse(safeStore.getItem(reasonsKey)||'[]')}catch{return []}}
-function saveReasons(list){safeStore.setItem(reasonsKey,JSON.stringify(list))}
-function populateReasons(){const s=$('reason'),v=s.value;[...s.querySelectorAll('option[data-custom="1"]')].forEach(o=>o.remove());getReasons().forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;o.dataset.custom='1';s.append(o)});if([...s.options].some(o=>o.value===v))s.value=v}
-function openReasonModal(){$('reasonModal').classList.add('active');$('reasonModal').setAttribute('aria-hidden','false');$('customReason').value='';$('customReason').focus()}
-function closeReasonModal(){$('reasonModal').classList.remove('active');$('reasonModal').setAttribute('aria-hidden','true')}
-$('reason').addEventListener('change',()=>{if($('reason').value==='__add__'){openReasonModal();$('reason').value=''}});
-
-$('reason').insertAdjacentHTML('beforeend','<option value="__add__">＋ 添加选项…</option>');
-$('cancelReason').addEventListener('click',closeReasonModal);
-$('reasonModal').addEventListener('click',e=>{if(e.target===$('reasonModal'))closeReasonModal()});
-$('saveReason').addEventListener('click',()=>{const v=$('customReason').value.trim();if(!v)return alert('请先输入故障位置/原因');if(['并丝','断丝',...getReasons()].includes(v))return alert('该选项已存在');saveReasons([...getReasons(),v]);populateReasons();$('reason').value=v;closeReasonModal()});
-$('customReason').addEventListener('keydown',e=>{if(e.key==='Enter')$('saveReason').click();if(e.key==='Escape')closeReasonModal()});
-function loadRecords(){try{return JSON.parse(safeStore.getItem(recordsKey)||'[]')}catch{return []}}
-function saveRecords(data){safeStore.setItem(recordsKey,JSON.stringify(data))}
-function displayTime(v){return v?v.replace('T',' '):'—'}
-function render(){const list=loadRecords(),root=$('records');root.innerHTML='';if(!list.length){root.innerHTML='<div class="empty">暂无记录，保存后会显示在这里。</div>';return}list.slice().reverse().forEach((r,idx)=>{const el=document.createElement('div');el.className='record';const top=document.createElement('div');top.className='record-top';const title=document.createElement('span');title.textContent=\`位号 \${r.position} · \${r.reason}\`;const del=document.createElement('button');del.textContent='删除';del.type='button';del.addEventListener('click',()=>{try{const a=loadRecords();let at=-1;if(r.createdAt)at=a.findIndex(x=>x.createdAt===r.createdAt);if(at<0)at=a.findIndex(x=>x.position===r.position&&x.occurred===r.occurred&&x.reason===r.reason&&x.operator===r.operator);if(at<0){alert('未找到这条记录，列表已刷新');render();return}a.splice(at,1);saveRecords(a);render()}catch(err){alert('删除失败：浏览器本地存储不可用，请检查浏览器设置。');console.error(err)}});top.append(title,del);const detail=document.createElement('small');detail.textContent=\`故障发生：\${displayTime(r.occurred)}　处理完成：\${displayTime(r.completed)}\\\\\\
-组件检查：\${r.inspection||'未选择'}　并丝品追查：\${r.trace||'未选择'}\\\\\\
-小卷数：\${r.smallRolls||'—'}　操作员：\${r.operator||'—'}\`;el.append(top,detail);root.append(el)})}
-function saveCurrentRecord(){
-  const r={position:$('position').value,occurred:$('occurred').value,reason:$('reason').value,inspection:$('inspection').dataset.value||'否',completed:$('completed').value,smallRolls:$('smallRolls').value,trace:$('trace').dataset.value||'否',operator:$('operator').value.trim(),createdAt:new Date().toISOString()};
-  if(!r.position||!r.occurred||!r.reason){alert('请填写位号、故障发生时间和故障位置');return;}
-  try{const a=loadRecords();a.push(r);saveRecords(a);render();$('entryForm').reset();['inspection','trace'].forEach(id=>{const b=$(id);b.dataset.value='否';paintToggle(b)});rollIndex=0;$('rollToggle').textContent='切换：8';}
-  catch(err){alert('保存失败，请检查浏览器是否允许本地存储。');console.error(err)}
-}
-$('saveRecordBtn').addEventListener('click', saveCurrentRecord);
-$('entryForm').addEventListener('submit',e=>{e.preventDefault();saveCurrentRecord()});
-
-populateReasons();render();
+const FAULT_TEMPLATE_HTML = (function(){
+  var cssEl=document.getElementById('ui-shared');
+  var jsEl=document.getElementById('ui-js');
+  var css=cssEl?cssEl.textContent:'';
+  var js=jsEl?jsEl.textContent:'';
+  var raw=document.getElementById('fault-template-source').innerHTML;
+  return raw.replace('/*__UI_CSS__*/',function(){return css;}).replace('/*__UI_JS__*/',function(){return js;});
 })();
-<\/script></div>
-</body>
-</html>`;function clearFaultTemplateData(){
+function clearFaultTemplateData(){
   // 故障记录模块使用本机 localStorage 独立保存；主页面重置时同步清空记录和自定义故障原因。
   try {
     localStorage.removeItem('luotong_fault_records_v1');
@@ -2844,7 +3291,48 @@ function openFaultTemplate(){
   tab.classList.add('active');
 }
 
+/* 车头栏个数低于当前批号预设个数时标红：预设为纯数字才比较，空值不标红 */
+function updateCountWarnings(){
+  var preset = S.currentBatch ? String(S.batchCounts[S.currentBatch] === undefined ? '' : S.batchCounts[S.currentBatch]).trim() : '';
+  var limit = /^\d+$/.test(preset) ? parseInt(preset, 10) : null;
+  for(var c = 0; c < CFG.CARS; c++){
+    var el = $('count_v' + c);
+    if(!el) continue;
+    var raw = String(el.value || '').trim();
+    var low = false;
+    if(limit !== null && /^\d+$/.test(raw)){
+      low = parseInt(raw, 10) < limit;
+    }
+    el.classList.toggle('count-low', low);
+  }
+}
 
+/* 位号标红：与默认编号不一致时整排位号显示红色；无默认编号的模板不标红 */
+function updateTitleCustomMarks(){
+  if(S.tab > 3){
+    for(var c0 = 0; c0 < CFG.CARS; c0++){
+      for(var s0 = 0; s0 < CFG.SUBS; s0++){
+        for(var i0 = 1; i0 <= 6; i0++){
+          var e0 = $('title_v' + c0 + '_s' + s0 + '_i' + i0);
+          if(e0) e0.classList.remove('title-custom');
+        }
+      }
+    }
+    return;
+  }
+  for(var c = 0; c < CFG.CARS; c++){
+    for(var s = 0; s < CFG.SUBS; s++){
+      var base = $('title_v' + c + '_s' + s + '_i1');
+      var want = String((6 - s + S.tab * 6) + '#').replace(/#+$/, '');
+      var val = base ? String(base.value || '').trim().replace(/#+$/, '') : '';
+      var custom = val !== '' && val !== want;
+      for(var i = 1; i <= 6; i++){
+        var el = $('title_v' + c + '_s' + s + '_i' + i);
+        if(el) el.classList.toggle('title-custom', custom);
+      }
+    }
+  }
+}
 function boot(){
   Layout.apply();
   setTimeout(() => {
@@ -2910,7 +3398,7 @@ function splitTrainOnEnter(input){
     input.value = '';
     if(shift) shift.value = '';
     Store.saveDebounced();
-    showToast('车次输入不合法，请输入数字');
+    showToast('车次输入不合法，请输入数字','err');
     input.focus();
     return true;
   }
@@ -2954,7 +3442,7 @@ function clearInvalidTrain(input, shift, message){
   input.value = '';
   if(shift) shift.value = '';
   Store.saveDebounced();
-  showToast(message);
+  showToast(message,'err');
   input.focus();
 }
 function focusNextOccupiedTrain(currentInput){
@@ -2986,6 +3474,11 @@ document.addEventListener('keydown', function(e){
 }, true);
 
 boot();
+})();
+(function(){
+  var el=document.getElementById('ui-js');
+  if(!el) return;
+  try{ (new Function(el.textContent))(); }catch(e){ console.error('[ui-js]', e); }
 })();
 </script>
 </body>
