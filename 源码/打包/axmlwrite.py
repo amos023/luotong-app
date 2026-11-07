@@ -2,7 +2,7 @@
 
 要点：属性名必须排在字符串池最前，并配套等长的 resource map，
 否则系统的 PackageParser 拿不到 android:xxx 的资源 ID，安装会失败。
-属性名 → 资源 ID 的取值已用真机 APK 反查确认（见 axml_probe.py 输出）。
+属性名 → 资源 ID 的取值已用真机 APK 反查确认。
 """
 import struct
 
@@ -36,11 +36,6 @@ class El:
         self.children = list(children)
 
 
-def _chrome():
-    """按层级写出（namespace 开始/结束由调用方处理）。"""
-    pass
-
-
 class Writer:
     def __init__(self, root):
         self.root = root
@@ -49,7 +44,6 @@ class Writer:
         self.body = bytearray()
         self.attr_order = []
 
-    # ---------- 字符串池 ----------
     def si(self, s):
         if s in self.pindex:
             return self.pindex[s]
@@ -58,16 +52,14 @@ class Writer:
         return self.pindex[s]
 
     def collect_attr_names(self, el):
-        for is_android, name, typ, val in el.attrs:
+        for _ns, name, _t, _v in el.attrs:
             if name not in self.attr_order:
                 self.attr_order.append(name)
         for ch in el.children:
             self.collect_attr_names(ch)
 
-    # ---------- 编码 ----------
     def encode(self):
         self.collect_attr_names(self.root)
-        # 属性名先入池，保证 resmap 连续覆盖前 N 项
         for name in self.attr_order:
             self.si(name)
         self.si("android")
@@ -99,7 +91,8 @@ class Writer:
             elif typ == T_REF:
                 blob += struct.pack("<III", ans, an, 0xFFFFFFFF) + struct.pack("<HBBI", 8, 0, T_REF, val)
             elif typ == T_BOOL:
-                blob += struct.pack("<III", ans, an, 0xFFFFFFFF) + struct.pack("<HBBI", 8, 0, T_BOOL, 0xFFFFFFFF if val else 0)
+                blob += struct.pack("<III", ans, an, 0xFFFFFFFF) + struct.pack(
+                    "<HBBI", 8, 0, T_BOOL, 0xFFFFFFFF if val else 0)
             else:
                 blob += struct.pack("<III", ans, an, 0xFFFFFFFF) + struct.pack("<HBBI", 8, 0, T_INT, val)
         size = 16 + 20 + len(blob)
@@ -127,6 +120,7 @@ class Writer:
         for s in self.pool:
             offsets.append(len(data))
             enc = s.encode("utf-16-le")
+            # UTF-16 字符串必须以 \0\0 结尾，否则解析器报 not null terminated
             data += struct.pack("<H", len(enc) // 2) + enc + b"\x00\x00"
         while len(data) % 4:
             data += b"\x00"
@@ -150,9 +144,7 @@ def build_manifest(package, version_code, version_name, label, activity_class,
         (True, "label", T_STRING, label),
         (True, "configChanges", T_INT, config_changes),
     ], [
-        El("intent-filter", [
-            (True, "label", T_STRING, label),
-        ], [
+        El("intent-filter", [], [
             El("action", [(True, "name", T_STRING, "android.intent.action.MAIN")]),
             El("category", [(True, "name", T_STRING, "android.intent.category.LAUNCHER")]),
         ]),

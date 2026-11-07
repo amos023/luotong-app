@@ -682,7 +682,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.89<br>
+                    满卷时间计算工具 v1.38<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1082,7 +1082,17 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
-  { version: 'v1.89', date: '2026-11-03', items: [
+  { version: 'v1.38', date: '2026-11-07', items: [
+    '调整：页面首次打开不再重算，直接显示上次保存的时间与空位结果，原样不动',
+    '修复：时间框、工艺时间框点进点出未改动内容也会触发重算，现在只有内容真的变化才重算',
+    '说明：只有改工艺时间、改位号、改开始时间、点击空位填充开关时才触发重算'
+  ]},
+  { version: 'v1.37', date: '2026-11-07', items: [
+    '调整：重算范围改为「当前车及其后面的车」，前面的车不再参与重算，时间与空位保持原样',
+    '说明：改位号、改开始时间只重算该车及之后的车辆；改工艺时间因影响全部车辆，仍从头重算',
+    '说明：切换模板不触发重算'
+  ]},
+  { version: 'v1.36', date: '2026-11-03', items: [
     '新增：位号与默认编号不一致时，该排位号显示红色加粗',
     '说明：默认编号按当前模板与排号自动计算（第1排6#、第2排5#…），位号为空不标红',
     '说明：比较时忽略末尾的 #，输入 6 与 6# 视为一致，输入过程中不会闪红',
@@ -1093,38 +1103,36 @@ const UPDATE_LOGS = [
     '说明：标红在个数输入、切换批号、切换模板三种时机实时刷新',
     '说明：标红只改数字颜色与字重，不改输入框描边'
   ]},
-  { version: 'v1.88', date: '2026-11-02', items: [
-    '整理：日志版本号顺延一位补齐 v1.87 空号，原 v1.86→v1.87、v1.85→v1.86、v1.84→v1.85、v1.83→v1.84、v1.82→v1.83、v1.81→v1.82，条目文字未改动',
-    '整理：撤回 v1.87 中精简 !important 的改动，弹窗样式恢复为显式强制覆盖',
-    '优化：导出备份 JSON 的版本号改为跟随当前版本，不再写死 v1.73',
+  { version: 'v1.35', date: '2026-11-02', items: [
+    '整理：撤回上一版中精简 !important 的改动，弹窗样式恢复为显式强制覆盖',
+    '优化：导出备份 JSON 的版本号改为跟随当前版本，不再写死固定版本号',
     '优化：弹窗高度跟随可视区域（--kb-view-h），键盘弹出时标题与首行输入不被顶出屏幕',
     '优化：记录卡片的时间输入框改为常规描边，聚焦时才显示蓝色高亮，不再常驻虚线',
     '整理：移除失效样式 .subrow 与 .hint，精简故障页样式规则',
     '整理：字号抽成 CSS 变量 --fs-10 至 --fs-16，故障页关键样式改为引用变量',
     '整理：为记录读写、渲染、保存校验、导入导出等关键函数补充用途注释'
   ]},
-  { version: 'v1.87', date: '2026-11-02', items: [
-    '整理：日志版本号统一重排为从 v1.86 起连续的序列，原 v1.84、v1.82、v1.81、v1.80、v1.77 依次顺延一位，历史条目文字内容未作改动',
+  { version: 'v1.34', date: '2026-11-02', items: [
     '修改：故障记录页的「个数」字段改名为「小卷数」，与组件检查结果、并丝品追查同排',
     '修改：保存故障记录时的必填提示同步改为「请填写位号、故障原因、故障时间和小卷数」',
     '说明：字段 id smallRolls 与已存记录的数据结构保持不变，历史记录不受影响'
   ]},
-  { version: 'v1.86', date: '2026-11-02', items: [
+  { version: 'v1.33', date: '2026-11-02', items: [
     '优化：自定义批号弹窗重排为三行两列，批号名称与个数同一行，旦数与工艺时间同一行',
     '优化：个数从原来的半列空白位提到第一行右列，与批号名称并排，弹窗高度减少约 60px',
     '统一：四字段仍沿用共用网格与输入框样式，校验、回车提交、保存逻辑未改动'
   ]},
-  { version: 'v1.85', date: '2026-11-02', items: [
+  { version: 'v1.32', date: '2026-11-02', items: [
     '优化：自定义批号弹窗改为两列布局，批号名称占整行，旦数与工艺时间并排，个数单独一行右侧',
     '优化：弹窗内字段标签与输入框改用网格控制，窄屏下自动缩小字号避免文字截断',
     '统一：批号弹窗字段结构与共用弹窗样式对齐，不改动原有校验与保存逻辑'
   ]},
-  { version: 'v1.84', date: '2026-11-02', items: [
+  { version: 'v1.31', date: '2026-11-02', items: [
     '统一：修复弹窗内单个按钮不撑满整行的问题，关闭类按钮统一为整行灰色圆角样式',
     '统一：更新日志弹窗的关闭按钮改用与其他弹窗一致的按钮组结构',
     '统一：弹窗按钮宽度、高度、圆角、字号统一由共用样式控制，后续新增弹窗自动继承'
   ]},
-  { version: 'v1.83', date: '2026-11-02', items: [
+  { version: 'v1.30', date: '2026-11-02', items: [
     '新增：第7个模板页「故障记录」，可独立记录位号、故障原因、发生时间、处理完成时间、小卷数、组件检查、并丝追查、个数',
     '新增：故障记录列表按录入顺序显示序号，可标记已填（卡片变淡、标题划线），支持就地修改处理完成时间',
     '新增：故障页时间输入支持「此刻」一键填入，显示格式为月日时分，不显示年份',
@@ -1136,78 +1144,78 @@ const UPDATE_LOGS = [
     '优化：故障页去掉了顶部标题栏，表单直接上移，手机端两列排版',
     '修复：删除字段后残留的脚本引用导致「保存记录」点击无反应的问题'
   ]},
-  { version: 'v1.82', date: '2026-10-28', items: [
+  { version: 'v1.29', date: '2026-10-28', items: [
     '修复：电脑端车头栏批号、工艺时间等字段文字显示被遮挡的问题，调整字段布局与可用宽度',
     '优化：车头栏其他输入内容的字体大小与姓名显示统一，避免桌面端内容拥挤',
     '优化：继续保留模板切换定位修复及夜班日期显示规则'
   ]},
-  { version: 'v1.76', date: '2026-10-28', items: [
+  { version: 'v1.28', date: '2026-10-28', items: [
     '修复：切换模板后恢复各模板上次查看车辆的位置，减少车辆内容显示不全和滚动偏移',
     '修复：夜班日期默认按生产日显示；位号时间跨午夜进入次日时，车头日期相应显示次日'
   ]},
-  { version: 'v1.75', date: '2026-10-26', items: [
+  { version: 'v1.27', date: '2026-10-26', items: [
     '调整：车头栏姓名恢复原有显示样式，避免与位号录入区字体调整互相影响',
     '优化：延续 v32 的姓名、时间、车次、班次字体设置及原有录入功能'
   ]},
-  { version: 'v1.74', date: '2026-10-25', items: [
+  { version: 'v1.26', date: '2026-10-25', items: [
     '修复：所有时间输入统一限制小时 0-23、分钟 0-59、秒 0-59，超范围显示轻提示并清空无效输入',
     '修复：有效时间纯数字输入格式，010 正确识别为 0:10，不再误显示为 10:00',
     '优化：工艺时间纯数字输入按位数格式化并保留前导 0，例如 010→0:10:00、123045→12:30:45',
     '优化：工艺时间按回车后执行校验、格式化并自动失焦',
-    '整理：按现有功能重新编排更新日志，补齐 v1.0 起的功能记录'
+    '整理：按现有功能重新编排更新日志，补齐最早的功能记录'
   ]},
-  { version: 'v1.73', date: '2026-10-25', items: [
+  { version: 'v1.25', date: '2026-10-25', items: [
     '修复：工艺时间无效或为空时清除自动计算的旧时间，保留手动填写时间',
     '优化：满卷时间恰好到达班次截止点后，后续自动计算留空',
     '新增：后台管理提供当前模板计算异常检查（只检查、不修改数据）'
   ]},
-  { version: 'v1.72', date: '2026-10-24', items: [
+  { version: 'v1.24', date: '2026-10-24', items: [
     '新增：模板1~模板4标签文字支持双击重命名',
     '新增：点击重置按钮恢复当前模板的默认标签名',
     '调整：故障 / 实验 / ST-48 模板隐藏「空位填充」按钮',
     '优化：个数输入框电脑端最小宽度调整，避免多位数字显示时拉伸'
   ]},
-  { version: 'v1.71', date: '2026-10-24', items: [
+  { version: 'v1.23', date: '2026-10-24', items: [
     '优化：个数输入框电脑端宽度增加，避免内容被截断',
     '优化：第 6 排回车不再跳到下一车，仅格式化并失焦'
   ]},
-  { version: 'v1.70', date: '2026-10-24', items: [
+  { version: 'v1.22', date: '2026-10-24', items: [
     '调整：后台管理填充统计改为以时间为准，位号、姓名、车次、班次不再计入'
   ]},
-  { version: 'v1.69', date: '2026-10-24', items: [
+  { version: 'v1.21', date: '2026-10-24', items: [
     '新增：后台管理中心，包含概览、数据、设置三栏',
     '新增：数据导出与导入（JSON 备份）',
     '新增：各模板单独清空功能',
     '新增：修改管理密码功能',
     '新增：存储占用、填充率等统计信息'
   ]},
-  { version: 'v1.68', date: '2026-10-24', items: [
+  { version: 'v1.20', date: '2026-10-24', items: [
     '新增：每辆车车头增加锁定按钮，锁定后该车只读，折叠 / 展开不受影响',
     '新增：锁定状态按模板独立保存，再次点击按钮即可解锁'
   ]},
-  { version: 'v1.67', date: '2026-10-24', items: ['优化：重置按钮改用循环箭头图标，更贴合重置语义'] },
-  { version: 'v1.66', date: '2026-10-24', items: ['调整：备注跳转按钮文字去掉箭头','调整：更新日志图标移至后台管理按钮左侧'] },
-  { version: 'v1.65', date: '2026-10-24', items: ['优化：更新日志按钮仅保留图标'] },
-  { version: 'v1.64', date: '2026-10-24', items: [
+  { version: 'v1.19', date: '2026-10-24', items: ['优化：重置按钮改用循环箭头图标，更贴合重置语义'] },
+  { version: 'v1.18', date: '2026-10-24', items: ['调整：备注跳转按钮文字去掉箭头','调整：更新日志图标移至后台管理按钮左侧'] },
+  { version: 'v1.17', date: '2026-10-24', items: ['优化：更新日志按钮仅保留图标'] },
+  { version: 'v1.16', date: '2026-10-24', items: [
     '优化：备注跳转按钮支持再次点击回退到 L1 列',
     '修复：备注跳转不生效及被滑动吸附打断的问题',
     '修复：位号卡片的 × 清除按钮无法清空内容的问题'
   ]},
-  { version: 'v1.63', date: '2026-10-24', items: ['新增：后台管理锁定系统功能，避免误操作','新增：后台管理系统状态与模板填充概览'] },
-  { version: 'v1.62', date: '2026-10-24', items: ['新增：排版设置可保存车辆宽度及位号项目高度','优化：桌面端与移动端分别使用排版参数'] },
-  { version: 'v1.61', date: '2026-10-24', items: ['新增：按模板清空和清空全部数据的确认操作','优化：危险操作增加二次确认，降低误清风险'] },
-  { version: 'v1.60', date: '2026-10-23', items: ['新增：批号选项管理，支持添加、编辑和删除批号','新增：批号相关设置按模板保存'] },
-  { version: 'v1.55', date: '2026-10-23', items: ['新增：每车折叠 / 展开，减少长页面查找成本','优化：切换模板后保留各模板的独立数据'] },
-  { version: 'v1.50', date: '2026-10-23', items: ['新增：满卷时间与工艺时间联动计算','优化：时间变化后刷新相关计算结果'] },
-  { version: 'v1.45', date: '2026-10-23', items: ['新增：按车组织输入卡片，集中展示单车信息','新增：位号、姓名、车次、班次及备注等信息录入'] },
-  { version: 'v1.40', date: '2026-10-22', items: ['新增：多模板切换，模板数据独立保存','新增：模板名称显示与当前模板状态提示'] },
-  { version: 'v1.35', date: '2026-10-22', items: ['新增：位号 / 内容卡片清空操作','优化：输入内容变化后自动保存，刷新页面后恢复数据'] },
-  { version: 'v1.30', date: '2026-10-22', items: ['新增：备注栏快速跳转，方便定位到备注相关列','优化：支持在跳转后返回原来的查看位置'] },
-  { version: 'v1.25', date: '2026-10-22', items: ['新增：空位填充开关，便于快速填充空白位号','优化：不同模板可使用各自的填充设置'] },
-  { version: 'v1.20', date: '2026-10-22', items: ['新增：每车锁定 / 解锁，避免已确认数据被误改','优化：锁定后保留折叠与展开等查看操作'] },
-  { version: 'v1.15', date: '2026-10-21', items: ['新增：重置当前模板与重置全部模板入口','优化：重置操作前显示确认提示'] },
-  { version: 'v1.10', date: '2026-10-21', items: ['新增：工艺时间、有效时间等时间字段输入与格式化','优化：支持数字快捷输入，失焦时统一校验格式'] },
-  { version: 'v1.05', date: '2026-10-21', items: ['新增：满卷时间计算相关字段与基础计算流程','优化：输入错误时提供页面内轻提示，避免弹窗打断操作'] },
+  { version: 'v1.15', date: '2026-10-24', items: ['新增：后台管理锁定系统功能，避免误操作','新增：后台管理系统状态与模板填充概览'] },
+  { version: 'v1.14', date: '2026-10-24', items: ['新增：排版设置可保存车辆宽度及位号项目高度','优化：桌面端与移动端分别使用排版参数'] },
+  { version: 'v1.13', date: '2026-10-24', items: ['新增：按模板清空和清空全部数据的确认操作','优化：危险操作增加二次确认，降低误清风险'] },
+  { version: 'v1.12', date: '2026-10-23', items: ['新增：批号选项管理，支持添加、编辑和删除批号','新增：批号相关设置按模板保存'] },
+  { version: 'v1.11', date: '2026-10-23', items: ['新增：每车折叠 / 展开，减少长页面查找成本','优化：切换模板后保留各模板的独立数据'] },
+  { version: 'v1.10', date: '2026-10-23', items: ['新增：满卷时间与工艺时间联动计算','优化：时间变化后刷新相关计算结果'] },
+  { version: 'v1.9', date: '2026-10-23', items: ['新增：按车组织输入卡片，集中展示单车信息','新增：位号、姓名、车次、班次及备注等信息录入'] },
+  { version: 'v1.8', date: '2026-10-22', items: ['新增：多模板切换，模板数据独立保存','新增：模板名称显示与当前模板状态提示'] },
+  { version: 'v1.7', date: '2026-10-22', items: ['新增：位号 / 内容卡片清空操作','优化：输入内容变化后自动保存，刷新页面后恢复数据'] },
+  { version: 'v1.6', date: '2026-10-22', items: ['新增：备注栏快速跳转，方便定位到备注相关列','优化：支持在跳转后返回原来的查看位置'] },
+  { version: 'v1.5', date: '2026-10-22', items: ['新增：空位填充开关，便于快速填充空白位号','优化：不同模板可使用各自的填充设置'] },
+  { version: 'v1.4', date: '2026-10-22', items: ['新增：每车锁定 / 解锁，避免已确认数据被误改','优化：锁定后保留折叠与展开等查看操作'] },
+  { version: 'v1.3', date: '2026-10-21', items: ['新增：重置当前模板与重置全部模板入口','优化：重置操作前显示确认提示'] },
+  { version: 'v1.2', date: '2026-10-21', items: ['新增：工艺时间、有效时间等时间字段输入与格式化','优化：支持数字快捷输入，失焦时统一校验格式'] },
+  { version: 'v1.1', date: '2026-10-21', items: ['新增：满卷时间计算相关字段与基础计算流程','优化：输入错误时提供页面内轻提示，避免弹窗打断操作'] },
   { version: 'v1.0', date: '2026-10-21', items: [
     '初版：建立满卷时间计算工具的基本页面与车辆信息录入结构',
     '初版：支持按车查看和编辑生产相关信息',
@@ -1589,8 +1597,9 @@ const Sync = {
     }
     if(!skipSave) Store.saveDebounced();
   },
-  dates(){
-    for(let c = 0; c < CFG.CARS; c++){
+  dates(fromCar){
+    const dfrom = (fromCar === undefined || fromCar === null || isNaN(fromCar)) ? 0 : Math.max(0, Math.min(fromCar|0, CFG.CARS - 1));
+    for(let c = dfrom; c < CFG.CARS; c++){
       const v = pref(c);
       let cross = false;
       for(let s = 0; s < CFG.SUBS && !cross; s++){
@@ -1621,6 +1630,12 @@ const Sync = {
 const Scheduler = {
   _timer: null,
   updateAll(){ Scheduler._doUpdate(); },
+  /* 只重算指定车及其后面的车，前面的车保持不动 */
+  updateFrom(n){ Scheduler._doUpdate(n); },
+  updateFromDebounced(n){
+    clearTimeout(Scheduler._timer);
+    Scheduler._timer = setTimeout(() => { Scheduler._timer = null; Scheduler._doUpdate(n); }, 180);
+  },
   updateAllDebounced(){
     clearTimeout(Scheduler._timer);
     Scheduler._timer = setTimeout(() => { Scheduler._timer = null; Scheduler._doUpdate(); }, 180);
@@ -1633,16 +1648,17 @@ const Scheduler = {
     if(am === null) return null;
     return am * 60 + (rel % 60);
   },
-  _doUpdate(){
-    if(isManualOnlyTab()){ Sync.dates(); Store.save(); return; }
+  _doUpdate(fromArg){
+    const from = (fromArg === undefined || fromArg === null || isNaN(fromArg)) ? 0 : Math.max(0, Math.min(fromArg|0, CFG.CARS - 1));
+    if(isManualOnlyTab()){ Sync.dates(from); Store.save(); return; }
     const durEl = $('processTime_v0');
     const dur = durEl ? U.toSec(durEl.value) : null;
     // Do not clear results while the user is midway through typing a duration;
     // validation on blur will either normalize it or clear it and recalculate.
     if(dur === null && durEl && durEl.value.trim() && document.activeElement === durEl) return;
     const dir = Flags.direction();
-    for(let c = 0; c < CFG.CARS; c++){ if(!CarLock.isLocked(c)) Scheduler.clearAutoFill(c); }
-    for(let c = 0; c < CFG.CARS; c++){
+    for(let c = from; c < CFG.CARS; c++){ if(!CarLock.isLocked(c)) Scheduler.clearAutoFill(c); }
+    for(let c = from; c < CFG.CARS; c++){
       if(CarLock.isLocked(c)) continue;
       for(let s = 0; s < CFG.SUBS; s++){
         const titleEl = $(`title_v${c}_s${s}_i1`);
@@ -1656,13 +1672,12 @@ const Scheduler = {
         }
       }
     }
-    for(let c = 0; c < CFG.CARS; c++){
+    for(let c = from; c < CFG.CARS; c++){
       if(CarLock.isLocked(c)) continue;
       Scheduler.processCar(c, dir, dur);
       if(Flags.emptyFill(c)) Scheduler.fillEmptySlots(c);
     }
-    Sync.dates();
-    Store.save();
+    Sync.dates(from);
   },
   processCar(c, dir, dur){
     const rows = [];
@@ -2246,7 +2261,7 @@ const App = {
     else Batch.applyAll('', true, true, true);
     CarLock.applyAll();
     Renderer.updateEmptySlotBtns();
-    Scheduler.updateAll();
+    // 切模板不重算：保留各模板已录入的时间与空位结果
     Layout.adjustCarHeightsThrottled();
     AutoSize.allHeaders();
     updateCountWarnings();
@@ -2260,7 +2275,7 @@ const App = {
     if(carIdx === 0){ for(let c = 0; c < CFG.CARS; c++) Flags.emptyFill(c, newVal); }
     else { Flags.emptyFill(carIdx, newVal); }
     Renderer.updateEmptySlotBtns();
-    Scheduler.updateAll();
+    Scheduler.updateFrom(carIdx);
     Store.save();
   },
   gotoRemark(carIdx){
@@ -2728,7 +2743,7 @@ const AdminPanel = {
     Store.flush();
     const backup = {
       app: '满卷时间计算工具',
-      version: 'v1.87',
+      version: 'v1.38',
       type: 'full',
       exportTime: new Date().toISOString(),
       data: S.data,
@@ -2752,7 +2767,7 @@ const AdminPanel = {
     Store.flush();
     const backup = {
       app: '满卷时间计算工具',
-      version: 'v1.87',
+      version: 'v1.38',
       type: 'single',
       templateIndex: S.tab,
       templateName: S.tabNames[S.tab] || defaultTabName(S.tab),
@@ -2997,7 +3012,7 @@ const Events = {
       Flags.titleCustom(c, s, v0Val !== el.value.trim());
       Sync.titles(v, s);
     }
-    if(!isManualOnlyTab()) Scheduler.updateAllDebounced();
+    if(!isManualOnlyTab()) Scheduler.updateFromDebounced(c);
     Store.saveDebounced();
     updateTitleCustomMarks();
   },
@@ -3008,7 +3023,7 @@ const Events = {
     const carIdx = m ? +m[1] : -1;
     if(field === 'processTime' && carIdx === 0){
       syncHeaderFieldFromV0('processTime', el.value);
-      if(!isManualOnlyTab()) Scheduler.updateAllDebounced();
+      if(!isManualOnlyTab()) Scheduler.updateFromDebounced(0);
       Store.saveDebounced();
       return;
     }
@@ -3036,6 +3051,7 @@ const Events = {
     if(role === 'title'){ Events.onTitleBlur(el); return; }
     if(role === 'header'){
       if(el.dataset.field === 'processTime' && el.id === 'processTime_v0'){
+        const beforePT = el.value;
         const raw = el.value.trim();
         if(raw && !U.isValidDurationInput(raw)){
           showToast('时间错误：小时须在 0-23 之间，分钟和秒须在 0-59 之间。','err');
@@ -3044,7 +3060,9 @@ const Events = {
           el.value = U.autoFormatDuration(raw);
         }
         syncHeaderFieldFromV0('processTime', el.value);
-        if(!isManualOnlyTab()){ Scheduler.updateAll(); AutoSize.allHeaders(); }
+        // 只有工艺时间真的变了才重算；点进点出不改内容不触发
+        if(beforePT !== el.value && !isManualOnlyTab()){ Scheduler.updateFrom(0); }
+        AutoSize.allHeaders();
       }
       Store.save();
       return;
@@ -3053,6 +3071,7 @@ const Events = {
   },
   onStartBlur(el){
     if(el.readOnly) return;
+    const before = el.value;
     const raw = el.value.trim();
     if(raw && !U.isValidClockInput(raw)){
       showToast('时间错误：小时须在 0-23 之间，分钟须在 0-59 之间。','err');
@@ -3060,6 +3079,7 @@ const Events = {
     } else {
       el.value = U.autoFormat(raw);
     }
+    const touched = !!el._dirty;
     if(el._dirty){
       const v = el.value.trim();
       const c = +el.dataset.car, s = +el.dataset.s;
@@ -3067,7 +3087,9 @@ const Events = {
       else { Flags.manualStart(c, s, false); Flags.manualClear(c, s, true); }
       el._dirty = false;
     }
-    if(!isManualOnlyTab()) Scheduler.updateAll();
+    // 只有真的改动过内容才重算；点进点出、没改东西不触发
+    const changed = touched || before !== el.value;
+    if(changed && !isManualOnlyTab()) Scheduler.updateFrom(+el.dataset.car);
   },
   onTitleBlur(el){
     if(el.readOnly) return;
@@ -3077,7 +3099,7 @@ const Events = {
     el.value = formatted;
     if(c === 0){ syncTitleFromV0(formatted, s); }
     else { Sync.titles(pref(c), s); }
-    if(!isManualOnlyTab()) Scheduler.updateAll();
+    if(!isManualOnlyTab()) Scheduler.updateFrom(c);
     updateTitleCustomMarks();
     Store.save();
   },
@@ -3362,7 +3384,7 @@ function boot(){
     }
 
     Renderer.updateEmptySlotBtns();
-    Scheduler.updateAll();
+    // 首次加载不重算：直接呈现上次保存的时间与空位结果，只有工艺时间、位号、开始时间变动或点空位填充时才重算
     Store.flush();
     Auth.applyLockState();
     Layout.adjustCarHeights();

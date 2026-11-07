@@ -25,6 +25,34 @@ public class MainActivity extends Activity {
     private static final String ORIGIN = "http://app.local/";
     private WebView web;
 
+    /** 资产拦截客户端：用具名内部类，避免匿名类在旧版 d8 上出问题 */
+    static class AssetClient extends WebViewClient {
+        private final MainActivity host;
+
+        AssetClient(MainActivity host) {
+            this.host = host;
+        }
+
+        @Override
+        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+            if (request == null || request.getUrl() == null) return null;
+            String url = request.getUrl().toString();
+            if (!url.startsWith(ORIGIN)) return null;
+            String path = url.substring(ORIGIN.length());
+            int q = path.indexOf('?');
+            if (q >= 0) path = path.substring(0, q);
+            int h = path.indexOf('#');
+            if (h >= 0) path = path.substring(0, h);
+            if (path.length() == 0) path = "index.html";
+            try {
+                InputStream in = host.getAssets().open(path);
+                return new WebResourceResponse(mimeOf(path), "utf-8", in);
+            } catch (IOException e) {
+                return null;
+            }
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,27 +80,7 @@ public class MainActivity extends Activity {
             s.setForceDark(WebSettings.FORCE_DARK_OFF);
         }
 
-        web.setWebViewClient(new WebViewClient() {
-            @Override
-            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                if (request == null || request.getUrl() == null) return null;
-                String url = request.getUrl().toString();
-                if (!url.startsWith(ORIGIN)) return null;
-                String path = url.substring(ORIGIN.length());
-                int q = path.indexOf('?');
-                if (q >= 0) path = path.substring(0, q);
-                int h = path.indexOf('#');
-                if (h >= 0) path = path.substring(0, h);
-                if (path.length() == 0) path = "index.html";
-                try {
-                    InputStream in = getAssets().open(path);
-                    return new WebResourceResponse(mimeOf(path), "utf-8", in);
-                } catch (IOException e) {
-                    return null;
-                }
-            }
-        });
-
+        web.setWebViewClient(new AssetClient(this));
         setContentView(web);
         web.loadUrl(ORIGIN + "index.html");
     }
@@ -96,7 +104,7 @@ public class MainActivity extends Activity {
         decor.setSystemUiVisibility(decor.getSystemUiVisibility() | flags);
     }
 
-    private static String mimeOf(String path) {
+    static String mimeOf(String path) {
         String p = path.toLowerCase();
         if (p.endsWith(".css")) return "text/css";
         if (p.endsWith(".js")) return "application/javascript";

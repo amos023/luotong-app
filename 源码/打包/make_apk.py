@@ -1,31 +1,40 @@
 #!/usr/bin/env python3
 """本地打包：不用 Gradle / aapt2，直接拼 APK。
 
-组成：二进制清单 + classes.dex + resources.arsc（图标资源表）+ assets/index.html。
-resources.arsc 按 Android 11+ 的要求「不压缩 + 4 字节对齐」，
-对齐用一条 res/raw/pad.bin 占位项做微调，反复构建直到偏移满足要求。
+组成：二进制清单 + classes.dex + resources.arsc（多密度图标资源表）+ assets/index.html。
+resources.arsc 按 Android 11+ 要求「不压缩 + 4 字节对齐」，
+对齐用一条 res/raw/pad.bin 占位项微调，反复构建直到偏移满足要求。
 """
 import os
 import struct
 import sys
 import zipfile
 
-sys.path.insert(0, "/workspace/临时/apkbuild")
+sys.path.insert(0, "/tmp/apk")
 from axmlwrite import build_manifest  # noqa: E402
 
-ROOT = "/workspace/项目/落筒录入APK"
+ROOT = "/tmp/apk"
 OUT = os.path.join(ROOT, "out")
-APK = os.path.join(OUT, "落筒录入_v1.89.apk")
+APK = os.path.join(OUT, "落筒录入.apk")
 
 PKG = "io.github.mcool.luotong"
-VERSION_CODE = 189
-VERSION_NAME = "1.89"
+VERSION_CODE = 38
+VERSION_NAME = "1.38"
 LABEL = "落筒录入"
 ACTIVITY = "io.github.mcool.luotong.MainActivity"
 ICON_RID = 0x7F010000
 
-ICON_PATH = "res/mipmap-xhdpi/ic_launcher.png"
+DENSITIES = ["mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi"]
 PAD_NAME = "res/raw/pad.bin"
+
+
+def icon_entries():
+    """返回 [(zip 内路径, 字节)]，按密度顺序，与 resources.arsc 里全局池顺序一致。"""
+    out = []
+    for d in DENSITIES:
+        path = os.path.join(OUT, "res", "mipmap-" + d, "ic_launcher.png")
+        out.append(("res/mipmap-%s/ic_launcher.png" % d, open(path, "rb").read()))
+    return out
 
 
 def data_offset(zf_path, entry_name):
@@ -38,9 +47,10 @@ def data_offset(zf_path, entry_name):
     return info.header_offset + 30 + nlen + elen
 
 
-def assemble(manifest, dex, html, arsc, icon, pad_size):
+def assemble(manifest, dex, html, arsc, icons, pad_size):
     with zipfile.ZipFile(APK, "w") as z:
-        z.writestr(zipfile.ZipInfo(ICON_PATH), icon, compress_type=zipfile.ZIP_DEFLATED)
+        for name, data in icons:
+            z.writestr(zipfile.ZipInfo(name), data, compress_type=zipfile.ZIP_DEFLATED)
         z.writestr(zipfile.ZipInfo(PAD_NAME), b"\x00" * pad_size, compress_type=zipfile.ZIP_STORED)
         z.writestr(zipfile.ZipInfo("resources.arsc"), arsc, compress_type=zipfile.ZIP_STORED)
         z.writestr(zipfile.ZipInfo("AndroidManifest.xml"), manifest, compress_type=zipfile.ZIP_DEFLATED)
@@ -53,11 +63,11 @@ def main():
     dex = open(os.path.join(OUT, "dex", "classes.dex"), "rb").read()
     html = open(os.path.join(ROOT, "assets", "index.html"), "rb").read()
     arsc = open(os.path.join(OUT, "resources.arsc"), "rb").read()
-    icon = open(os.path.join(OUT, ICON_PATH), "rb").read()
+    icons = icon_entries()
 
     pad = 0
     for _ in range(8):
-        assemble(manifest, dex, html, arsc, icon, pad)
+        assemble(manifest, dex, html, arsc, icons, pad)
         off = data_offset(APK, "resources.arsc")
         if off % 4 == 0:
             break
@@ -70,7 +80,7 @@ def main():
     print("resources.arsc data offset:", off, "(4 字节对齐:", off % 4 == 0, ")")
     with zipfile.ZipFile(APK) as z:
         for i in z.infolist():
-            print("  %-34s %8d -> %8d" % (i.filename, i.file_size, i.compress_size))
+            print("  %-38s %8d -> %8d" % (i.filename, i.file_size, i.compress_size))
         print("  testzip:", z.testzip())
 
 
