@@ -284,7 +284,7 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 }
 
 /* 非阻塞轻提示：时间输入错误时使用，不显示系统弹窗 */
-.app-toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top, 0px));transform:translate(-50%,-8px);z-index:12000;max-width:calc(100vw - 32px);padding:10px 15px;border-radius:9px;background:rgba(180,35,24,.96);color:#fff;font-size:13px;line-height:1.45;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.18);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease;}
+.app-toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top, 0px));transform:translate(-50%,-8px);z-index:12000;max-width:calc(100vw - 32px);padding:10px 15px;border-radius:9px;background:linear-gradient(135deg,#f97316,#dc2626);color:#fff;font-size:13px;line-height:1.45;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.20);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease;}
 .app-toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
 
 /* v32：位号区姓名、时间、车次、班次字体保持原设置 */
@@ -402,9 +402,9 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 /* ===== Toast ===== */
 /* ===== 字号变量 ===== */
 :root{--fs-10:10px;--fs-11:11px;--fs-12:12px;--fs-13:13px;--fs-14:14px;--fs-15:15px;--fs-16:16px}
-.app-toast{position:fixed!important;left:50%!important;top:calc(16px + env(safe-area-inset-top,0px))!important;transform:translate(-50%,-10px)!important;z-index:40000!important;max-width:calc(100vw - 40px)!important;padding:11px 16px!important;border-radius:12px!important;background:rgba(30,41,59,.94)!important;color:#fff!important;font-size:14px!important;line-height:1.45!important;font-weight:600!important;text-align:center!important;box-shadow:0 8px 24px rgba(16,24,40,.26)!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:opacity .2s ease,transform .2s ease!important;letter-spacing:0!important;font-size:var(--fs-14)!important}
+.app-toast{position:fixed!important;left:50%!important;top:calc(16px + env(safe-area-inset-top,0px))!important;transform:translate(-50%,-10px)!important;z-index:40000!important;max-width:calc(100vw - 40px)!important;padding:12px 16px!important;border-radius:12px!important;background:linear-gradient(135deg,#f97316,#dc2626)!important;color:#fff!important;font-size:14px!important;line-height:1.45!important;font-weight:600!important;text-align:center!important;box-shadow:0 6px 18px rgba(16,24,40,.22)!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:opacity .2s ease,transform .2s ease!important;letter-spacing:0!important;font-size:var(--fs-14)!important}
 .app-toast.show{opacity:1!important;visibility:visible!important;transform:translate(-50%,0)!important}
-.app-toast.ok,.app-toast.err,.app-toast.warn{background:rgba(30,41,59,.94)!important}
+/* v1.41：提示统一为橙红渐变，不再区分成功/错误配色 */
 .fault-toast{display:none!important}
 </style>
 <script id="ui-js" type="text/plain">
@@ -531,7 +531,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
   function toast(msg,kind){
     var el=document.getElementById('appToast');
     if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);}
-    el.className='app-toast';
+    el.className='app-toast'+(kind?' '+kind:'');
     el.textContent=msg||'';
     void el.offsetWidth;
     el.classList.add('show');
@@ -682,7 +682,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.38<br>
+                    满卷时间计算工具 v1.39<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -924,7 +924,7 @@ function populateReasons(){const s=$('reason'),v=s.value;[...s.querySelectorAll(
 function openReasonModal(){$('reasonModal').classList.add('active');$('reasonModal').setAttribute('aria-hidden','false');$('customReason').value='';$('customReason').focus()}
 function closeReasonModal(){$('reasonModal').classList.remove('active');$('reasonModal').setAttribute('aria-hidden','true')}
 /* 故障页统一提示：转发共用 toast，未就绪时本地兜底 */
-function showNotice(message,kind){ if(window.__toast){window.__toast(message,kind||'');return;} var el=document.getElementById('appToast'); if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);} el.className='app-toast'; el.textContent=message||''; window.requestAnimationFrame(function(){el.classList.add('show');}); setTimeout(function(){el.classList.remove('show');},2200); }
+function showNotice(message,kind){ if(window.__toast){window.__toast(message,kind||'');return;} var el=document.getElementById('appToast'); if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);} el.className='app-toast'+(kind?' '+kind:''); el.textContent=message||''; window.requestAnimationFrame(function(){el.classList.add('show');}); setTimeout(function(){el.classList.remove('show');},2200); }
 function closeNotice(){$('noticeModal').classList.remove('active');$('noticeModal').setAttribute('aria-hidden','true')}
 $('noticeOk').addEventListener('click',closeNotice);$('noticeModal').addEventListener('click',e=>{if(e.target===$('noticeModal'))closeNotice()});
 $('reason').addEventListener('change',()=>{if($('reason').value==='__add__'){openReasonModal();$('reason').value=''}});
@@ -1082,6 +1082,12 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.39', date: '2026-11-08', items: [
+    '新增：空位填充开启条件限制，当前车只有 1 个或 2 个空位时才允许开启',
+    '说明：空位指位号已填但时间未填、且未被手工清空的排，与填充逻辑判定一致',
+    '说明：不满足条件时点击按钮弹出提示并保持关闭；关闭空位填充不受空位数量限制',
+    '调整：提示语配色统一为橙红渐变底、白色文字、整圈圆角，不再区分成功与错误配色'
+  ]},
   { version: 'v1.38', date: '2026-11-07', items: [
     '调整：页面首次打开不再重算，直接显示上次保存的时间与空位结果，原样不动',
     '修复：时间框、工艺时间框点进点出未改动内容也会触发重算，现在只有内容真的变化才重算',
@@ -1280,7 +1286,7 @@ function resetBatchBaseDate(tab){
 const $ = id => document.getElementById(id);
 const $$ = (sel, root) => (root || document).querySelectorAll(sel);
 let toastTimer = null;
-function showToast(message,kind){ if(window.__toast){window.__toast(message,kind||'');return;} var el=document.getElementById('appToast'); if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);} el.className='app-toast'; el.textContent=message||''; window.requestAnimationFrame(function(){el.classList.add('show');}); setTimeout(function(){el.classList.remove('show');},2200); }
+function showToast(message,kind){ if(window.__toast){window.__toast(message,kind||'');return;} var el=document.getElementById('appToast'); if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);} el.className='app-toast'+(kind?' '+kind:''); el.textContent=message||''; window.requestAnimationFrame(function(){el.classList.add('show');}); setTimeout(function(){el.classList.remove('show');},2200); }
 const pref = c => 'v' + c;
 function getAllFields(){ return $$('#main_content input, #main_content textarea, #main_content select'); }
 function defaultTabName(t){ return CFG.TEMPLATE_NAMES[t] || ('模板' + (t + 1)); }
@@ -2272,6 +2278,14 @@ const App = {
     if(isManualOnlyTab()) return;
     if(CarLock.isLocked(carIdx)) return;
     const newVal = !Flags.emptyFill(carIdx);
+    // 只有当前车正好 1 个或 2 个空位时才能开启；关闭不受限制
+    if(newVal){
+      const n = countEmptySlots(carIdx);
+      if(n !== 1 && n !== 2){
+        showToast('当前 ' + n + ' 个空位，超出 1～2 个的限制', 'err');
+        return;
+      }
+    }
     if(carIdx === 0){ for(let c = 0; c < CFG.CARS; c++) Flags.emptyFill(c, newVal); }
     else { Flags.emptyFill(carIdx, newVal); }
     Renderer.updateEmptySlotBtns();
@@ -2743,7 +2757,7 @@ const AdminPanel = {
     Store.flush();
     const backup = {
       app: '满卷时间计算工具',
-      version: 'v1.38',
+      version: 'v1.39',
       type: 'full',
       exportTime: new Date().toISOString(),
       data: S.data,
@@ -2767,7 +2781,7 @@ const AdminPanel = {
     Store.flush();
     const backup = {
       app: '满卷时间计算工具',
-      version: 'v1.38',
+      version: 'v1.39',
       type: 'single',
       templateIndex: S.tab,
       templateName: S.tabNames[S.tab] || defaultTabName(S.tab),
@@ -3074,7 +3088,7 @@ const Events = {
     const before = el.value;
     const raw = el.value.trim();
     if(raw && !U.isValidClockInput(raw)){
-      showToast('时间错误：小时须在 0-23 之间，分钟须在 0-59 之间。','err');
+      showToast('时间错误：小时须在 0-23 之间，分钟和秒须在 0-59 之间。','err');
       el.value = '';
     } else {
       el.value = U.autoFormat(raw);
@@ -3355,6 +3369,22 @@ function updateTitleCustomMarks(){
     }
   }
 }
+/* 统计该车空位数：位号已填、时间未填、且未被手工清空；与 fillEmptySlots 的 empty 判定完全一致 */
+function countEmptySlots(carIdx){
+  var v = pref(carIdx);
+  var n = 0;
+  for(var s = 0; s < CFG.SUBS; s++){
+    var titleEl = $('title_' + v + '_s' + s + '_i1');
+    var startEl = $('start_' + v + '_s' + s + '_i1');
+    if(!titleEl || !startEl) continue;
+    if(!titleEl.value.trim()) continue;
+    if(Scheduler.absSecOf(startEl.value) !== null) continue;
+    if(Flags.isManualClear(carIdx, s)) continue;
+    n++;
+  }
+  return n;
+}
+
 function boot(){
   Layout.apply();
   setTimeout(() => {
