@@ -10,17 +10,16 @@ import struct
 import sys
 import zipfile
 
-# 工程根 = 本文件所在目录向上两级（源码/打包 -> 源码 -> 工程根）
-_HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(os.path.dirname(_HERE))
-sys.path.insert(0, _HERE)
+sys.path.insert(0, "/tmp/apk")
 from axmlwrite import build_manifest  # noqa: E402
+
+ROOT = "/tmp/apk"
 OUT = os.path.join(ROOT, "out")
 APK = os.path.join(OUT, "落筒录入.apk")
 
 PKG = "io.github.mcool.luotong"
-VERSION_CODE = 39
-VERSION_NAME = "1.39"
+VERSION_CODE = 40
+VERSION_NAME = "1.40"
 LABEL = "落筒录入"
 ACTIVITY = "io.github.mcool.luotong.MainActivity"
 ICON_RID = 0x7F010000

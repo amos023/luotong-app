@@ -345,6 +345,23 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 #loginModal .modal-input:focus{background:#fff!important;border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255,.14)!important}
 #loginModal .modal-btn{border-radius:12px!important;min-height:48px!important;font-size:15.5px!important}
 #loginModal .modal-btn.cancel{background:#f1f4f8!important;color:#475569!important;border:1px solid #e2e8f0!important;box-shadow:none!important}
+
+/* ===== 新手引导 ===== */
+#guideMask{position:fixed;inset:0;z-index:30000;display:none}
+#guideMask.on{display:block}
+#guideHole{position:absolute;border:2px solid #f97316;border-radius:8px;box-shadow:0 0 0 9999px rgba(15,23,42,.76);pointer-events:none;transition:left .24s ease,top .24s ease,width .24s ease,height .24s ease}
+#guideBub{position:absolute;left:50%;transform:translateX(-50%);width:calc(100% - 36px);max-width:360px;background:#fff;border-radius:12px;padding:14px 15px 12px;box-shadow:0 12px 32px rgba(0,0,0,.34);transition:top .24s ease}
+.gd-step{font-size:11px;font-weight:700;color:#f97316;letter-spacing:.5px;margin:0 0 5px}
+.gd-title{font-size:15px;font-weight:700;color:#0f172a;margin:0 0 6px}
+.gd-desc{font-size:13px;line-height:1.62;color:#475569;margin:0}
+.gd-ft{display:flex;align-items:center;justify-content:space-between;margin:13px 0 0;gap:6px}
+.gd-dots{display:flex;gap:5px;align-items:center;flex:0 0 auto}
+.gd-dots i{display:block;width:6px;height:6px;border-radius:50%;background:#cbd5e1;transition:all .2s}
+.gd-dots i.on{background:#f97316;width:16px;border-radius:3px}
+.gd-nav{display:flex;align-items:center;gap:2px;flex:0 0 auto}
+.gd-btn{background:#f97316;color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:700;padding:8px 16px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.gd-btn.ghost{background:transparent;color:#94a3b8;font-weight:600;padding:8px 8px}
+.gd-btn:active{opacity:.8}
 </style>
 <style id="ui-shared">
 /* ===== 弹窗基础 ===== */
@@ -542,6 +559,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
   window.__toast=toast;
 })();
 </script>
+
 </head>
 <body>
 <div id="loading-mask">加载中，请稍候...</div>
@@ -606,44 +624,17 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
             <div class="admin-panel-title">⚙️ 后台管理中心</div>
             <button class="admin-panel-close" data-action="close-modal" data-modal="adminPanelModal">✕</button>
         </div>
-        <div class="admin-panel-tabs">
-            <div class="admin-tab active" data-action="switch-admin-tab" data-tab="overview">📊 概览</div>
-            <div class="admin-tab" data-action="switch-admin-tab" data-tab="data">💾 数据</div>
-            <div class="admin-tab" data-action="switch-admin-tab" data-tab="settings">⚙️ 设置</div>
-        </div>
         <div class="admin-panel-body">
-            <div class="admin-pane active" data-pane="overview">
-                <div id="adminStats"></div>
-                <div class="admin-section">
-                    <div class="admin-section-title">计算异常检查</div>
-                    <p style="font-size:12px;color:#777;line-height:1.6;margin:0 0 10px;">检查当前模板的时间格式、重复/倒退时间和班次截止后的自动时间。仅报告问题，不会修改数据。</p>
-                    <button class="admin-btn primary" data-action="admin-check-calculation">🔎 检查当前模板</button>
-                    <div id="calculationCheckResults" aria-live="polite"></div>
-                </div>
-            </div>
-            <div class="admin-pane" data-pane="data">
-                <div class="admin-section">
-                    <div class="admin-section-title">备份与恢复</div>
-                    <button class="admin-btn primary" data-action="admin-export-all">📦 导出全部数据（手机/电脑传输）</button>
-                    <button class="admin-btn success" data-action="admin-import">📥 导入备份文件（先自动备份）</button>
-                    <input type="file" id="importFileInput" accept=".json,application/json" style="display:none">
-                    <button class="admin-btn neutral" data-action="admin-export-current">📤 只导出当前模板</button>
-                </div>
-                <div class="admin-section">
-                    <div class="admin-section-title">按模板清空</div>
-                    <div id="adminTemplateList"></div>
-                </div>
-                <div class="admin-section">
-                    <div class="admin-section-title">危险操作</div>
-                    <button class="admin-btn danger" data-action="clear-all-data">⚠️ 清空所有数据（含批号 / 密码 / 设置）</button>
-                </div>
-            </div>
-            <div class="admin-pane" data-pane="settings">
+            <div class="admin-pane active" data-pane="settings">
                 <div class="admin-section">
                     <div class="admin-section-title">提醒设置</div>
                     <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
                         <input type="checkbox" id="settingMissingTimeHighlight" style="width:18px;height:18px;">
                         未填写时间红色边框提醒（默认开启）
+                    </label>
+                    <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;margin-top:10px;">
+                        <input type="checkbox" id="settingGuideAlways" style="width:18px;height:18px;">
+                        每次打开都显示新手引导（默认关闭，只首次显示）
                     </label>
                 </div>
                 <div class="admin-section">
@@ -682,7 +673,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.39<br>
+                    满卷时间计算工具 v1.40<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -885,6 +876,9 @@ select{appearance:none!important;-webkit-appearance:none!important;background-im
 .rec-now:active{background:rgba(22,119,255,.08)!important}
 @media(max-width:599px){.rec-now{height:30px!important;font-size:11px!important;padding:0 6px!important}}
 /*__UI_CSS__*/
+
+
+
 </style>
 </head>
 <body>
@@ -1082,6 +1076,13 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.40', date: '2026-11-08', items: [
+    '新增：新手引导，共 8 步，高亮对应区域并配文字说明',
+    '说明：首次打开自动播放一次，看完不再出现',
+    '说明：引导内容覆盖模板标签、重置、批号、自动计算、台车号、空位填充、车锁定、备注跳转与折叠',
+    '说明：后台设置可开启「每次打开都显示新手引导」',
+    '调整：后台管理只保留设置页，移除概览、数据两页及其统计、计算检查、备份恢复、清空功能'
+  ]},
   { version: 'v1.39', date: '2026-11-08', items: [
     '新增：空位填充开启条件限制，当前车只有 1 个或 2 个空位时才允许开启',
     '说明：空位指位号已填但时间未填、且未被手工清空的排，与填充逻辑判定一致',
@@ -2606,144 +2607,18 @@ const Auth = {
 
 const AdminPanel = {
   open(){
-    AdminPanel.switchTab('overview');
     AdminPanel.renderAll();
     Modals.open('adminPanelModal');
   },
-  switchTab(tab){
-    $$('.admin-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
-    $$('.admin-pane').forEach(el => el.classList.toggle('active', el.dataset.pane === tab));
-  },
   renderAll(){
-    AdminPanel.renderStats();
-    AdminPanel.renderTemplateList();
     AdminPanel.fillSettings();
-  },
-  _hasTime(d, v, s){
-    const t = (d[`start_${v}_s${s}_i1`] || '').trim();
-    return t !== '';
-  },
-  renderStats(){
-    let totalFilled = 0, totalCells = 0, batchCount = 0;
-    const rows = S.data.map((d, idx) => {
-      let filled = 0, total = 0;
-      for(let c = 0; c < CFG.CARS; c++){
-        const v = pref(c);
-        for(let s = 0; s < CFG.SUBS; s++){
-          total++;
-          if(AdminPanel._hasTime(d, v, s)) filled++;
-        }
-      }
-      const batch = d['batch_v0'] || '';
-      totalFilled += filled; totalCells += total;
-      if(batch) batchCount++;
-      return { idx, name: S.tabNames[idx] || defaultTabName(idx), filled, total, batch, pct: total ? (filled/total*100).toFixed(0) : 0 };
-    });
-    let storageSize = 0;
-    for(let i = 0; i < localStorage.length; i++){
-      const k = localStorage.key(i);
-      storageSize += k.length + (localStorage.getItem(k) || '').length;
-    }
-    const storageKB = (storageSize / 1024).toFixed(1);
-    const locked = S.locked;
-
-    let html = '';
-    html += `<div class="admin-grid-4">`;
-    html += `<div class="admin-kpi" style="background:linear-gradient(135deg,#e6f0ff,#d0e4ff);"><div class="num" style="color:#007aff;">${totalFilled}</div><div class="label">已填行 / ${totalCells}</div></div>`;
-    html += `<div class="admin-kpi" style="background:linear-gradient(135deg,#e8f8ee,#d0f0dc);"><div class="num" style="color:#34c759;">${batchCount}</div><div class="label">已设批号模板</div></div>`;
-    html += `<div class="admin-kpi" style="background:linear-gradient(135deg,#fff4e6,#ffe8cc);"><div class="num" style="color:#ff9500;">${storageKB}<span style="font-size:12px;">KB</span></div><div class="label">本地存储占用</div></div>`;
-    html += `<div class="admin-kpi" style="background:linear-gradient(135deg,${locked?'#ffeceb,#ffd6d2':'#f2f2f7,#e0e0e5'});"><div class="num" style="color:${locked?'#ff3b30':'#8e8e93'};">${locked?'🔒':'🔓'}</div><div class="label">${locked?'已锁定':'可编辑'}</div></div>`;
-    html += `</div>`;
-
-    html += `<div class="admin-section-title">各模板填充情况（以时间为准）</div>`;
-    rows.forEach(r => {
-      html += `<div class="admin-stat-card">`;
-      html += `<div class="admin-stat-row"><span class="admin-stat-label">${U.esc(r.name)}${r.idx === S.tab ? ' <span style="color:#007aff;font-size:10px;font-weight:bold;">(当前)</span>' : ''}</span><span class="admin-stat-value">${r.filled}/${r.total} · ${r.pct}%</span></div>`;
-      html += `<div class="admin-stat-bar"><div class="admin-stat-bar-fill" style="width:${r.pct}%"></div></div>`;
-      if(r.batch) html += `<div style="font-size:11px;color:#888;margin-top:4px;">批号：${U.esc(r.batch)}</div>`;
-      html += `</div>`;
-    });
-
-    $('adminStats').innerHTML = html;
-  },
-  checkCalculation(){
-    const out = [];
-    const add = (level, message) => out.push({level, message});
-    const templateName = S.tabNames[S.tab] || defaultTabName(S.tab);
-    const durEl = $('processTime_v0');
-    const rawDur = durEl ? durEl.value.trim() : '';
-    const durValid = !rawDur || U.isValidDurationInput(rawDur);
-    const dur = rawDur && durValid ? U.toSec(rawDur) : null;
-    if(rawDur && !durValid) add('error', '工艺时间格式不正确（小时 0-23，分钟和秒 0-59）：' + rawDur);
-    if(!rawDur && S.tab < 4) add('info', '工艺时间为空，自动推算无法进行。');
-    for(let c=0;c<CFG.CARS;c++){
-      const v=pref(c);
-      const groups=new Map();
-      for(let s=0;s<CFG.SUBS;s++){
-        const titleEl=$(`title_${v}_s${s}_i1`);
-        const timeEl=$(`start_${v}_s${s}_i1`);
-        if(!titleEl || !timeEl) continue;
-        const title=titleEl.value.trim();
-        const raw=timeEl.value.trim();
-        if(raw && !U.isValidClockInput(raw)) add('error', `${CFG.CAR_NAMES[c]} · 第${s+1}位：时间格式错误「${raw}」`);
-        if(title && raw){
-          if(!groups.has(title)) groups.set(title,[]);
-          const abs=Scheduler.absSecOf(raw);
-          if(abs!==null) groups.get(title).push({s,raw,abs,manual:Flags.isManualStart(c,s)});
-        }
-      }
-      groups.forEach((items,title)=>{
-        // Scheduler's normal order is backward: larger slot index is processed first.
-        items.sort((a,b)=>b.s-a.s);
-        const seen=new Map();
-        items.forEach(it=>{
-          if(seen.has(it.raw)) add('warn', `${CFG.CAR_NAMES[c]} · 「${title}」存在重复时间 ${it.raw}（第${seen.get(it.raw)+1}位、第${it.s+1}位）`);
-          else seen.set(it.raw,it.s);
-        });
-        for(let i=1;i<items.length;i++){
-          const prev=items[i-1], cur=items[i];
-          if(cur.abs<=prev.abs) add('warn', `${CFG.CAR_NAMES[c]} · 「${title}」时间顺序可能倒退：第${prev.s+1}位 ${prev.raw} → 第${cur.s+1}位 ${cur.raw}`);
-          if(dur!==null && !cur.manual){
-            const boundary=U.shiftBoundary(prev.abs);
-            if(boundary!==null && prev.abs+dur>=boundary){
-              add('warn', `${CFG.CAR_NAMES[c]} · 「${title}」第${cur.s+1}位仍有自动时间 ${cur.raw}，但前一位按工艺时间推算将到达/超过班次截止点；请复核`);
-            }
-          }
-        }
-      });
-    }
-    const box=$('calculationCheckResults');
-    if(!box) return;
-    if(!out.length){
-      box.innerHTML='<div class="admin-stat-card" style="border-color:#34c759;color:#218838;">未发现明显的时间格式、重复时间、顺序倒退或班次截止异常。此检查不能替代现场工艺核对。</div>';
-      return;
-    }
-    const label={error:'错误',warn:'需复核',info:'提示'};
-    const colors={error:'#ff3b30',warn:'#ff9500',info:'#007aff'};
-    box.innerHTML=`<div class="admin-stat-card"><div style="font-weight:bold;margin-bottom:8px;">${U.esc(templateName)}：发现 ${out.length} 项待检查</div>`+out.map(item=>`<div style="padding:7px 0;border-top:1px solid #eee;font-size:12px;line-height:1.5;"><span style="font-weight:bold;color:${colors[item.level]};">[${label[item.level]}]</span> ${U.esc(item.message)}</div>`).join('')+'</div>';
-  },
-  renderTemplateList(){
-    let html = '';
-    S.data.forEach((d, idx) => {
-      let filled = 0;
-      for(let c = 0; c < CFG.CARS; c++){
-        const v = pref(c);
-        for(let s = 0; s < CFG.SUBS; s++){
-          if(AdminPanel._hasTime(d, v, s)) filled++;
-        }
-      }
-      html += `<div class="admin-template-row">`;
-      html += `<div><div class="name">${U.esc(S.tabNames[idx] || defaultTabName(idx))}</div><div class="info">${filled} 条时间数据</div></div>`;
-      html += `<button data-action="admin-clear-template" data-idx="${idx}">清空</button>`;
-      html += `</div>`;
-    });
-    $('adminTemplateList').innerHTML = html;
   },
   fillSettings(){
     $('settingCarWidthDesktop').value = localStorage.getItem(CFG.KEY.W_DESKTOP) || '';
     $('settingCarWidthMobile').value = localStorage.getItem(CFG.KEY.W_MOBILE) || '';
     $('settingItemHeight').value = localStorage.getItem(CFG.KEY.ITEM_H) || '';
     $('settingMissingTimeHighlight').checked = localStorage.getItem('luotong_missing_time_highlight_v1') !== 'false';
+    $('settingGuideAlways').checked = localStorage.getItem('luotong_guide_always_v1') === 'true';
     $('newPassword').value = '';
     $('confirmPassword').value = '';
     const btn = $('lockToggleBtn');
@@ -2753,143 +2628,12 @@ const AdminPanel = {
     }
   },
   /* 导出全部模板数据为备份 JSON */
-  exportAll(){
-    Store.flush();
-    const backup = {
-      app: '满卷时间计算工具',
-      version: 'v1.39',
-      type: 'full',
-      exportTime: new Date().toISOString(),
-      data: S.data,
-      tabNames: S.tabNames.slice(0, 4),
-      batchOpts: S.batchOpts,
-      batchDeniers: S.batchDeniers,
-      batchPT: S.batchPT,
-      batchCounts: S.batchCounts,
-      faultRecords: localStorage.getItem('luotong_fault_records_v1') || '[]',
-      faultReasons: localStorage.getItem('luotong_fault_reasons_v1') || '[]',
-      settings: {
-        wDesktop: localStorage.getItem(CFG.KEY.W_DESKTOP),
-        wMobile: localStorage.getItem(CFG.KEY.W_MOBILE),
-        itemH: localStorage.getItem(CFG.KEY.ITEM_H)
-      }
-    };
-    AdminPanel._download(backup, '满卷备份_全部_');
-  },
-  /* 导出当前模板数据为备份 JSON */
-  exportCurrent(){
-    Store.flush();
-    const backup = {
-      app: '满卷时间计算工具',
-      version: 'v1.39',
-      type: 'single',
-      templateIndex: S.tab,
-      templateName: S.tabNames[S.tab] || defaultTabName(S.tab),
-      exportTime: new Date().toISOString(),
-      data: S.data[S.tab]
-    };
-    AdminPanel._download(backup, `满卷_${(S.tabNames[S.tab] || defaultTabName(S.tab)).replace(/[\\/:*?"<>|]/g,'_')}_`);
-  },
-  _download(obj, prefix){
-    const blob = new Blob([JSON.stringify(obj, null, 2)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const ts = new Date();
-    const stamp = `${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}`;
-    a.download = `${prefix}${stamp}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  },
-  triggerImport(){ $('importFileInput').click(); },
-  handleImportFile(file){
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const backup = JSON.parse(ev.target.result);
-        if(!backup.data) throw new Error('文件中缺少 data 字段');
-
-        if(backup.type === 'single' || backup.templateIndex !== undefined){
-          const idx = +backup.templateIndex;
-          if(idx < 0 || idx >= CFG.TEMPLATES) throw new Error('模板索引无效');
-          Modals.askConfirm('导入单模板数据',
-            `将导入到「${S.tabNames[idx] || defaultTabName(idx)}」并覆盖现有数据。\n确定导入吗？`).then(ok => {
-            if(!ok) return;
-            AdminPanel._download({app:'落筒录入同步恢复备份',type:'recovery',exportTime:new Date().toISOString(),localStorage:Object.fromEntries(Array.from({length:localStorage.length},(_,i)=>localStorage.key(i)).filter(k=>k!==null).map(k=>[k,localStorage.getItem(k)]))}, '导入前自动恢复备份_');
-            S.data[idx] = backup.data;
-            Store.save();
-            showToast('导入成功，正在刷新','ok');
-            setTimeout(function(){location.reload()},900);
-          });
-        } else if(Array.isArray(backup.data) && backup.data.length === CFG.TEMPLATES){
-          Modals.askConfirm('导入全部数据',
-            `将覆盖所有模板的数据和批号配置，当前数据会丢失。\n确定导入吗？`).then(ok => {
-            if(!ok) return;
-            AdminPanel._download({app:'落筒录入同步恢复备份',type:'recovery',exportTime:new Date().toISOString(),localStorage:Object.fromEntries(Array.from({length:localStorage.length},(_,i)=>localStorage.key(i)).filter(k=>k!==null).map(k=>[k,localStorage.getItem(k)]))}, '导入前自动恢复备份_');
-            S.data = backup.data;
-            if(Array.isArray(backup.tabNames)){
-              for(let t = 0; t < 4; t++){
-                const v = backup.tabNames[t];
-                S.tabNames[t] = (typeof v === 'string' && v.trim()) ? v.trim() : defaultTabName(t);
-              }
-              Store.saveTabNames();
-            }
-            S.batchOpts = backup.batchOpts || [];
-            S.batchDeniers = backup.batchDeniers || {};
-            S.batchPT = backup.batchPT || {};
-            S.batchCounts = backup.batchCounts || {};
-            if(backup.settings){
-              if(backup.settings.wDesktop != null) localStorage.setItem(CFG.KEY.W_DESKTOP, backup.settings.wDesktop); else localStorage.removeItem(CFG.KEY.W_DESKTOP);
-              if(backup.settings.wMobile != null) localStorage.setItem(CFG.KEY.W_MOBILE, backup.settings.wMobile); else localStorage.removeItem(CFG.KEY.W_MOBILE);
-              if(backup.settings.itemH != null) localStorage.setItem(CFG.KEY.ITEM_H, backup.settings.itemH); else localStorage.removeItem(CFG.KEY.ITEM_H);
-            }
-            Store.save();
-            Store.saveBatchOpts(); Store.saveBatchDeniers(); Store.saveBatchPT(); Store.saveBatchCounts();
-            if(backup.faultRecords != null) localStorage.setItem('luotong_fault_records_v1', typeof backup.faultRecords === 'string' ? backup.faultRecords : JSON.stringify(backup.faultRecords));
-            if(backup.faultReasons != null) localStorage.setItem('luotong_fault_reasons_v1', typeof backup.faultReasons === 'string' ? backup.faultReasons : JSON.stringify(backup.faultReasons));
-            showToast('导入成功，正在刷新','ok');
-            setTimeout(function(){location.reload()},900);
-          });
-        } else {
-          throw new Error('无法识别的文件格式');
-        }
-      } catch(err) {
-        showToast('导入失败：' + err.message,'err');
-      }
-    };
-    reader.readAsText(file);
-  },
-  clearOneTemplate(idx){
-    if(idx < 0 || idx >= CFG.TEMPLATES) return;
-    Modals.askConfirm('清空模板',
-      `确定清空「${S.tabNames[idx] || defaultTabName(idx)}」的所有数据吗？\n此操作不可恢复。`).then(ok => {
-      if(!ok) return;
-      S.data[idx] = {};
-      resetBatchBaseDate(idx);
-      const d = S.data[idx];
-      for(let c = 0; c < CFG.CARS; c++){
-        const v = pref(c);
-        d[`date_${v}`] = todayStr;
-        for(let s = 0; s < CFG.SUBS; s++){
-          for(let i = 1; i <= 6; i++){
-            d[`title_${v}_s${s}_i${i}`] = idx <= 3 ? ((6-s + idx*6) + '#') : '';
-          }
-        }
-      }
-      Store.save();
-      AdminPanel.renderAll();
-      if(idx === S.tab){ App.loadTab(); }
-      showToast('模板已清空','ok');
-    });
-  },
   saveLayout(){
     localStorage.setItem(CFG.KEY.W_DESKTOP, $('settingCarWidthDesktop').value);
     localStorage.setItem(CFG.KEY.W_MOBILE, $('settingCarWidthMobile').value);
     localStorage.setItem(CFG.KEY.ITEM_H, $('settingItemHeight').value);
     localStorage.setItem('luotong_missing_time_highlight_v1', $('settingMissingTimeHighlight').checked ? 'true' : 'false');
+    localStorage.setItem('luotong_guide_always_v1', $('settingGuideAlways').checked ? 'true' : 'false');
     showToast('设置已保存，正在刷新','ok');
     setTimeout(function(){location.reload()},900);
   },
@@ -2960,11 +2704,6 @@ const Events = {
       case 'batch-add-cancel': Modals.close('batchAddModal'); break;
       case 'toggle-lock': AdminPanel.toggleLock(); break;
       case 'check-password': Auth.check(); break;
-      case 'clear-all-data':
-        Modals.askConfirm('清空所有数据', '确定清空所有本地数据吗？\n包括所有模板、批号、密码和排版设置。此操作不可恢复。').then(ok => {
-          if(ok){ localStorage.clear(); location.reload(); }
-        });
-        break;
       case 'close-modal': Modals.close(t.dataset.modal); break;
       case 'confirm-modal-ok': if(Modals._confirmOk) Modals._confirmOk(); break;
       case 'confirm-modal-cancel': if(Modals._confirmCancel) Modals._confirmCancel(); break;
@@ -2976,12 +2715,6 @@ const Events = {
       case 'toggle-opt': App.toggleOpt(t); break;
       case 'toggle-count': e.preventDefault(); App.toggleCount(t.dataset.car); break;
       case 'clear-card': App.clearCard(+t.dataset.car, +t.dataset.s, +t.dataset.i); break;
-      case 'switch-admin-tab': AdminPanel.switchTab(t.dataset.tab); break;
-      case 'admin-export-all': AdminPanel.exportAll(); break;
-      case 'admin-check-calculation': AdminPanel.checkCalculation(); break;
-      case 'admin-export-current': AdminPanel.exportCurrent(); break;
-      case 'admin-import': AdminPanel.triggerImport(); break;
-      case 'admin-clear-template': AdminPanel.clearOneTemplate(+t.dataset.idx); break;
       case 'admin-save-layout': AdminPanel.saveLayout(); break;
       case 'admin-change-pwd': AdminPanel.changePassword(); break;
     }
@@ -3257,13 +2990,6 @@ const Events = {
   }
 };
 
-document.addEventListener('change', e => {
-  if(e.target.id === 'importFileInput'){
-    AdminPanel.handleImportFile(e.target.files && e.target.files[0]);
-    e.target.value = '';
-  }
-});
-
 // 故障记录模板：以独立 iframe 嵌入，隔离样式和脚本，不影响原有录入功能
 const FAULT_TEMPLATE_HTML = (function(){
   var cssEl=document.getElementById('ui-shared');
@@ -3385,6 +3111,210 @@ function countEmptySlots(carIdx){
   return n;
 }
 
+
+/* ===== 新手引导 =====
+   6 步高亮挖空 + 气泡。首次打开自动播放一次，之后可点右上角 ? 重看。
+   目标元素用 CSS 选择器定位，取真实 getBoundingClientRect 画框，
+   所以不依赖固定坐标，横竖屏、不同宽度都能对准。 */
+const Guide = {
+  KEY: 'luotong_guide_seen_v1',
+  ALWAYS_KEY: 'luotong_guide_always_v1',
+  idx: 0,
+  running: false,
+  _shown: false,
+  _targets: [],
+  mask: null, hole: null, bub: null,
+
+  STEPS: [
+    { sel: '#main-tabs', title: '模板标签',
+      desc: '这里有 4 个模板，各自的数据完全独立。做不同批号时切一下就行，不会互相影响。' },
+    { sel: '.reset-btn', title: '重置',
+      desc: '这里可以重置数据。点开选「重置当前」只清当前模板，「重置全部」清所有模板。' },
+    { sel: '#block_v0 .batch-box', title: '批号',
+      desc: '先选批号，会自动带出旦数、个数和工艺时间，不用一个个手填。' },
+    { sel: ['#title_v0_s0_i1', '#start_v0_s0_i1'], title: '自动计算',
+      desc: '填入位号满卷时间，后面位号按工艺时间自动计算。时间可不用输冒号，举例：输入840自动变为8:40' },
+    { sel: '#block_v0 .cart-box', title: '台车号',
+      desc: '填台车号。左边的 F 和右边的 A 都能点，点了会切换成 G 和 B。' },
+    { sel: '#emptySlotBtn_v0', title: '空位填充',
+      desc: '有 1～2 个排还没填时间时点它，能自动补齐。空位超过 2 个不让开，避免填乱。' },
+    { sel: '#lockBtn_v0', title: '车锁定',
+      desc: '一车填完点这里锁住，防止误改。只锁这一车，其他车照常使用。' },
+    { sel: ['#block_v0 .goto-remark-btn', '#block_v0 .toggle-btn'], title: '备注跳转 / 折叠',
+      desc: '「备注跳转」直接跳到这车的备注卡片；「折叠」把这一车收起来，方便看后面的车。' }
+  ],
+
+  init(){
+    if(this.mask) return;
+    const wrap = document.createElement('div');
+    wrap.id = 'guideMask';
+    wrap.innerHTML = '<div id="guideHole"></div><div id="guideBub"></div>';
+    document.body.appendChild(wrap);
+    this.mask = wrap;
+    this.hole = wrap.querySelector('#guideHole');
+    this.bub = wrap.querySelector('#guideBub');
+
+    // 点空白处前进；气泡内点击不穿透
+    wrap.addEventListener('click', (e) => {
+      if(e.target === wrap || e.target === this.hole) this.next();
+    });
+    this.bub.addEventListener('click', (e) => e.stopPropagation());
+
+    // 自动播放：后台开关开启时每次都弹（便于反复查看），否则只在首次弹一次
+    let seen = false, always = false;
+    try { seen = localStorage.getItem(this.KEY) === '1'; } catch(e) {}
+    try { always = localStorage.getItem(this.ALWAYS_KEY) === 'true'; } catch(e) {}
+    if(always || !seen) setTimeout(() => { if(!this.running) this.start(); }, 150);
+
+    // 视口变化时重新定位
+    const re = () => { if(this.running) this.place(); };
+    window.addEventListener('resize', re);
+    window.addEventListener('orientationchange', () => setTimeout(re, 240));
+    const mc = document.getElementById('main_content');
+    if(mc) mc.addEventListener('scroll', re, { passive: true });
+    window.addEventListener('scroll', re, { passive: true });
+  },
+
+  start(){
+    this.idx = 0;
+    this._shown = false;
+    this.running = true;
+    this.hole.style.transition = 'none';
+    this.bub.style.transition = 'none';
+    // 顶部标签栏可能被之前的横向滚动带偏，引导开始时复位到最左
+    const nav = document.querySelector('.top-nav');
+    if(nav) nav.scrollLeft = 0;
+    this.mask.classList.add('on');
+    this.show(0);
+  },
+
+  show(i){
+    if(!this.running) return;
+    if(i < 0) i = 0;
+    if(i > this.STEPS.length - 1) return this.end();
+    this.idx = i;
+    const st = this.STEPS[i];
+    const list = Array.isArray(st.sel) ? st.sel : [st.sel];
+    this._targets = list.map(x => { try { return document.querySelector(x); } catch(e) { return null; } })
+                        .filter(Boolean);
+
+    // 目标找不到（例如该车被折叠）就跳过这一步
+    if(!this._targets.length){
+      if(i < this.STEPS.length - 1) return this.show(i + 1);
+      return this.end();
+    }
+
+    this._render(st, i);
+    this._ensureVisible(this._targets[0]);
+    setTimeout(() => this.place(), 90);
+  },
+
+  /* 把目标滚进可视区，只动纵向。顶部栏内的元素直接跳过，
+     避免 scrollIntoView 把模板标签横向滚走。 */
+  _ensureVisible(el){
+    if(!el) return;
+    const nav = el.closest ? el.closest('.top-nav') : null;
+    if(nav){
+      // 顶部栏是横向滚动的，目标可能在可视区外；只调 nav.scrollLeft，不动整页
+      const nr = nav.getBoundingClientRect();
+      const er = el.getBoundingClientRect();
+      if(er.left < nr.left + 10) nav.scrollLeft -= (nr.left + 10 - er.left);
+      else if(er.right > nr.right - 10) nav.scrollLeft += (er.right - nr.right + 10);
+      return;
+    }
+
+    const topNav = document.querySelector('.top-nav');
+    const topH = topNav ? topNav.getBoundingClientRect().height : 0;
+    const rc = el.getBoundingClientRect();
+    const vh = window.innerHeight;
+    if(rc.top >= topH + 8 && rc.bottom <= vh - 8) return;
+
+    const mc = document.getElementById('main_content');
+    const target = rc.top - topH - Math.max(24, (vh - topH - rc.height) / 2);
+    if(mc && mc.scrollHeight > mc.clientHeight){
+      mc.scrollTop += target;
+    } else {
+      window.scrollBy(0, target);
+    }
+  },
+
+  _render(st, i){
+    const total = this.STEPS.length;
+    const dots = this.STEPS.map((_, k) => '<i class="' + (k === i ? 'on' : '') + '"></i>').join('');
+    const prev = i > 0 ? '<button class="gd-btn ghost" data-gd="prev">上一步</button>' : '';
+    const nextTxt = i === total - 1 ? '完成' : '下一步';
+    this.bub.innerHTML =
+      '<p class="gd-step">第 ' + (i + 1) + ' 步 / 共 ' + total + ' 步</p>' +
+      '<p class="gd-title">' + st.title + '</p>' +
+      '<p class="gd-desc">' + st.desc + '</p>' +
+      '<div class="gd-ft">' +
+        '<button class="gd-btn ghost" data-gd="skip">跳过</button>' +
+        '<div class="gd-dots">' + dots + '</div>' +
+        '<div class="gd-nav">' + prev +
+          '<button class="gd-btn" data-gd="next">' + nextTxt + '</button>' +
+        '</div>' +
+      '</div>';
+    this._bind();
+  },
+
+  _bind(){
+    const q = (k) => this.bub.querySelector('[data-gd="' + k + '"]');
+    const skip = q('skip'), prev = q('prev'), next = q('next');
+    if(skip) skip.onclick = () => this.end();
+    if(prev) prev.onclick = () => this.show(this.idx - 1);
+    if(next) next.onclick = () => this.next();
+  },
+
+  place(){
+    if(!this.running || !this._targets.length) return;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+    this._targets.forEach(el => {
+      const rc = el.getBoundingClientRect();
+      l = Math.min(l, rc.left); t = Math.min(t, rc.top);
+      r = Math.max(r, rc.right); b = Math.max(b, rc.bottom);
+    });
+    if(!isFinite(l)) return;
+
+    const pad = 5;
+    const hl = Math.max(2, l - pad), ht = Math.max(2, t - pad);
+    const hw = Math.min(vw - 4, (r - l) + pad * 2);
+    const hh = Math.max(20, (b - t) + pad * 2);
+    this.hole.style.left = hl + 'px';
+    this.hole.style.top = ht + 'px';
+    this.hole.style.width = hw + 'px';
+    this.hole.style.height = hh + 'px';
+
+    // 气泡优先放目标下方，空间不够放上方，都不够就贴底
+    const bubH = this.bub.offsetHeight || 160;
+    const gap = 14, edge = 12;
+    let top;
+    if(ht + hh + gap + bubH <= vh - edge) top = ht + hh + gap;
+    else if(ht - gap - bubH >= edge) top = ht - gap - bubH;
+    else top = Math.max(edge, Math.min(vh - bubH - edge, ht + hh + gap));
+    this.bub.style.top = top + 'px';
+
+    if(!this._shown){
+      this._shown = true;
+      requestAnimationFrame(() => {
+        this.hole.style.transition = '';
+        this.bub.style.transition = '';
+      });
+    }
+  },
+
+  next(){
+    if(this.idx < this.STEPS.length - 1) this.show(this.idx + 1);
+    else this.end();
+  },
+
+  end(){
+    this.running = false;
+    if(this.mask) this.mask.classList.remove('on');
+    try { localStorage.setItem(this.KEY, '1'); } catch(e) {}
+  }
+};
+
 function boot(){
   Layout.apply();
   setTimeout(() => {
@@ -3419,6 +3349,8 @@ function boot(){
     Auth.applyLockState();
     Layout.adjustCarHeights();
     AutoSize.allHeaders();
+
+    Guide.init();
 
     const mask = $('loading-mask');
     if(mask){
