@@ -673,7 +673,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.40<br>
+                    满卷时间计算工具 v1.41<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1076,6 +1076,9 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.41', date: '2026-11-08', items: [
+    '修复：点台车号的 F / A 切换按钮时键盘会被收起，现在焦点和键盘保持不变，只有按钮文字切换'
+  ]},
   { version: 'v1.40', date: '2026-11-08', items: [
     '新增：新手引导，共 8 步，高亮对应区域并配文字说明',
     '说明：首次打开自动播放一次，看完不再出现',
@@ -2043,9 +2046,9 @@ const Renderer = {
     h += `</div>`;
     h += `<span class="field-sep">丨</span>`;
     h += `<div class="cart-box"><label>台车号:</label>`;
-    h += `<button type="button" class="opt-btn fg" data-action="toggle-opt" data-type="fg">F</button>`;
+    h += `<button type="button" tabindex="-1" class="opt-btn fg" data-action="toggle-opt" data-type="fg">F</button>`;
     h += `<input type="text" id="cart_${v}" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="cart">`;
-    h += `<button type="button" class="opt-btn ab" data-action="toggle-opt" data-type="ab">A</button>`;
+    h += `<button type="button" tabindex="-1" class="opt-btn ab" data-action="toggle-opt" data-type="ab">A</button>`;
     h += `</div>`;
     h += `<span class="field-sep">丨</span>`;
     h += `<div class="input-group-top"><label>旦数:</label><input type="text" id="denier_${v}" class="calc-input" inputmode="numeric" pattern="[0-9.]*" data-role="header" data-field="denier" ${denierRO}></div>`;
@@ -2663,6 +2666,12 @@ const Events = {
     document.addEventListener('input', Events.onInput);
     document.addEventListener('change', Events.onChange);
     document.addEventListener('blur', Events.onBlur, true);
+    // F/A 切换按钮：按下时不抢焦点，输入框保持聚焦，键盘不会收起
+    document.addEventListener('mousedown', function(e){
+      var t = e.target;
+      if(!t || !t.closest) return;
+      if(t.closest('[data-action="toggle-opt"]')) e.preventDefault();
+    }, true);
     document.addEventListener('focusin', Events.onFocusIn);
     document.addEventListener('focusout', Events.onFocusOut);
     document.addEventListener('keydown', Events.onKeyDown, true);
@@ -2712,7 +2721,19 @@ const Events = {
       case 'goto-remark': App.gotoRemark(+t.dataset.car); break;
       case 'scroll-cars': App.scrollCars(+t.dataset.dir); break;
       case 'toggle-collapse': App.toggleCollapse(t); break;
-      case 'toggle-opt': App.toggleOpt(t); break;
+      case 'toggle-opt': {
+        const prev = document.activeElement;
+        App.toggleOpt(t);
+        // 兜底：万一某些 WebView 仍把焦点移走，立刻抢回输入框，键盘不会收起
+        if(prev && prev !== document.activeElement && U.isEditable(prev)){
+          try {
+            prev.focus({ preventScroll: true });
+            const keep = prev.value;
+            prev.value = keep;
+          } catch(_e){}
+        }
+        break;
+      }
       case 'toggle-count': e.preventDefault(); App.toggleCount(t.dataset.car); break;
       case 'clear-card': App.clearCard(+t.dataset.car, +t.dataset.s, +t.dataset.i); break;
       case 'admin-save-layout': AdminPanel.saveLayout(); break;
