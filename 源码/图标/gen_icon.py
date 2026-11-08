@@ -1,14 +1,27 @@
-"""用用户指定的母版图标生成 5 档密度资源。
+"""由母版图标生成 5 档密度资源。
 
-母版：/storage/emulated/0/共享目录/代码/图标方案2/icon2_512.png（512×512）
+母版：本脚本同目录下的 ic_launcher_master_512.png（512×512）
+      （若放在 res/ 子目录里也能自动找到）
 5 档全部由这一张 LANCZOS 缩小得到，保证各密度都是原始细节，不做放大。
+
+输出到 res/mipmap-{mdpi,hdpi,xhdpi,xxhdpi,xxxhdpi}/ic_launcher.png，
+与 res_table.py 里的密度列表一一对应。
+
+路径均相对本脚本定位，避免换机器或换工作目录后失效。
 """
 import os
 
 from PIL import Image
 
-SRC = "/storage/emulated/0/共享目录/代码/图标方案2/icon2_512.png"
-OUT_DIR = "/tmp/apk/res"
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT_DIR = HERE
+
+# 母版可能在脚本同目录，也可能在同目录的 res/ 下
+_CANDIDATES = [
+    os.path.join(HERE, "ic_launcher_master_512.png"),
+    os.path.join(HERE, "res", "ic_launcher_master_512.png"),
+]
+SRC = next((p for p in _CANDIDATES if os.path.exists(p)), _CANDIDATES[0])
 
 DENSITIES = {
     "mdpi": 48,

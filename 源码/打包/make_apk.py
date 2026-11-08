@@ -10,10 +10,11 @@ import struct
 import sys
 import zipfile
 
-sys.path.insert(0, "/tmp/apk")
+# 工程根 = 本文件所在目录向上两级（源码/打包 -> 源码 -> 工程根）
+_HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(_HERE))
+sys.path.insert(0, _HERE)
 from axmlwrite import build_manifest  # noqa: E402
-
-ROOT = "/tmp/apk"
 OUT = os.path.join(ROOT, "out")
 APK = os.path.join(OUT, "落筒录入.apk")
 

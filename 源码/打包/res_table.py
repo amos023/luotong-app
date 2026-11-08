@@ -115,5 +115,10 @@ def build(package_name="io.github.mcool.luotong",
 
 if __name__ == "__main__":
     data = build()
-    open("/tmp/apk/out/resources.arsc", "wb").write(data)
-    print("resources.arsc:", len(data), "bytes,", len(DENSITIES), "种密度")
+    import os
+    here = os.path.dirname(os.path.abspath(__file__))
+    out_dir = os.path.join(os.path.dirname(os.path.dirname(here)), "out")
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, "resources.arsc")
+    open(path, "wb").write(data)
+    print("resources.arsc:", len(data), "bytes,", len(DENSITIES), "种密度 ->", path)
