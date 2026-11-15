@@ -291,8 +291,9 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 }
 
 /* 非阻塞轻提示：时间输入错误时使用，不显示系统弹窗 */
-.app-toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top, 0px));transform:translate(-50%,-8px);z-index:12000;max-width:calc(100vw - 32px);padding:10px 15px;border-radius:9px;background:linear-gradient(135deg,#f97316,#dc2626);color:#fff;font-size:13px;line-height:1.45;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.20);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease;}
+.app-toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top, 0px));transform:translate(-50%,-8px);z-index:12000;max-width:calc(100vw - 32px);padding:10px 15px;border-radius:9px;background:#1f2937;color:#fff;font-size:13px;line-height:1.45;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.20);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease;}
 .app-toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+/* v1.42：所有提示统一为深灰底 #1f2937（原为橙红渐变） */
 
 /* v32：位号区姓名、时间、车次、班次字体保持原设置 */
 .one-car-block input[id^="name_"],
@@ -328,6 +329,14 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .one-car-block .cell input[id^="tf_"]::placeholder{
   font-size:16px!important;
   font-weight:400!important;
+}
+/* v1.42：备注框输入的文字显示红色（空框的灰色提示不受影响） */
+.one-car-block .cell input[id^="name_"]{
+  color:#e53935!important;
+}
+/* v1.42：同模板内同一车次/班次在不同车上重复出现时，文字标红提醒（不改数据） */
+.one-car-block .cell input[id^="tf_"].tf-dup{
+  color:#e53935!important;
 }
 /* v1.42：位号列「位号」标签与位号内容（如 6#）统一 17px */
 .one-car-block .left-label,
@@ -465,8 +474,10 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 /* ===== Toast ===== */
 /* ===== 字号变量 ===== */
 :root{--fs-10:10px;--fs-11:11px;--fs-12:12px;--fs-13:13px;--fs-14:14px;--fs-15:15px;--fs-16:16px}
-.app-toast{position:fixed!important;left:50%!important;top:calc(16px + env(safe-area-inset-top,0px))!important;transform:translate(-50%,-10px)!important;z-index:40000!important;max-width:calc(100vw - 40px)!important;padding:12px 16px!important;border-radius:12px!important;background:linear-gradient(135deg,#f97316,#dc2626)!important;color:#fff!important;font-size:14px!important;line-height:1.45!important;font-weight:600!important;text-align:center!important;box-shadow:0 6px 18px rgba(16,24,40,.22)!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:opacity .2s ease,transform .2s ease!important;letter-spacing:0!important;font-size:var(--fs-14)!important}
+.app-toast{position:fixed!important;left:50%!important;top:calc(16px + env(safe-area-inset-top,0px))!important;transform:translate(-50%,-10px)!important;z-index:40000!important;max-width:calc(100vw - 40px)!important;padding:12px 16px!important;border-radius:12px!important;background:#1f2937!important;color:#fff!important;font-size:14px!important;line-height:1.45!important;font-weight:600!important;text-align:center!important;box-shadow:0 6px 18px rgba(16,24,40,.22)!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:opacity .2s ease,transform .2s ease!important;letter-spacing:0!important;font-size:var(--fs-14)!important}
 .app-toast.show{opacity:1!important;visibility:visible!important;transform:translate(-50%,0)!important}
+/* v1.42：所有提示统一深灰底（含 dup 类型，保持一致） */
+.app-toast.dup{background:#1f2937!important}
 /* v1.41：提示统一为橙红渐变，不再区分成功/错误配色 */
 .fault-toast{display:none!important}
 </style>
@@ -727,6 +738,24 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
     </div>
 </div>
 
+<div class="modal-overlay" id="renameTabModal">
+    <div class="modal-box">
+        <div class="modal-title">✏️ 修改模板名称</div>
+        <div class="batch-add-form">
+            <div class="batch-add-field">
+                <label>模板名称</label>
+                <input type="text" id="renameTabInput" class="modal-input" placeholder="留空则恢复默认名称" autocomplete="off">
+            </div>
+            <div class="batch-add-field">
+                <p style="font-size:12px;color:#8a94a6;line-height:1.6;margin:0;">留空保存后，会恢复成「模板1」这类默认名称。</p>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn cancel" data-action="rename-tab-cancel">取消</button>
+            <button class="modal-btn" data-action="rename-tab-ok">确认</button>
+        </div>
+    </div>
+</div>
 <div class="modal-overlay" id="batchAddModal">
     <div class="modal-box">
         <div class="modal-title">＋ 自定义批号</div>
@@ -1701,6 +1730,7 @@ const TF = {
     TF.set(d.v, d.s, d.i, res.train, res.shift);
     el.value = TF.text(res.train, res.shift);
     if(d.i === 1) Sync.rowToB_F(d.v, d.s, true);
+    if(typeof TF.checkDuplicates === 'function'){ TF.checkDuplicates(); TF.notifyDuplicates(); }
     return true;
   },
   rowFromFirst(v, s){
@@ -1716,6 +1746,71 @@ const TF = {
     }
     for(let col = 2; col <= 6; col++) TF.set(v, s, col, train, shift);
   },
+  /* 同模板内全车互比：同一「位号值」下，车次/班次组合出现 2 次及以上则全部标红。
+     跳过：位号为空、或车次与班次都为空。
+     只读取 value，不读布局属性，避免强制重排。 */
+  checkDuplicates(){
+    const groups = Object.create(null);
+    const cells = [];
+    for(let c = 0; c < CFG.CARS; c++){
+      const v = pref(c);
+      for(let s = 0; s < CFG.SUBS; s++){
+        // 只比对每排主格 i1：i2~i6 是主格的只读同步副本，位号与车班次天然相同，
+        // 若一起参与会被误判为重复。
+        {
+          const i = 1;
+          const titleEl = $('title_' + v + '_s' + s + '_i' + i);
+          const tfEl = $('tf_' + v + '_s' + s + '_i' + i);
+          if(titleEl && tfEl){
+            const title = String(titleEl.value || '').trim();
+            const trEl = $('train_' + v + '_s' + s + '_i' + i);
+            const shEl = $('shift_' + v + '_s' + s + '_i' + i);
+            const tr = trEl ? String(trEl.value || '').trim() : '';
+            const sh = shEl ? String(shEl.value || '').trim() : '';
+            if(title && (tr || sh)){
+              const key = title + '\u0001' + tr + '\u0001' + sh;
+              if(!groups[key]) groups[key] = [];
+              groups[key].push(tfEl);
+              cells.push(tfEl);
+            }
+          }
+        }
+        // 同步副本不参与比对，但要确保它们身上没有残留的重复标红
+        for(let i = 2; i <= 6; i++){
+          const el = $('tf_' + v + '_s' + s + '_i' + i);
+          if(el && el.classList.contains('tf-dup')) el.classList.remove('tf-dup');
+        }
+      }
+    }
+    // 按组判定：组内 ≥2 个则整组标红，并记录重复明细（位号 / 车次班次 / 各车）
+    const mark = new Set();
+    for(const k in groups){
+      const arr = groups[k];
+      if(arr.length > 1){
+        for(const el of arr) mark.add(el);
+      }
+    }
+    // 只对状态变化的元素写 DOM
+    let markedCount = 0;
+    for(const el of cells){
+      const want = mark.has(el);
+      const has = el.classList.contains('tf-dup');
+      if(want && !has) el.classList.add('tf-dup');
+      else if(!want && has) el.classList.remove('tf-dup');
+      if(want) markedCount++;
+    }
+    TF._dupCount = markedCount;
+    return markedCount;
+  },
+  /* 有新增重复时弹一次提示；重复格数未增加则不打扰 */
+  notifyDuplicates(){
+    const n = TF._dupCount || 0;
+    const prev = (typeof TF._prevDupCount === 'number') ? TF._prevDupCount : 0;
+    TF._prevDupCount = n;
+    // 只在重复格数增加时提示一次；没有重复或数量未变则不打扰
+    if(n <= prev) return;
+    showToast('车班次重复', 'dup');
+  },
   renderAll(){
     const list = document.querySelectorAll('input[id^="tf_"]');
     for(let i = 0; i < list.length; i++){
@@ -1730,6 +1825,7 @@ const TF = {
       el.dataset.shift = k;
       if(el !== document.activeElement) el.value = TF.text(t, k);
     }
+    TF.checkDuplicates();
   }
 };
 
@@ -2602,7 +2698,7 @@ const App = {
       [`start_${v}_s${sIdx}_i1`, `tf_${v}_s${sIdx}_i1`, `shift_${v}_s${sIdx}_i1`, `train_${v}_s${sIdx}_i1`, `name_${v}_s${sIdx}_i1`].forEach(id => { const el = $(id); if(el) el.value = ''; });
       Flags.manualStart(carIdx, sIdx, false);
       const titleEl = $(`title_${v}_s${sIdx}_i1`);
-      Flags.manualClear(carIdx, sIdx, !!(titleEl && titleEl.value.trim()));
+      Flags.manualClear(carIdx, sIdx, false);
       const afKey = fk.autoFill(carIdx, sIdx);
       delete T()[afKey];
       Sync.titles(v, sIdx);
@@ -2612,6 +2708,7 @@ const App = {
     Sync.dates();
     Store.saveDebounced();
     updateTitleCustomMarks();
+    if(typeof TF.checkDuplicates === 'function') TF.checkDuplicates();
   },
   resetCurrent(){
     if(S.locked) return;
@@ -2876,6 +2973,8 @@ const Events = {
       case 'open-login': Modals.openLogin(); break;
       case 'reset-current': Modals.close('resetModal'); App.resetCurrent(); break;
       case 'reset-all': Modals.close('resetModal'); App.resetAll(); break;
+      case 'rename-tab-ok': Events.submitRenameTab(); break;
+      case 'rename-tab-cancel': Events._renameIdx = null; Modals.close('renameTabModal'); break;
       case 'batch-add-ok': Modals.submitBatchAdd(); break;
       case 'batch-add-cancel': Modals.close('batchAddModal'); break;
       case 'toggle-lock': AdminPanel.toggleLock(); break;
@@ -2910,15 +3009,33 @@ const Events = {
   renameTab(idx){
     if(idx < 0 || idx >= 4) return;
     if(S.locked){ showToast('系统已锁定，无法修改模板名称','err'); return; }
+    Events._renameIdx = idx;
     const def = defaultTabName(idx);
     const cur = S.tabNames[idx] || def;
-    const input = prompt(`修改「${def}」名称：\n（留空则恢复默认「${def}」）`, cur);
-    if(input === null) return;
-    const nv = String(input).trim();
+    const inp = $('renameTabInput');
+    if(inp){
+      inp.value = cur;
+      inp.placeholder = def + '（留空恢复默认）';
+    }
+    Modals.open('renameTabModal');
+    setTimeout(() => {
+      const el = $('renameTabInput');
+      if(el){ try { el.focus(); el.select(); } catch(_e){} }
+    }, 60);
+  },
+  submitRenameTab(){
+    const idx = Events._renameIdx;
+    Modals.close('renameTabModal');
+    if(idx === undefined || idx === null || idx < 0 || idx >= 4) return;
+    const def = defaultTabName(idx);
+    const inp = $('renameTabInput');
+    const nv = inp ? String(inp.value || '').trim() : '';
     S.tabNames[idx] = nv ? nv : def;
     Store.saveTabNames();
     Renderer.initTabs();
     Renderer.updateActiveTab();
+    Events._renameIdx = null;
+    showToast(nv ? ('模板已改名为「' + nv + '」') : ('已恢复默认名「' + def + '」'), 'ok');
   },
   onInput(e){
     const el = e.target;
@@ -2988,7 +3105,7 @@ const Events = {
     const role = el.dataset.role;
     if(S.locked) return;
     if(role === 'start'){ Events.onStartBlur(el); return; }
-    if(role === 'title'){ Events.onTitleBlur(el); return; }
+    if(role === 'title'){ Events.onTitleBlur(el); if(typeof TF.checkDuplicates === 'function') TF.checkDuplicates(); return; }
     if(role === 'tf'){ TF.commit(el); Store.save(); return; }
     if(role === 'header'){
       if(el.dataset.field === 'processTime' && el.id === 'processTime_v0'){
@@ -3111,6 +3228,10 @@ const Events = {
   onKeyDown(e){
     const t = e.target;
     if(!t) return;
+    if(t.id === 'renameTabInput'){
+      if(e.key === 'Enter'){ e.preventDefault(); Events.submitRenameTab(); }
+      return;
+    }
     if(t.id === 'batchAddName' || t.id === 'batchAddDenier' || t.id === 'batchAddPT' || t.id === 'batchAddCount'){
       if(e.key === 'Enter'){ e.preventDefault(); Modals.submitBatchAdd(); }
       return;
