@@ -478,6 +478,15 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 .app-toast.show{opacity:1!important;visibility:visible!important;transform:translate(-50%,0)!important}
 /* v1.42：所有提示统一深灰底（含 dup 类型，保持一致） */
 .app-toast.dup{background:#1f2937!important}
+/* v1.42：快照恢复提示条 */
+.recover-bar{position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:50000;
+  background:#1f2937;color:#fff;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;
+  box-shadow:0 6px 20px rgba(16,24,40,.28);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.recover-bar .rb-txt{flex:1 1 auto;min-width:0}
+.recover-bar button{border:0;border-radius:7px;font-size:12.5px;font-weight:700;padding:6px 12px;
+  font-family:inherit;cursor:pointer;flex:0 0 auto}
+.recover-bar .rb-ok{background:#10b981;color:#fff}
+.recover-bar .rb-no{background:rgba(255,255,255,.16);color:#e5e7eb}
 /* v1.41：提示统一为橙红渐变，不再区分成功/错误配色 */
 .fault-toast{display:none!important}
 </style>
@@ -730,7 +739,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.42<br>
+                    满卷时间计算工具 v1.43<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1151,6 +1160,13 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.43', date: '2026-11-17', items: [
+    '新增：数据快照，保存时自动保留最近 3 份，重置前额外留一份',
+    '新增：数据损坏或丢失时自动从快照恢复，不影响主动清空的场景',
+    '新增：数据为空时顶部提示，可一键恢复或忽略，忽略后本次不再提示',
+    '修复：保存失败（如存储满）时不再静默，会弹出提示',
+    '说明：快照与快照轮转只在数据非空时进行，空数据不会覆盖快照'
+  ]},
   { version: 'v1.42', date: '2026-11-09', items: [
     '调整：车次与班次合并为一个输入框，填完转成 3/1 的形式，斜线左边是车次、右边是班次',
     '调整：位号卡片右侧改为两行，姓名占一整行，时间与车次/班次并排，三格高度一致',
@@ -1565,8 +1581,75 @@ const Store = {
         d[el.id] = el.value;
       }
     });
-    try { localStorage.setItem(CFG.KEY.ALL, JSON.stringify(S.data)); }
-    catch(e){ console.warn('[save] failed', e); }
+    const json = JSON.stringify(S.data);
+    try {
+      // 写入前先轮转快照：只有本次数据非空才推进快照，保证快照里始终是有数据的版本
+      if(Store.hasAnyData(S.data)) Store.rotate(json);
+      localStorage.setItem(CFG.KEY.ALL, json);
+      Store._lastSaveOk = Date.now();
+    } catch(e){
+      // v1.42：保存失败必须让人看见，不能静默
+      Store._lastSaveOk = 0;
+      const quota = (e && (e.name === 'QuotaExceededError' || e.code === 22 || /quota/i.test(e.message || '')));
+      showToast(quota ? '存储已满，保存失败！请先导出备份' : ('保存失败：' + ((e && e.message) || e)), 'err');
+    }
+  },
+  /* 判断数据里是否真的填了东西（位号/时间/车班次任一非空） */
+  hasAnyData(data){
+    if(!Array.isArray(data)) return false;
+    for(let t = 0; t < data.length; t++){
+      const obj = data[t];
+      if(!obj || typeof obj !== 'object') continue;
+      for(const k in obj){
+        const v = obj[k];
+        if(typeof v !== 'string') continue;
+        if(/^(title|start|time|tf|train|shift|name)_/.test(k) && v.trim()) return true;
+      }
+    }
+    return false;
+  },
+  SNAP_KEY(i){ return 'manju_snap_v1_' + i; },
+  SNAP_TIME(i){ return 'manju_snap_time_v1_' + i; },
+  /* 轮转 3 份快照：snap0 最新 */
+  rotate(json){
+    try {
+      const s1 = localStorage.getItem(Store.SNAP_KEY(1));
+      const t1 = localStorage.getItem(Store.SNAP_TIME(1));
+      if(s1) { localStorage.setItem(Store.SNAP_KEY(2), s1); if(t1) localStorage.setItem(Store.SNAP_TIME(2), t1); }
+      const s0 = localStorage.getItem(Store.SNAP_KEY(0));
+      const t0 = localStorage.getItem(Store.SNAP_TIME(0));
+      if(s0) { localStorage.setItem(Store.SNAP_KEY(1), s0); if(t0) localStorage.setItem(Store.SNAP_TIME(1), t0); }
+      localStorage.setItem(Store.SNAP_KEY(0), json);
+      localStorage.setItem(Store.SNAP_TIME(0), String(Date.now()));
+    } catch(e){ /* 快照失败不影响主保存 */ }
+  },
+  /* 重置前额外留一份，专供误触重置恢复 */
+  saveBeforeReset(){
+    try {
+      localStorage.setItem('manju_snap_before_reset', JSON.stringify(S.data));
+      localStorage.setItem('manju_snap_before_reset_time', String(Date.now()));
+    } catch(e){}
+  },
+  /* 找一份可用的快照：优先重置前那份，其次 snap0/1/2 */
+  findSnapshot(){
+    try {
+      const br = localStorage.getItem('manju_snap_before_reset');
+      if(br){
+        try {
+          const arr = JSON.parse(br);
+          if(Store.hasAnyData(arr)) return { data: arr, at: Number(localStorage.getItem('manju_snap_before_reset_time')) || 0, from: 'reset' };
+        } catch(_e){}
+      }
+      for(let i = 0; i < 3; i++){
+        const raw = localStorage.getItem(Store.SNAP_KEY(i));
+        if(!raw) continue;
+        try {
+          const arr = JSON.parse(raw);
+          if(Store.hasAnyData(arr)) return { data: arr, at: Number(localStorage.getItem(Store.SNAP_TIME(i))) || 0, from: 'snap' + i };
+        } catch(_e){}
+      }
+    } catch(e){}
+    return null;
   },
   saveDebounced(delay){
     clearTimeout(Store._timer);
@@ -1574,22 +1657,86 @@ const Store = {
   },
   flush(){ if(Store._timer){ clearTimeout(Store._timer); Store._timer = null; } Store.save(); },
   load(){
-    try {
-      const raw = localStorage.getItem(CFG.KEY.ALL);
-      if(raw){
+    let broken = false;      // 主数据损坏或缺失
+    let raw = null;
+    try { raw = localStorage.getItem(CFG.KEY.ALL); } catch(e){ broken = true; }
+    if(!raw){
+      broken = true;         // 键不存在，视为异常
+    } else {
+      try {
         const parsed = JSON.parse(raw);
-        if(Array.isArray(parsed)){
-          if(parsed.length === CFG.TEMPLATES){ S.data = parsed; }
-          else if(parsed.length === CFG.TEMPLATES - 1){
-            const m = Array.from({length: CFG.TEMPLATES}, () => ({}));
-            m[0] = parsed[0] || {}; m[1] = parsed[1] || {}; m[2] = parsed[2] || {}; m[3] = parsed[3] || {};
-            m[4] = {}; m[5] = parsed[4] || {}; m[6] = parsed[5] || {};
-            S.data = m;
-          }
+        if(!Array.isArray(parsed)){
+          broken = true;
+        } else if(parsed.length === CFG.TEMPLATES){
+          S.data = parsed;
+        } else if(parsed.length === CFG.TEMPLATES - 1){
+          const m = Array.from({length: CFG.TEMPLATES}, () => ({}));
+          m[0] = parsed[0] || {}; m[1] = parsed[1] || {}; m[2] = parsed[2] || {}; m[3] = parsed[3] || {};
+          m[4] = {}; m[5] = parsed[4] || {}; m[6] = parsed[5] || {};
+          S.data = m;
+        } else {
+          broken = true;
         }
+      } catch(e){
+        broken = true;
       }
-    } catch(e){ console.warn('[load data] failed', e); }
+    }
+
+    if(broken){
+      // 异常：尝试自动恢复，这不会误伤"主动清空"的场景
+      const snap = Store.findSnapshot();
+      if(snap){
+        S.data = snap.data;
+        Store.initDefaults();
+        try { localStorage.setItem(CFG.KEY.ALL, JSON.stringify(S.data)); } catch(e){}
+        setTimeout(() => showToast('数据异常，已自动从快照恢复', 'dup'), 1200);
+        return;
+      }
+      S.data = Array.from({length: CFG.TEMPLATES}, () => ({}));
+      Store.initDefaults();
+      return;
+    }
+
     Store.initDefaults();
+
+    // 主数据合法但内容为空：不自动覆盖，只提示由你决定
+    if(!Store.hasAnyData(S.data)){
+      const snap = Store.findSnapshot();
+      if(snap){
+        setTimeout(() => Store.showRecoverBar(snap), 1500);
+      }
+    }
+  },
+  /* 顶部提示条：给出一键恢复，不替用户做决定 */
+  showRecoverBar(snap){
+    try {
+      if(document.getElementById('recoverBar')) return;
+      const d = new Date(snap.at || Date.now());
+      const mm = ('0' + (d.getMonth() + 1)).slice(-2);
+      const dd = ('0' + d.getDate()).slice(-2);
+      const hh = ('0' + d.getHours()).slice(-2);
+      const mi = ('0' + d.getMinutes()).slice(-2);
+      const bar = document.createElement('div');
+      bar.id = 'recoverBar';
+      bar.className = 'recover-bar';
+      bar.innerHTML = '<span class="rb-txt">检测到数据为空，快照里有 ' + (mm + '-' + dd + ' ' + hh + ':' + mi) + ' 的数据</span>'
+        + '<button type="button" class="rb-ok">恢复</button>'
+        + '<button type="button" class="rb-no">忽略</button>';
+      document.body.appendChild(bar);
+      bar.querySelector('.rb-ok').addEventListener('click', () => {
+        S.data = snap.data;
+        Store.initDefaults();
+        try { localStorage.setItem(CFG.KEY.ALL, JSON.stringify(S.data)); } catch(e){}
+        App.loadTab();
+        bar.remove();
+        showToast('已恢复快照数据', 'dup');
+      });
+      bar.querySelector('.rb-no').addEventListener('click', () => {
+        // 本次忽略：清掉重置前快照，避免下次启动又提示；常规快照保留
+        try { localStorage.removeItem('manju_snap_before_reset'); } catch(e){}
+        bar.remove();
+      });
+    } catch(e){}
   },
   initDefaults(){
     for(let t = 0; t < CFG.TEMPLATES; t++){
@@ -2485,6 +2632,8 @@ const App = {
     setTimeout(restorePosition, 320);
   },
   loadTab(){
+    const rb = document.getElementById('recoverBar');
+    if(rb) rb.remove();
     document.querySelectorAll('.fullscreen-car').forEach(el => el.classList.remove('fullscreen-car'));
     document.body.classList.remove('car-fullscreen-active');
     const d = T();
@@ -2712,6 +2861,8 @@ const App = {
   },
   resetCurrent(){
     if(S.locked) return;
+    Store.save();              // 先把当前页面内容落盘，保证快照拿到的是最新数据
+    Store.saveBeforeReset();   // 重置前留一份，专供误触恢复
     clearFaultTemplateData();
     S.data[S.tab] = {};
     getAllFields().forEach(el => {
@@ -2740,6 +2891,8 @@ const App = {
   },
   resetAll(){
     if(S.locked) return;
+    Store.save();
+    Store.saveBeforeReset();
     clearFaultTemplateData();
     S.data = Array.from({length: CFG.TEMPLATES}, () => ({}));
     for(let t = 0; t < CFG.TEMPLATES; t++) resetBatchBaseDate(t);
