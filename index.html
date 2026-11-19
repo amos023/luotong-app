@@ -653,11 +653,13 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 <div class="modal-overlay" id="resetModal">
     <div class="modal-box">
         <div class="modal-title">重置数据</div>
-        <p style="font-size:13px;color:#666;margin:0 0 15px 0;">请选择重置范围：</p>
-        <div class="modal-actions modal-actions-3">
-            <button class="modal-btn danger" data-action="reset-current">重置当前</button>
-            <button class="modal-btn danger" data-action="reset-all">重置全部</button>
-            <button class="modal-btn cancel" data-action="close-modal" data-modal="resetModal">取消</button>
+        <p style="font-size:13px;color:#666;margin:0 0 8px 0;">请选择重置范围：</p>
+        <p style="font-size:12px;color:#94a3b8;margin:0 0 15px 0;line-height:1.55;">「只清内容」清掉时间、车班次、备注，并把日期重置为今天；车头栏（批号、工艺时间、系列、台车号、丹尼数、定重、只数）和位号都保留。</p>
+        <div class="modal-actions">
+            <button class="modal-btn" data-action="reset-content" style="grid-column:1/-1;order:0">只清内容（保留车头栏）</button>
+            <button class="modal-btn danger" data-action="reset-current" style="order:1">重置当前</button>
+            <button class="modal-btn danger" data-action="reset-all" style="order:2">重置全部</button>
+            <button class="modal-btn cancel" data-action="close-modal" data-modal="resetModal" style="grid-column:1/-1;order:3">取消</button>
         </div>
     </div>
 </div>
@@ -739,7 +741,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.44<br>
+                    满卷时间计算工具 v1.45<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1143,6 +1145,7 @@ const CFG = {
   DEFAULT_PWD: '2002',
   SHIFT_840: 8*3600 + 39*60,
   SHIFT_2040: 20*3600 + 39*60,
+  DAY_START: 7*3600,          // 日期分界：7:00，之前仍算当天，7:00 起进入次日
   DAY: 86400,
   KEY: {
     ALL: 'manjuan_all_data_v7',
@@ -1160,6 +1163,11 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.45', date: '2026-11-19', items: [
+    '调整：日期分界改为 7:00，凌晨到 6:59 仍算当天，7:00 之后才进入次日',
+    '调整：时间排序与夜班接凌晨的跨天判定同步以 7:00 为界',
+    '新增：重置增加「只清内容」，只清时间、车班次和备注并把日期重置为今天，车头栏与位号保留'
+  ]},
   { version: 'v1.44', date: '2026-11-19', items: [
     '修复：按同位号的计算顺序识别跨午夜，避免早班时间被误排到次日，导致后车无法接续计算'
   ]},
@@ -1500,7 +1508,7 @@ const U = {
   toHM(sec){ if(sec === null || isNaN(sec)) return ''; const tm = Math.floor(sec/60); const h = Math.floor(tm/60) % 24; const m = tm % 60; return h + ':' + U.pad(m); },
   fmtTime(sec){ if(sec === null || sec === undefined || isNaN(sec)) return ''; const tm = Math.round(sec / 60); const h = Math.floor(tm / 60) % 24; const m = tm % 60; return h + ':' + U.pad(m); },
   toMins(str){ if(!str || !str.includes(':')) return null; const p = str.split(':'); const h = parseInt(p[0], 10), m = parseInt(p[1], 10); return (isNaN(h) || isNaN(m)) ? null : h*60 + m; },
-  absMins(str){ if(!str) return null; const sec = U.toSec(str); if(sec === null) return null; const m = Math.floor(sec/60); return m < 520 ? m + 1440 : m; },
+  absMins(str){ if(!str) return null; const sec = U.toSec(str); if(sec === null) return null; const m = Math.floor(sec/60); return m < 420 ? m + 1440 : m; },
   shiftBoundary(sec){
     if(sec === null || sec === undefined || isNaN(sec)) return null;
     const d = Math.floor(sec / CFG.DAY);
@@ -2031,7 +2039,7 @@ const Sync = {
           else { const el = $(`time_${v}_s${s}_i${col}`); if(el) tv = el.value; }
           if(tv){
             const cm = U.toMins(tv);
-            if(cm !== null && cm < startM){ cross = true; break; }
+            if(cm !== null && cm >= 420 && cm < startM){ cross = true; break; }
           }
         }
       }
@@ -2126,7 +2134,7 @@ const Scheduler = {
       if(sec === null || prior === null) return sec;
       const day = Math.floor(prior / CFG.DAY);
       const prevClock = prior % CFG.DAY;
-      const overnight = prevClock >= CFG.SHIFT_2040 && sec < CFG.SHIFT_840 + 60;
+      const overnight = prevClock >= CFG.SHIFT_2040 && sec < CFG.DAY_START;
       return sec + (day + (overnight ? 1 : 0)) * CFG.DAY;
     };
     groups.forEach((slots, title) => {
@@ -2872,6 +2880,36 @@ const App = {
     updateTitleCustomMarks();
     if(typeof TF.checkDuplicates === 'function') TF.checkDuplicates();
   },
+  /* 只清内容：清时间、车班次、备注，日期基准重置为今天；车头栏与位号保留 */
+  resetContent(){
+    if(S.locked) return;
+    Store.save();              // 先把当前内容落盘，保证快照完整
+    Store.saveBeforeReset();   // 清前留一份，误触可恢复
+    const d = T();
+    for(let c = 0; c < CFG.CARS; c++){
+      const v = pref(c);
+      for(let s = 0; s < CFG.SUBS; s++){
+        for(let i = 1; i <= 6; i++){
+          [`start_${v}_s${s}_i${i}`, `time_${v}_s${s}_i${i}`,
+           `tf_${v}_s${s}_i${i}`, `shift_${v}_s${s}_i${i}`, `train_${v}_s${s}_i${i}`,
+           `name_${v}_s${s}_i${i}`].forEach(id => {
+            const el = $(id);
+            if(el) el.value = '';
+            delete d[id];
+          });
+        }
+        Flags.manualStart(c, s, false);
+        Flags.manualClear(c, s, false);
+        delete d[fk.autoFill(c, s)];
+      }
+    }
+    resetBatchBaseDate(S.tab);   // 日期基准回到今天
+    Sync.dates();                // 日期框统一显示今天
+    Store.save();
+    updateTitleCustomMarks();
+    if(typeof TF.checkDuplicates === 'function') TF.checkDuplicates();
+    showToast('已清空时间和车班次，日期已重置为今天');
+  },
   resetCurrent(){
     if(S.locked) return;
     Store.save();              // 先把当前页面内容落盘，保证快照拿到的是最新数据
@@ -3137,6 +3175,7 @@ const Events = {
       case 'open-log': Modals.openLog(); break;
       case 'open-reset': if(!S.locked) Modals.open('resetModal'); break;
       case 'open-login': Modals.openLogin(); break;
+      case 'reset-content': Modals.close('resetModal'); App.resetContent(); break;
       case 'reset-current': Modals.close('resetModal'); App.resetCurrent(); break;
       case 'reset-all': Modals.close('resetModal'); App.resetAll(); break;
       case 'rename-tab-ok': Events.submitRenameTab(); break;
@@ -3610,7 +3649,7 @@ const Guide = {
     { sel: '#main-tabs', title: '模板标签',
       desc: '这里有 4 个模板，各自的数据完全独立。做不同批号时切一下就行，不会互相影响。' },
     { sel: '.reset-btn', title: '重置',
-      desc: '这里可以重置数据。点开选「重置当前」只清当前模板，「重置全部」清所有模板。' },
+      desc: '这里可以重置数据。点开选「只清内容」只清时间、车班次和备注并把日期重置为今天，车头栏保留；「重置当前」清当前模板，「重置全部」清所有模板。' },
     { sel: '#block_v0 .batch-box', title: '批号',
       desc: '先选批号，会自动带出旦数、个数和工艺时间，不用一个个手填。' },
     { sel: ['#title_v0_s0_i1', '#start_v0_s0_i1'], title: '自动计算',
