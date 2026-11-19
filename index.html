@@ -739,7 +739,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.43<br>
+                    满卷时间计算工具 v1.44<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1160,6 +1160,9 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.44', date: '2026-11-19', items: [
+    '修复：按同位号的计算顺序识别跨午夜，避免早班时间被误排到次日，导致后车无法接续计算'
+  ]},
   { version: 'v1.43', date: '2026-11-17', items: [
     '新增：数据快照，保存时自动保留最近 3 份，重置前额外留一份',
     '新增：数据损坏或丢失时自动从快照恢复，不影响主动清空的场景',
@@ -2117,16 +2120,26 @@ const Scheduler = {
       return;
     }
     const vPrev = pref(c - 1);
+    const compareRows = (a,b) => dir === 'forward' ? a-b : b-a;
+    const placeClock = (value, prior) => {
+      const sec = U.toSec(value);
+      if(sec === null || prior === null) return sec;
+      const day = Math.floor(prior / CFG.DAY);
+      const prevClock = prior % CFG.DAY;
+      const overnight = prevClock >= CFG.SHIFT_2040 && sec < CFG.SHIFT_840 + 60;
+      return sec + (day + (overnight ? 1 : 0)) * CFG.DAY;
+    };
     groups.forEach((slots, title) => {
-      const order = slots.slice().sort((a,b) => dir === 'forward' ? a-b : b-a);
+      const order = slots.slice().sort(compareRows);
       let prevMaxSec = null;
       if(c > 0){
-        for(let ps = 0; ps < CFG.SUBS; ps++){
+        const previousRows = Array.from({length: CFG.SUBS}, (_, i) => i).sort(compareRows);
+        for(const ps of previousRows){
           const pte = $(`title_${vPrev}_s${ps}_i1`);
           if(!pte || pte.value.trim() !== title) continue;
           const pse = $(`start_${vPrev}_s${ps}_i1`);
           if(!pse) continue;
-          const absSec = Scheduler.absSecOf(pse.value);
+          const absSec = placeClock(pse.value, prevMaxSec);
           if(absSec !== null && (prevMaxSec === null || absSec > prevMaxSec)) prevMaxSec = absSec;
         }
       }
@@ -2135,7 +2148,7 @@ const Scheduler = {
         const row = rows.find(r => r.s === s);
         if(!row) continue;
         if(Flags.isManualStart(c, s)){
-          const absSec = Scheduler.absSecOf(row.startEl.value);
+          const absSec = placeClock(row.startEl.value, cur);
           if(absSec !== null) cur = absSec;
           continue;
         }
