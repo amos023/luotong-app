@@ -120,7 +120,13 @@ body.keyboard-open .tab-content{scroll-snap-type:y mandatory !important;scroll-b
 .clear-btn{position:absolute;top:2px;right:4px;width:18px;height:18px;line-height:16px;text-align:center;font-size:18px;font-weight:bold;color:#bbb;cursor:pointer;z-index:10;user-select:none}
 .clear-btn:hover{color:#ff3b30}
 .clear-btn:active{transform:scale(.9)}
+.undo-btn{position:absolute;bottom:2px;right:3px;width:18px;height:18px;line-height:16px;text-align:center;font-size:14px;font-weight:bold;color:#bbb;cursor:pointer;z-index:10;user-select:none;opacity:0;pointer-events:none;transition:opacity .15s}
+.undo-btn.on{opacity:1;pointer-events:auto}
+.undo-btn:hover{color:#007aff}
+.undo-btn:active{transform:scale(.9)}
 body.locked .clear-btn{pointer-events:none;opacity:.35}
+body.locked .undo-btn{pointer-events:none;opacity:0!important}
+.car-block.car-locked .undo-btn{pointer-events:none;opacity:0!important}
 
 .one-car-block .sub-cars{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0}
 .one-car-block .sub-car-row{display:flex;align-items:stretch;gap:6px;flex:1;min-height:0}
@@ -282,6 +288,7 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .one-car-block .cell.cell-small label{font-size:8px}
 .one-car-block .cell.cell-small input{font-size:10px;min-height:16px}
 .clear-btn{top:1px;right:2px;font-size:15px}
+.undo-btn{bottom:1px;right:2px}
 
 .admin-panel-box{max-height:94vh!important}
 .admin-panel-body{padding:12px}
@@ -653,13 +660,14 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 <div class="modal-overlay" id="resetModal">
     <div class="modal-box">
         <div class="modal-title">重置数据</div>
-        <p style="font-size:13px;color:#666;margin:0 0 8px 0;">请选择重置范围：</p>
-        <p style="font-size:12px;color:#94a3b8;margin:0 0 15px 0;line-height:1.55;">「只清内容」清掉时间、车班次、备注，并把日期重置为今天；车头栏（批号、工艺时间、系列、台车号、丹尼数、定重、只数）和位号都保留。</p>
+        <p style="font-size:13px;color:#666;margin:0 0 8px 0;">请选择操作范围：</p>
+        <p style="font-size:12px;color:#94a3b8;margin:0 0 15px 0;line-height:1.55;">「只清内容」清掉时间、车班次、备注、台车号，日期重置为今天，其他车头栏信息和位号保留；同时展开折叠区域。</p>
         <div class="modal-actions">
-            <button class="modal-btn" data-action="reset-content" style="grid-column:1/-1;order:0">只清内容（保留车头栏）</button>
-            <button class="modal-btn danger" data-action="reset-current" style="order:1">重置当前</button>
-            <button class="modal-btn danger" data-action="reset-all" style="order:2">重置全部</button>
-            <button class="modal-btn cancel" data-action="close-modal" data-modal="resetModal" style="grid-column:1/-1;order:3">取消</button>
+            <button class="modal-btn" data-action="reset-content-current" style="order:0">只清当前模板</button>
+            <button class="modal-btn" data-action="reset-content-all" style="order:1">只清全部模板</button>
+            <button class="modal-btn danger" data-action="reset-current" style="order:2">重置当前</button>
+            <button class="modal-btn danger" data-action="reset-all" style="order:3">重置全部</button>
+            <button class="modal-btn cancel" data-action="close-modal" data-modal="resetModal" style="grid-column:1/-1;order:4">取消</button>
         </div>
     </div>
 </div>
@@ -741,7 +749,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.45<br>
+                    满卷时间计算工具 v1.50<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1163,6 +1171,21 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.50', date: '2026-11-20', items: [
+    '调整：空位填充不再受 8:39 和 20:39 交接截止时间限制，直接按工艺时间填充'
+  ]},
+  { version: 'v1.49', date: '2026-11-20', items: [
+    '调整：只清内容仅保留批号、工艺时间、系列、旦数、姓名、个数和位号，其余数据、锁定、空位填充和折叠状态全部重置'
+  ]},
+  { version: 'v1.48', date: '2026-11-20', items: [
+    '调整：只清内容分为当前模板和全部模板两个范围，清理时同步展开折叠区域'
+  ]},
+  { version: 'v1.47', date: '2026-11-20', items: [
+    '调整：只清内容时同步清空台车号，其他车头栏信息和位号继续保留'
+  ]},
+  { version: 'v1.46', date: '2026-11-19', items: [
+    '新增：位号卡片 × 下方增加撤销按钮，点 × 清错后可退回上一步'
+  ]},
   { version: 'v1.45', date: '2026-11-19', items: [
     '调整：日期分界改为 7:00，凌晨到 6:59 仍算当天，7:00 之后才进入次日',
     '调整：时间排序与夜班接凌晨的跨天判定同步以 7:00 为界',
@@ -1518,6 +1541,29 @@ const U = {
     return (d+1)*CFG.DAY + CFG.SHIFT_840;
   },
   isEditable(el){ if(!el) return false; const t = el.tagName; return t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT'; }
+};
+
+/* 撤销清除：按「模板|车|排|格」记住被 × 清掉的内容 */
+const UndoClear = {
+  _map: {},
+  key(c,s,i){ return S.tab + '|' + c + '|' + s + '|' + i; },
+  ids(v,s,i){
+    return i === 1
+      ? [`start_${v}_s${s}_i1`, `tf_${v}_s${s}_i1`, `shift_${v}_s${s}_i1`, `train_${v}_s${s}_i1`, `name_${v}_s${s}_i1`]
+      : [`time_${v}_s${s}_i${i}`, `tf_${v}_s${s}_i${i}`, `shift_${v}_s${s}_i${i}`, `train_${v}_s${s}_i${i}`, `name_${v}_s${s}_i${i}`];
+  },
+  remember(c,s,i,v){
+    const saved = {};
+    let any = false;
+    this.ids(v,s,i).forEach(id => { const el = $(id); saved[id] = el ? el.value : ''; if(saved[id] !== '') any = true; });
+    if(!any) return false;
+    this._map[this.key(c,s,i)] = { saved, manualStart: Flags.isManualStart(c,s) };
+    return true;
+  },
+  has(c,s,i){ return !!this._map[this.key(c,s,i)]; },
+  take(c,s,i){ const k = this.key(c,s,i); const r = this._map[k]; delete this._map[k]; return r || null; },
+  putBack(c,s,i,r){ this._map[this.key(c,s,i)] = r; },
+  clearAll(){ this._map = {}; }
 };
 
 const T = () => S.data[S.tab] || (S.data[S.tab] = {});
@@ -2212,8 +2258,7 @@ const Scheduler = {
       const src = sources[i];
       const slot = empty[i];
       const nextSec = src.absSec + dur;
-      const b = U.shiftBoundary(src.absSec);
-      if(b !== null && nextSec > b) continue;
+      // 空位填充不判断交接截止时间，只按来源时间加工艺时间。
       const timeStr = U.fmtTime(nextSec);
       const titleEl = $(`title_${v}_s${slot.sIdx}_i1`);
       const startEl = $(`start_${v}_s${slot.sIdx}_i1`);
@@ -2510,6 +2555,7 @@ const Renderer = {
     }
     return `<div class="item-card">
       <div class="clear-btn" data-action="clear-card" data-car="${carIdx}" data-s="${sIdx}" data-i="${colIdx}" title="清除该位号内容">×</div>
+      <div class="undo-btn${UndoClear.has(carIdx,sIdx,colIdx) ? ' on' : ''}" data-action="undo-clear" data-car="${carIdx}" data-s="${sIdx}" data-i="${colIdx}" title="撤销上一步清除">↺</div>
       <div class="card-left-col">
         <span class="left-label">位号</span>
         <input type="text" class="left-title-input calc-input" id="title_${v}_s${sIdx}_i${colIdx}" data-role="title" data-car="${carIdx}" data-s="${sIdx}" value="" ${ro}>
@@ -2860,10 +2906,43 @@ const App = {
     AutoSize.byId(el);
     Store.saveDebounced();
   },
+  /* 撤销最近一次 × 清除，只恢复那一格被清掉的内容 */
+  undoClear(carIdx, sIdx, colNum){
+    if(S.locked) return;
+    if(CarLock.isLocked(carIdx)) return;
+    const rec = UndoClear.take(carIdx, sIdx, colNum);
+    if(!rec) return;
+    const v = pref(carIdx);
+    const ids = UndoClear.ids(v, sIdx, colNum);
+    const busy = ids.some(id => { const el = $(id); return el && el.value.trim() !== ''; });
+    if(busy){                       // 格子里已有新内容，不覆盖，把记录放回去
+      UndoClear.putBack(carIdx, sIdx, colNum, rec);
+      this.refreshUndoBtns();
+      showToast('该位号已有内容，无法撤销');
+      return;
+    }
+    ids.forEach(id => { const el = $(id); if(el) el.value = rec.saved[id] || ''; });
+    Flags.manualStart(carIdx, sIdx, !!rec.manualStart);
+    Flags.manualClear(carIdx, sIdx, false);
+    delete T()[fk.autoFill(carIdx, sIdx)];
+    Sync.dates();
+    if(colNum === 1) Scheduler.updateFrom(carIdx);
+    Store.saveDebounced();
+    updateTitleCustomMarks();
+    if(typeof TF.checkDuplicates === 'function') TF.checkDuplicates();
+    this.refreshUndoBtns();
+    showToast('已撤销清除');
+  },
+  refreshUndoBtns(){
+    document.querySelectorAll('[data-action="undo-clear"]').forEach(el => {
+      el.classList.toggle('on', UndoClear.has(+el.dataset.car, +el.dataset.s, +el.dataset.i));
+    });
+  },
   clearCard(carIdx, sIdx, colNum){
     if(S.locked) return;
     if(CarLock.isLocked(carIdx)) return;
     const v = pref(carIdx);
+    UndoClear.remember(carIdx, sIdx, colNum, v);   // 清之前先记下，供撤销
     if(colNum === 1){
       [`start_${v}_s${sIdx}_i1`, `tf_${v}_s${sIdx}_i1`, `shift_${v}_s${sIdx}_i1`, `train_${v}_s${sIdx}_i1`, `name_${v}_s${sIdx}_i1`].forEach(id => { const el = $(id); if(el) el.value = ''; });
       Flags.manualStart(carIdx, sIdx, false);
@@ -2880,38 +2959,48 @@ const App = {
     updateTitleCustomMarks();
     if(typeof TF.checkDuplicates === 'function') TF.checkDuplicates();
   },
-  /* 只清内容：清时间、车班次、备注，日期基准重置为今天；车头栏与位号保留 */
-  resetContent(){
+  /* 只清内容：只保留指定车头栏和位号，其余模板状态全部重置 */
+  resetContent(allTabs){
     if(S.locked) return;
-    Store.save();              // 先把当前内容落盘，保证快照完整
-    Store.saveBeforeReset();   // 清前留一份，误触可恢复
-    const d = T();
-    for(let c = 0; c < CFG.CARS; c++){
-      const v = pref(c);
-      for(let s = 0; s < CFG.SUBS; s++){
-        for(let i = 1; i <= 6; i++){
-          [`start_${v}_s${s}_i${i}`, `time_${v}_s${s}_i${i}`,
-           `tf_${v}_s${s}_i${i}`, `shift_${v}_s${s}_i${i}`, `train_${v}_s${s}_i${i}`,
-           `name_${v}_s${s}_i${i}`].forEach(id => {
-            const el = $(id);
-            if(el) el.value = '';
-            delete d[id];
-          });
+    UndoClear.clearAll();
+    Store.save();
+    Store.saveBeforeReset();
+    const targetTabs = allTabs ? Array.from({length: CFG.TEMPLATES}, (_, i) => i) : [S.tab];
+    const keepData = tab => {
+      const old = S.data[tab] || {};
+      const kept = {};
+      for(let c = 0; c < CFG.CARS; c++){
+        const v = pref(c);
+        [`batch_${v}`, `processTime_${v}`, `series_${v}_1`, `series_${v}_2`,
+         `denier_${v}`, `count_${v}`, `headerName_${v}`].forEach(k => {
+          if(old[k] !== undefined) kept[k] = old[k];
+        });
+        for(let s = 0; s < CFG.SUBS; s++){
+          for(let i = 1; i <= 6; i++){
+            const k = `title_${v}_s${s}_i${i}`;
+            if(old[k] !== undefined) kept[k] = old[k];
+          }
         }
-        Flags.manualStart(c, s, false);
-        Flags.manualClear(c, s, false);
-        delete d[fk.autoFill(c, s)];
+        kept[`date_${v}`] = todayStr;
       }
-    }
-    resetBatchBaseDate(S.tab);   // 日期基准回到今天
-    Sync.dates();                // 日期框统一显示今天
+      S.data[tab] = kept;
+      resetBatchBaseDate(tab);
+    };
+    targetTabs.forEach(keepData);
+    App.loadTab();
+    document.querySelectorAll('.one-car-block').forEach(block => {
+      block.classList.remove('collapsed');
+      const btn = block.querySelector('.toggle-btn');
+      if(btn) btn.textContent = '折叠';
+    });
     Store.save();
     updateTitleCustomMarks();
     if(typeof TF.checkDuplicates === 'function') TF.checkDuplicates();
-    showToast('已清空时间和车班次，日期已重置为今天');
+    showToast(allTabs ? '已按保留项目重置全部模板并展开' : '已按保留项目重置当前模板并展开');
   },
   resetCurrent(){
     if(S.locked) return;
+    UndoClear.clearAll();
     Store.save();              // 先把当前页面内容落盘，保证快照拿到的是最新数据
     Store.saveBeforeReset();   // 重置前留一份，专供误触恢复
     clearFaultTemplateData();
@@ -2942,6 +3031,7 @@ const App = {
   },
   resetAll(){
     if(S.locked) return;
+    UndoClear.clearAll();
     Store.save();
     Store.saveBeforeReset();
     clearFaultTemplateData();
@@ -3175,7 +3265,8 @@ const Events = {
       case 'open-log': Modals.openLog(); break;
       case 'open-reset': if(!S.locked) Modals.open('resetModal'); break;
       case 'open-login': Modals.openLogin(); break;
-      case 'reset-content': Modals.close('resetModal'); App.resetContent(); break;
+      case 'reset-content-current': Modals.close('resetModal'); App.resetContent(false); break;
+      case 'reset-content-all': Modals.close('resetModal'); App.resetContent(true); break;
       case 'reset-current': Modals.close('resetModal'); App.resetCurrent(); break;
       case 'reset-all': Modals.close('resetModal'); App.resetAll(); break;
       case 'rename-tab-ok': Events.submitRenameTab(); break;
@@ -3206,7 +3297,8 @@ const Events = {
         break;
       }
       case 'toggle-count': e.preventDefault(); App.toggleCount(t.dataset.car); break;
-      case 'clear-card': App.clearCard(+t.dataset.car, +t.dataset.s, +t.dataset.i); break;
+      case 'clear-card': App.clearCard(+t.dataset.car, +t.dataset.s, +t.dataset.i); App.refreshUndoBtns(); break;
+      case 'undo-clear': App.undoClear(+t.dataset.car, +t.dataset.s, +t.dataset.i); break;
       case 'admin-save-layout': AdminPanel.saveLayout(); break;
       case 'admin-change-pwd': AdminPanel.changePassword(); break;
     }
@@ -3649,7 +3741,7 @@ const Guide = {
     { sel: '#main-tabs', title: '模板标签',
       desc: '这里有 4 个模板，各自的数据完全独立。做不同批号时切一下就行，不会互相影响。' },
     { sel: '.reset-btn', title: '重置',
-      desc: '这里可以重置数据。点开选「只清内容」只清时间、车班次和备注并把日期重置为今天，车头栏保留；「重置当前」清当前模板，「重置全部」清所有模板。' },
+      desc: '这里可以重置数据。点开可选「只清当前模板」或「只清全部模板」；只保留批号、工艺时间、系列、旦数、姓名、个数和位号，其余全部重置。' },
     { sel: '#block_v0 .batch-box', title: '批号',
       desc: '先选批号，会自动带出旦数、个数和工艺时间，不用一个个手填。' },
     { sel: ['#title_v0_s0_i1', '#start_v0_s0_i1'], title: '自动计算',
