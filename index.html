@@ -749,7 +749,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.50<br>
+                    满卷时间计算工具 v1.52<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1171,6 +1171,12 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.52', date: '2026-11-21', items: [
+    '调整：仅第一车的空位填充不受交接截止时间限制，后续车辆恢复 8:39 和 20:39 截止判断'
+  ]},
+  { version: 'v1.51', date: '2026-11-20', items: [
+    '修复：空位填充生成的时间继续参与下一车接续计算，不再被当成手动固定时间'
+  ]},
   { version: 'v1.50', date: '2026-11-20', items: [
     '调整：空位填充不再受 8:39 和 20:39 交接截止时间限制，直接按工艺时间填充'
   ]},
@@ -2201,7 +2207,7 @@ const Scheduler = {
       for(const s of order){
         const row = rows.find(r => r.s === s);
         if(!row) continue;
-        if(Flags.isManualStart(c, s)){
+        if(Flags.isManualStart(c, s) && !T()[fk.autoFill(c, s)]){
           const absSec = placeClock(row.startEl.value, cur);
           if(absSec !== null) cur = absSec;
           continue;
@@ -2249,6 +2255,7 @@ const Scheduler = {
     if(!empty.length || !valid.length) return;
     const dir = Flags.direction();
     const asc = dir === 'forward';
+    const ignoreBoundary = carIdx === 0;
     empty.sort((a,b) => asc ? a.sIdx - b.sIdx : b.sIdx - a.sIdx);
     valid.sort((a,b) => a.absSec - b.absSec);
     const take = Math.min(empty.length, valid.length);
@@ -2258,7 +2265,9 @@ const Scheduler = {
       const src = sources[i];
       const slot = empty[i];
       const nextSec = src.absSec + dur;
-      // 空位填充不判断交接截止时间，只按来源时间加工艺时间。
+      // 仅第一车不判断交接截止时间；后续车辆仍按交接点停止填充。
+      const b = U.shiftBoundary(src.absSec);
+      if(!ignoreBoundary && b !== null && nextSec > b) continue;
       const timeStr = U.fmtTime(nextSec);
       const titleEl = $(`title_${v}_s${slot.sIdx}_i1`);
       const startEl = $(`start_${v}_s${slot.sIdx}_i1`);
