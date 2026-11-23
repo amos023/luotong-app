@@ -451,6 +451,13 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .modal-actions .modal-btn:not(.cancel),.modal-actions .btn.primary{order:2}
 .modal-actions.modal-actions-3{grid-template-columns:1fr 1fr 1fr!important}
 .modal-actions.modal-actions-1{grid-template-columns:1fr!important}
+.reset-group{text-align:left;margin:0 0 4px 0}
+.reset-group + .reset-group{margin-top:16px;padding-top:14px;border-top:1px dashed #e2e8f0}
+.reset-group-title{font-size:13.5px;font-weight:700;margin:0 0 6px 0}
+.reset-group-title.blue{color:#007aff}
+.reset-group-title.red{color:#ff3b30}
+.reset-group-desc{font-size:11.5px;color:#94a3b8;line-height:1.65;margin:0 0 10px 0}
+.reset-group-desc b{color:#64748b;font-weight:600}
 /* 自定义批号弹窗：两列网格 */
 .batch-add-form{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px 12px!important;text-align:left!important;margin-bottom:6px!important}
 .batch-add-field{display:flex!important;flex-direction:column!important;min-width:0!important;align-items:stretch!important}
@@ -660,14 +667,33 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 <div class="modal-overlay" id="resetModal">
     <div class="modal-box">
         <div class="modal-title">重置数据</div>
-        <p style="font-size:13px;color:#666;margin:0 0 8px 0;">请选择操作范围：</p>
-        <p style="font-size:12px;color:#94a3b8;margin:0 0 15px 0;line-height:1.55;">「只清内容」清掉时间、车班次、备注、台车号，日期重置为今天，其他车头栏信息和位号保留；同时展开折叠区域。</p>
-        <div class="modal-actions">
-            <button class="modal-btn" data-action="reset-content-current" style="order:0">只清当前模板</button>
-            <button class="modal-btn" data-action="reset-content-all" style="order:1">只清全部模板</button>
-            <button class="modal-btn danger" data-action="reset-current" style="order:2">重置当前</button>
-            <button class="modal-btn danger" data-action="reset-all" style="order:3">重置全部</button>
-            <button class="modal-btn cancel" data-action="close-modal" data-modal="resetModal" style="grid-column:1/-1;order:4">取消</button>
+        <p style="font-size:12.5px;color:#64748b;margin:0 0 14px 0;text-align:left;line-height:1.6;">两种方式的区别：清内容只清当班录入，车头栏照旧；重置连车头栏一起还原成初始状态。</p>
+
+        <div class="reset-group">
+            <div class="reset-group-title blue">清除录入内容</div>
+            <div class="reset-group-desc">
+                <b>保留</b>批号、工艺时间、系列、旦数、姓名、个数、位号<br>
+                <b>清除</b>时间、车次/班次、备注、台车号，日期回到今天
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn" data-action="reset-content-current" style="order:0">清除当前模板</button>
+                <button class="modal-btn" data-action="reset-content-all" style="order:1">清除全部模板</button>
+            </div>
+        </div>
+
+        <div class="reset-group">
+            <div class="reset-group-title red">整模板重置</div>
+            <div class="reset-group-desc">
+                车头栏、位号、录入内容全部清空，恢复初始状态
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn danger" data-action="reset-current" style="order:0">重置当前模板</button>
+                <button class="modal-btn danger" data-action="reset-all" style="order:1">重置全部模板</button>
+            </div>
+        </div>
+
+        <div class="modal-actions modal-actions-1" style="margin-top:14px">
+            <button class="modal-btn cancel" data-action="close-modal" data-modal="resetModal">取消</button>
         </div>
     </div>
 </div>
@@ -749,7 +775,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.54<br>
+                    满卷时间计算工具 v1.55<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1171,6 +1197,9 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.55', date: '2026-11-23', items: [
+    '调整：空位填充可开启范围由 1～2 个空位放宽到 1～5 个空位'
+  ]},
   { version: 'v1.54', date: '2026-11-23', items: [
     '调整：锁定车辆时同步锁定台车号，后台车辆的所有输入字段均不可修改'
   ]},
@@ -2261,25 +2290,15 @@ const Scheduler = {
     const dir = Flags.direction();
     const asc = dir === 'forward';
     const ignoreBoundary = carIdx === 0;
-    empty.sort((a,b) => asc ? a.sIdx - b.sIdx : b.sIdx - a.sIdx);
-    valid.sort((a,b) => a.absSec - b.absSec);
-    const take = Math.min(empty.length, valid.length);
-    const sources = valid.slice(0, take).map(vv => ({srcPos: vv.sIdx+1, title: vv.title, absSec: vv.absSec}));
-    sources.sort((a,b) => asc ? a.srcPos - b.srcPos : b.srcPos - a.srcPos);
-    for(let i = 0; i < take; i++){
-      const src = sources[i];
-      const slot = empty[i];
-      const nextSec = src.absSec + dur;
-      // 仅第一车不判断交接截止时间；后续车辆仍按交接点停止填充。
-      const b = U.shiftBoundary(src.absSec);
-      if(!ignoreBoundary && b !== null && nextSec > b) continue;
+    // 统一规则：每个位号各自一条时间线，互不共用；空位按原有位号顺序循环。
+    const writeSlot = (slot, slotTitle, nextSec) => {
       const timeStr = U.fmtTime(nextSec);
       const titleEl = $(`title_${v}_s${slot.sIdx}_i1`);
       const startEl = $(`start_${v}_s${slot.sIdx}_i1`);
       if(titleEl){
         d[fk.autoFillOldTitle(carIdx, slot.sIdx)] = titleEl.value;
         d[fk.autoFillOldCustom(carIdx, slot.sIdx)] = Flags.isTitleCustom(carIdx, slot.sIdx);
-        titleEl.value = src.title;
+        titleEl.value = slotTitle;
       }
       if(startEl) startEl.value = timeStr;
       d[fk.autoFill(carIdx, slot.sIdx)] = true;
@@ -2287,6 +2306,46 @@ const Scheduler = {
       Flags.manualClear(carIdx, slot.sIdx, false);
       Sync.titles(v, slot.sIdx);
       Sync.rowToB_F(v, slot.sIdx, true);
+    };
+    // 方向只按源值位置判断：第 1 排有源值就从上往下填，否则从下往上填。
+    const fillUpward = !valid.some(vv => vv.sIdx === 0);
+    empty.sort((a,b) => fillUpward ? b.sIdx - a.sIdx : a.sIdx - b.sIdx);
+    // 4 个及以上源值：按时间取最早的空位数个源值，一对一加工艺时间。
+    if(valid.length >= 4){
+      const byTime = valid.slice().sort((a,b) => a.absSec - b.absSec);
+      const take = Math.min(empty.length, byTime.length);
+      for(let i = 0; i < take; i++){
+        const slot = empty[i];
+        const src = byTime[i];
+        const baseSec = src.absSec;
+        const nextSec = baseSec + dur;
+        const b = U.shiftBoundary(baseSec);
+        if(!ignoreBoundary && b !== null && nextSec > b) continue;
+        writeSlot(slot, src.title, nextSec);
+      }
+      updateTitleCustomMarks();
+      return;
+    }
+    // 1～3 个源值：位号按填充方向的原有排位顺序循环，每个位号各走自己的时间线。
+    const orderedValid = valid.slice().sort((a,b) => fillUpward ? b.sIdx - a.sIdx : a.sIdx - b.sIdx);
+    const titleCycle = [];
+    const chainMap = {};
+    orderedValid.forEach(vv => {
+      const tt = vv.title;
+      if(!tt) return;
+      if(!titleCycle.includes(tt)) titleCycle.push(tt);
+      if(chainMap[tt] === undefined || vv.absSec > chainMap[tt]) chainMap[tt] = vv.absSec;
+    });
+    const fallbackSec = valid[0].absSec;
+    for(let i = 0; i < empty.length; i++){
+      const slot = empty[i];
+      const slotTitle = titleCycle.length ? titleCycle[i % titleCycle.length] : valid[0].title;
+      const baseSec = chainMap[slotTitle] !== undefined ? chainMap[slotTitle] : fallbackSec;
+      const nextSec = baseSec + dur;
+      const b = U.shiftBoundary(baseSec);
+      if(!ignoreBoundary && b !== null && nextSec > b) continue;
+      chainMap[slotTitle] = nextSec;
+      writeSlot(slot, slotTitle, nextSec);
     }
     updateTitleCustomMarks();
   },
@@ -2778,8 +2837,8 @@ const App = {
     // 只有当前车正好 1 个或 2 个空位时才能开启；关闭不受限制
     if(newVal){
       const n = countEmptySlots(carIdx);
-      if(n !== 1 && n !== 2){
-        showToast('当前 ' + n + ' 个空位，超出 1～2 个的限制', 'err');
+      if(n < 1 || n > 5){
+        showToast('当前 ' + n + ' 个空位，超出 1～5 个的限制', 'err');
         return;
       }
     }
@@ -3462,9 +3521,12 @@ const Events = {
       else { Flags.manualStart(c, s, false); Flags.manualClear(c, s, true); }
       el._dirty = false;
     }
-    // 只有真的改动过内容才重算；点进点出、没改东西不触发
+    // 只有真的改动过内容才重算；点进点出、没改东西不触发。
+    // 手动删空只清本格，不重算整车，避免连带改动其他自动填充的格子。
     const changed = touched || before !== el.value;
-    if(changed && !isManualOnlyTab()) Scheduler.updateFrom(+el.dataset.car);
+    const nowEmpty = !el.value.trim();
+    if(changed && nowEmpty) Store.saveDebounced();
+    if(changed && !nowEmpty && !isManualOnlyTab()) Scheduler.updateFrom(+el.dataset.car);
   },
   onTitleBlur(el){
     if(el.readOnly) return;
