@@ -18,8 +18,8 @@ OUT = os.path.join(ROOT, "out")
 APK = os.path.join(OUT, "落筒录入.apk")
 
 PKG = "io.github.mcool.luotong"
-VERSION_CODE = 52
-VERSION_NAME = "1.52"
+VERSION_CODE = 54
+VERSION_NAME = "1.54"
 LABEL = "落筒录入"
 ACTIVITY = "io.github.mcool.luotong.MainActivity"
 ICON_RID = 0x7F010000

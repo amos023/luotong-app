@@ -749,7 +749,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.52<br>
+                    满卷时间计算工具 v1.54<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1171,6 +1171,12 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.54', date: '2026-11-23', items: [
+    '调整：锁定车辆时同步锁定台车号，后台车辆的所有输入字段均不可修改'
+  ]},
+  { version: 'v1.53', date: '2026-11-23', items: [
+    '修复：重置前恢复空位填充自动改过的位号，手动改过的位号保持不变，避免清空后时间错位'
+  ]},
   { version: 'v1.52', date: '2026-11-21', items: [
     '调整：仅第一车的空位填充不受交接截止时间限制，后续车辆恢复 8:39 和 20:39 截止判断'
   ]},
@@ -1622,8 +1628,7 @@ const CarLock = {
       btn.disabled = S.locked;
     }
     block.querySelectorAll('input, textarea, select').forEach(el => {
-      const isCartNumber = el.id === `cart_${pref(c)}`;
-      const dis = S.locked || (locked && !isCartNumber);
+      const dis = S.locked || locked;
       el.disabled = dis;
       if(!el.readOnly) el.style.backgroundColor = dis ? '#e9ecef' : '';
     });
@@ -2988,6 +2993,12 @@ const App = {
           for(let i = 1; i <= 6; i++){
             const k = `title_${v}_s${s}_i${i}`;
             if(old[k] !== undefined) kept[k] = old[k];
+          }
+          // 仅恢复空位填充自动替换前保存的原位号；没有 autoFill 标记的手动位号不动。
+          if(old[fk.autoFill(c, s)]){
+            const titleKey = `title_${v}_s${s}_i1`;
+            const oldTitleKey = fk.autoFillOldTitle(c, s);
+            if(old[oldTitleKey] !== undefined) kept[titleKey] = old[oldTitleKey];
           }
         }
         kept[`date_${v}`] = todayStr;
