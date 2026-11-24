@@ -775,7 +775,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.55<br>
+                    满卷时间计算工具 v1.56<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1197,6 +1197,9 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.56', date: '2026-11-25', items: [
+    '调整：清空空位填充的全部计算规则，保留开关与按钮，等待重新定义'
+  ]},
   { version: 'v1.55', date: '2026-11-23', items: [
     '调整：空位填充可开启范围由 1～2 个空位放宽到 1～5 个空位'
   ]},
@@ -2169,7 +2172,14 @@ const Scheduler = {
     // Do not clear results while the user is midway through typing a duration;
     // validation on blur will either normalize it or clear it and recalculate.
     if(dur === null && durEl && durEl.value.trim() && document.activeElement === durEl) return;
-    const dir = Flags.direction();
+    // 方向以第一车手动输入的时间为准（自动算出来的不算）：
+    // 第 1 排手动填了 → 从上往下；第 6 排手动填了 → 从下往上；后面车沿用同一方向。
+    const manualAtRow = (c, s) => {
+      const el = $(`start_${pref(c)}_s${s}_i1`);
+      if(!el || !String(el.value || '').trim()) return false;
+      return Flags.isManualStart(c, s) && !T()[fk.autoFill(c, s)];
+    };
+    const dir = manualAtRow(0, 0) ? 'forward' : 'backward';
     for(let c = from; c < CFG.CARS; c++){ if(!CarLock.isLocked(c)) Scheduler.clearAutoFill(c); }
     for(let c = from; c < CFG.CARS; c++){
       if(CarLock.isLocked(c)) continue;
@@ -2224,7 +2234,15 @@ const Scheduler = {
       return sec + (day + (overnight ? 1 : 0)) * CFG.DAY;
     };
     groups.forEach((slots, title) => {
-      const order = slots.slice().sort(compareRows);
+      // 同一位号内先算已有时间的格，再算空位，这样空位能拿到起点继续推算。
+      const order = slots.slice().sort((a, b) => {
+        const av = String((($(`start_${pref(c)}_s${a}_i1`) || {}).value) || '').trim();
+        const bv = String((($(`start_${pref(c)}_s${b}_i1`) || {}).value) || '').trim();
+        const aHas = av ? 0 : 1;
+        const bHas = bv ? 0 : 1;
+        if(aHas !== bHas) return aHas - bHas;
+        return compareRows(a, b);
+      });
       let prevMaxSec = null;
       if(c > 0){
         const previousRows = Array.from({length: CFG.SUBS}, (_, i) => i).sort(compareRows);
@@ -2270,84 +2288,8 @@ const Scheduler = {
     });
   },
   fillEmptySlots(carIdx){
-    const v = pref(carIdx);
-    const durEl = $('processTime_v0');
-    const dur = durEl ? U.toSec(durEl.value) : null;
-    if(dur === null) return;
-    const valid = [], empty = [];
-    const d = T();
-    for(let s = 0; s < CFG.SUBS; s++){
-      const titleEl = $(`title_${v}_s${s}_i1`);
-      const startEl = $(`start_${v}_s${s}_i1`);
-      if(!titleEl || !startEl) continue;
-      const title = titleEl.value.trim();
-      if(!title) continue;
-      const absSec = Scheduler.absSecOf(startEl.value);
-      if(absSec !== null) valid.push({title, absSec, sIdx: s});
-      else if(!Flags.isManualClear(carIdx, s)) empty.push({sIdx: s});
-    }
-    if(!empty.length || !valid.length) return;
-    const dir = Flags.direction();
-    const asc = dir === 'forward';
-    const ignoreBoundary = carIdx === 0;
-    // 统一规则：每个位号各自一条时间线，互不共用；空位按原有位号顺序循环。
-    const writeSlot = (slot, slotTitle, nextSec) => {
-      const timeStr = U.fmtTime(nextSec);
-      const titleEl = $(`title_${v}_s${slot.sIdx}_i1`);
-      const startEl = $(`start_${v}_s${slot.sIdx}_i1`);
-      if(titleEl){
-        d[fk.autoFillOldTitle(carIdx, slot.sIdx)] = titleEl.value;
-        d[fk.autoFillOldCustom(carIdx, slot.sIdx)] = Flags.isTitleCustom(carIdx, slot.sIdx);
-        titleEl.value = slotTitle;
-      }
-      if(startEl) startEl.value = timeStr;
-      d[fk.autoFill(carIdx, slot.sIdx)] = true;
-      Flags.manualStart(carIdx, slot.sIdx, true);
-      Flags.manualClear(carIdx, slot.sIdx, false);
-      Sync.titles(v, slot.sIdx);
-      Sync.rowToB_F(v, slot.sIdx, true);
-    };
-    // 方向只按源值位置判断：第 1 排有源值就从上往下填，否则从下往上填。
-    const fillUpward = !valid.some(vv => vv.sIdx === 0);
-    empty.sort((a,b) => fillUpward ? b.sIdx - a.sIdx : a.sIdx - b.sIdx);
-    // 4 个及以上源值：按时间取最早的空位数个源值，一对一加工艺时间。
-    if(valid.length >= 4){
-      const byTime = valid.slice().sort((a,b) => a.absSec - b.absSec);
-      const take = Math.min(empty.length, byTime.length);
-      for(let i = 0; i < take; i++){
-        const slot = empty[i];
-        const src = byTime[i];
-        const baseSec = src.absSec;
-        const nextSec = baseSec + dur;
-        const b = U.shiftBoundary(baseSec);
-        if(!ignoreBoundary && b !== null && nextSec > b) continue;
-        writeSlot(slot, src.title, nextSec);
-      }
-      updateTitleCustomMarks();
-      return;
-    }
-    // 1～3 个源值：位号按填充方向的原有排位顺序循环，每个位号各走自己的时间线。
-    const orderedValid = valid.slice().sort((a,b) => fillUpward ? b.sIdx - a.sIdx : a.sIdx - b.sIdx);
-    const titleCycle = [];
-    const chainMap = {};
-    orderedValid.forEach(vv => {
-      const tt = vv.title;
-      if(!tt) return;
-      if(!titleCycle.includes(tt)) titleCycle.push(tt);
-      if(chainMap[tt] === undefined || vv.absSec > chainMap[tt]) chainMap[tt] = vv.absSec;
-    });
-    const fallbackSec = valid[0].absSec;
-    for(let i = 0; i < empty.length; i++){
-      const slot = empty[i];
-      const slotTitle = titleCycle.length ? titleCycle[i % titleCycle.length] : valid[0].title;
-      const baseSec = chainMap[slotTitle] !== undefined ? chainMap[slotTitle] : fallbackSec;
-      const nextSec = baseSec + dur;
-      const b = U.shiftBoundary(baseSec);
-      if(!ignoreBoundary && b !== null && nextSec > b) continue;
-      chainMap[slotTitle] = nextSec;
-      writeSlot(slot, slotTitle, nextSec);
-    }
-    updateTitleCustomMarks();
+    // 空位填充规则已清空，等待重新定义；当前不做任何填充。
+    return;
   },
   clearAutoFill(carIdx){
     const d = T();
