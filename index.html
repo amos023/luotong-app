@@ -6,7 +6,7 @@
 <title>落筒录入</title>
 <style>
 *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-body{background:#f2f2f7;margin:0;padding:0;color:#333;font-size:13px;overflow:hidden}
+body{background:#f2f2f7;margin:0;padding:0;color:#333;font-size:13px;overflow:hidden;-webkit-tap-highlight-color:transparent}
 #loading-mask{position:fixed;top:0;left:0;width:100%;height:100%;background:#f2f2f7;z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:16px;font-weight:bold;color:#007aff;transition:opacity .3s ease}
 #loading-mask.hidden{opacity:0;pointer-events:none}
 .lock-banner{display:none;background:#ff3b30;color:#fff;text-align:center;padding:10px;font-weight:bold;font-size:14px}
@@ -117,10 +117,11 @@ body.keyboard-open .tab-content{scroll-snap-type:y mandatory !important;scroll-b
 .count-toggle-btn{flex-shrink:0;height:18px;font-size:10px;margin-left:2px;padding:0 6px;min-width:44px;white-space:nowrap;display:flex;align-items:center;justify-content:center}
 
 .item-card{position:relative}
-.clear-btn{position:absolute;top:2px;right:4px;width:18px;height:18px;line-height:16px;text-align:center;font-size:18px;font-weight:bold;color:#bbb;cursor:pointer;z-index:10;user-select:none}
+.clear-btn{position:absolute;top:2px;right:-4px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#9aa0a6;cursor:pointer;z-index:10;user-select:none;-webkit-tap-highlight-color:transparent;outline:none}
 .clear-btn:hover{color:#ff3b30}
 .clear-btn:active{transform:scale(.9)}
-.undo-btn{position:absolute;bottom:2px;right:3px;width:18px;height:18px;line-height:16px;text-align:center;font-size:14px;font-weight:bold;color:#bbb;cursor:pointer;z-index:10;user-select:none;opacity:0;pointer-events:none;transition:opacity .15s}
+.undo-btn{position:absolute;bottom:2px;right:-4px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;font-weight:bold;color:#9aa0a6;cursor:pointer;z-index:10;user-select:none;opacity:0;pointer-events:none;transition:opacity .15s;-webkit-tap-highlight-color:transparent;outline:none}
+.clear-btn svg{width:20px;height:20px;display:block}
 .undo-btn.on{opacity:1;pointer-events:auto}
 .undo-btn:hover{color:#007aff}
 .undo-btn:active{transform:scale(.9)}
@@ -287,8 +288,9 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .one-car-block .cell input{flex:1 1 0;width:100%;min-width:0;box-sizing:border-box;font-size:11px;padding:0 1px;height:auto;min-height:18px;-webkit-appearance:none}
 .one-car-block .cell.cell-small label{font-size:8px}
 .one-car-block .cell.cell-small input{font-size:10px;min-height:16px}
-.clear-btn{top:1px;right:2px;font-size:15px}
-.undo-btn{bottom:1px;right:2px}
+.clear-btn{top:1px;right:-4px;width:26px;height:26px}
+.undo-btn{bottom:1px;right:-4px;width:26px;height:26px}
+.clear-btn svg{width:19px;height:19px}
 
 .admin-panel-box{max-height:94vh!important}
 .admin-panel-body{padding:12px}
@@ -1203,7 +1205,10 @@ const UPDATE_LOGS = [
     '调整：空位位号固定数字小的放最下面，位号不够时循环使用',
     '调整：空位填充改过的位号显示红色',
     '调整：计算方向由第一车第 1 排是否有手动时间决定，所有车共用同一方向',
-    '修复：空位填充内部重算与主流程使用同一条方向'
+    '修复：空位填充内部重算与主流程使用同一条方向',
+    '调整：手动改时间、改位号、删空也支持撤销，只还原刚改的那一个输入框',
+    '调整：撤销不再触发整车重算，不影响其他位号',
+    '优化：清空与撤销按钮加大并统一外观，点击不再出现蓝色高亮'
   ]},
   { version: 'v1.55', date: '2026-11-23', items: [
     '调整：空位填充可开启范围由 1～2 个空位放宽到 1～5 个空位'
@@ -1607,6 +1612,12 @@ const UndoClear = {
     this.ids(v,s,i).forEach(id => { const el = $(id); saved[id] = el ? el.value : ''; if(saved[id] !== '') any = true; });
     if(!any) return false;
     this._map[this.key(c,s,i)] = { saved, manualStart: Flags.isManualStart(c,s) };
+    return true;
+  },
+  /* 只记录本次被改的那一个字段，撤销时只还原它 */
+  rememberField(c,s,i,fieldId,oldValue){
+    if(!fieldId) return false;
+    this._map[this.key(c,s,i)] = { field: fieldId, value: oldValue === undefined ? '' : oldValue, fromEdit: true, single: true };
     return true;
   },
   has(c,s,i){ return !!this._map[this.key(c,s,i)]; },
@@ -2619,7 +2630,7 @@ const Renderer = {
       timeHtml = `<div class="cell cell-small"><label>时间</label><input type="text" id="time_${v}_s${sIdx}_i${colIdx}" class="calc-input" placeholder="时间" readonly></div>`;
     }
     return `<div class="item-card">
-      <div class="clear-btn" data-action="clear-card" data-car="${carIdx}" data-s="${sIdx}" data-i="${colIdx}" title="清除该位号内容">×</div>
+      <div class="clear-btn" data-action="clear-card" data-car="${carIdx}" data-s="${sIdx}" data-i="${colIdx}" title="清除该位号内容"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></div>
       <div class="undo-btn${UndoClear.has(carIdx,sIdx,colIdx) ? ' on' : ''}" data-action="undo-clear" data-car="${carIdx}" data-s="${sIdx}" data-i="${colIdx}" title="撤销上一步清除">↺</div>
       <div class="card-left-col">
         <span class="left-label">位号</span>
@@ -2978,9 +2989,27 @@ const App = {
     const rec = UndoClear.take(carIdx, sIdx, colNum);
     if(!rec) return;
     const v = pref(carIdx);
+    // 单字段撤销：只还原刚改的那一个输入框
+    if(rec.single){
+      const el = $(rec.field);
+      if(!el) return;
+      el.value = rec.value || '';
+      if(rec.field.indexOf('start_') === 0){
+        const hasVal = !!el.value.trim();
+        Flags.manualStart(carIdx, sIdx, hasVal);
+        Flags.manualClear(carIdx, sIdx, !hasVal);
+        Sync.rowToB_F(v, sIdx, true);
+      }
+      Store.saveDebounced();
+      updateTitleCustomMarks();
+      if(typeof TF.checkDuplicates === 'function') TF.checkDuplicates();
+      this.refreshUndoBtns();
+      showToast('已撤销修改');
+      return;
+    }
     const ids = UndoClear.ids(v, sIdx, colNum);
     const busy = ids.some(id => { const el = $(id); return el && el.value.trim() !== ''; });
-    if(busy){                       // 格子里已有新内容，不覆盖，把记录放回去
+    if(busy && !rec.fromEdit){                       // 格子里已有新内容，不覆盖，把记录放回去
       UndoClear.putBack(carIdx, sIdx, colNum, rec);
       this.refreshUndoBtns();
       showToast('该位号已有内容，无法撤销');
@@ -2991,7 +3020,7 @@ const App = {
     Flags.manualClear(carIdx, sIdx, false);
     delete T()[fk.autoFill(carIdx, sIdx)];
     Sync.dates();
-    if(colNum === 1) Scheduler.updateFrom(carIdx);
+    Sync.rowToB_F(v, sIdx, true);
     Store.saveDebounced();
     updateTitleCustomMarks();
     if(typeof TF.checkDuplicates === 'function') TF.checkDuplicates();
@@ -3516,6 +3545,12 @@ const Events = {
     // 只有真的改动过内容才重算；点进点出、没改东西不触发。
     // 手动删空只清本格，不重算整车，避免连带改动其他自动填充的格子。
     const changed = touched || before !== el.value;
+    if(changed && el._undoField){
+      const c0 = +el.dataset.car, s0 = +el.dataset.s;
+      UndoClear.rememberField(c0, s0, 1, el._undoField, el._undoValue);
+      el._undoField = null; el._undoValue = null;
+      if(typeof App !== 'undefined' && App.refreshUndoBtns) App.refreshUndoBtns();
+    }
     const nowEmpty = !el.value.trim();
     if(changed && nowEmpty) Store.saveDebounced();
     if(changed && !nowEmpty && !isManualOnlyTab()) Scheduler.updateFrom(+el.dataset.car);
@@ -3524,6 +3559,12 @@ const Events = {
     if(el.readOnly) return;
     const c = +el.dataset.car, s = +el.dataset.s;
     const formatted = U.formatTitle(el.value);
+    const origin = el._undoValue === undefined || el._undoValue === null ? null : String(el._undoValue);
+    if(origin !== null && origin !== formatted && el._undoField){
+      UndoClear.rememberField(c, s, 1, el._undoField, origin);
+      if(typeof App !== 'undefined' && App.refreshUndoBtns) App.refreshUndoBtns();
+    }
+    el._undoField = null; el._undoValue = null;
     if(formatted === el.value) return;
     el.value = formatted;
     if(c === 0){ syncTitleFromV0(formatted, s); }
@@ -3534,6 +3575,11 @@ const Events = {
   },
   onFocusIn(e){
     const el = e.target;
+    // 手动编辑前记下这个字段的原值，供撤销使用
+    if(el.dataset && (el.dataset.role === 'start' || el.dataset.role === 'title')){
+      el._undoField = el.id;
+      el._undoValue = el.value;
+    }
     if(el.classList && el.classList.contains('calc-input') && !el.readOnly){
       setTimeout(() => { try{ el.select(); }catch(_e){} }, 10);
     }
