@@ -1,12 +1,21 @@
 package io.github.mcool.luotong;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -23,6 +32,7 @@ import java.io.InputStream;
 public class MainActivity extends Activity {
 
     private static final String ORIGIN = "http://app.local/";
+    private static final String CHANNEL = "lt_alert";
     private WebView web;
 
     /** 资产拦截客户端：用具名内部类，避免匿名类在旧版 d8 上出问题 */
@@ -53,6 +63,94 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** 到点提醒：闹钟触发后发系统通知，锁屏状态也能亮屏提醒 */
+    public static class AlarmReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context ctx, Intent intent) {
+            try {
+                String text = intent == null ? null : intent.getStringExtra("text");
+                if (text == null || text.length() == 0) text = "到点提醒";
+                NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+                if (nm == null) return;
+                if (Build.VERSION.SDK_INT >= 26) {
+                    NotificationChannel ch = new NotificationChannel(CHANNEL, "到点提醒", NotificationManager.IMPORTANCE_HIGH);
+                    ch.enableVibration(true);
+                    nm.createNotificationChannel(ch);
+                }
+                Intent open = new Intent(ctx, MainActivity.class);
+                open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                int flag = PendingIntent.FLAG_UPDATE_CURRENT;
+                if (Build.VERSION.SDK_INT >= 23) flag |= PendingIntent.FLAG_IMMUTABLE;
+                PendingIntent pi = PendingIntent.getActivity(ctx, 0, open, flag);
+                Notification.Builder b;
+                if (Build.VERSION.SDK_INT >= 26) b = new Notification.Builder(ctx, CHANNEL);
+                else b = new Notification.Builder(ctx);
+                b.setContentTitle("落筒录入")
+                        .setContentText(text)
+                        .setSmallIcon(android.R.drawable.ic_dialog_info)
+                        .setAutoCancel(true)
+                        .setContentIntent(pi);
+                if (Build.VERSION.SDK_INT >= 16) b.setPriority(Notification.PRIORITY_HIGH);
+                int nid = (int) (System.currentTimeMillis() & 0x7fffffff);
+                nm.notify(nid, b.build());
+            } catch (Throwable ignore) {
+            }
+        }
+    }
+
+    /** 页面调用的桥：schedule(id, 时间戳, 文案) / cancel(id) */
+    public static class AlarmBridge {
+        private final Context ctx;
+
+        public AlarmBridge(Context c) {
+            this.ctx = c;
+        }
+
+        @JavascriptInterface
+        public boolean available() {
+            return true;
+        }
+
+        @JavascriptInterface
+        public void schedule(String id, long atMillis, String text) {
+            try {
+                if (atMillis <= 0) return;
+                AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+                if (am == null) return;
+                Intent i = new Intent(ctx, AlarmReceiver.class);
+                i.putExtra("text", text == null ? "" : text);
+                int flag = PendingIntent.FLAG_UPDATE_CURRENT;
+                if (Build.VERSION.SDK_INT >= 23) flag |= PendingIntent.FLAG_IMMUTABLE;
+                PendingIntent pi = PendingIntent.getBroadcast(ctx, reqCode(id), i, flag);
+                if (Build.VERSION.SDK_INT >= 23) {
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, pi);
+                } else {
+                    am.setExact(AlarmManager.RTC_WAKEUP, atMillis, pi);
+                }
+            } catch (Throwable ignore) {
+            }
+        }
+
+        @JavascriptInterface
+        public void cancel(String id) {
+            try {
+                AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+                Intent i = new Intent(ctx, AlarmReceiver.class);
+                int flag = PendingIntent.FLAG_UPDATE_CURRENT;
+                if (Build.VERSION.SDK_INT >= 23) flag |= PendingIntent.FLAG_IMMUTABLE;
+                PendingIntent pi = PendingIntent.getBroadcast(ctx, reqCode(id), i, flag);
+                if (am != null) am.cancel(pi);
+                pi.cancel();
+            } catch (Throwable ignore) {
+            }
+        }
+
+        private static int reqCode(String id) {
+            if (id == null || id.length() == 0) return 1;
+            return id.hashCode();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,9 +178,21 @@ public class MainActivity extends Activity {
             s.setForceDark(WebSettings.FORCE_DARK_OFF);
         }
 
+        try {
+            web.addJavascriptInterface(new AlarmBridge(this), "LuotongAlarm");
+        } catch (Throwable ignore) {
+        }
+
         web.setWebViewClient(new AssetClient(this));
         setContentView(web);
         web.loadUrl(ORIGIN + "index.html");
+
+        if (Build.VERSION.SDK_INT >= 33) {
+            try {
+                requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 1);
+            } catch (Throwable ignore) {
+            }
+        }
     }
 
     /** 状态栏改成白色底 + 深色图标，与页面顶部白底保持一致 */
