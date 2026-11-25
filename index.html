@@ -18,24 +18,27 @@ body{background:#f2f2f7;margin:0;padding:0;color:#333;font-size:13px;overflow:hi
 .main-tab.active{color:#007aff;border-bottom-color:#007aff;background:#f8f9fa}
 .log-btn{flex:0 0 auto;padding:0 12px;background:transparent;color:#5856d6;font-weight:bold;cursor:pointer;border-left:1px solid #ddd;font-size:16px;display:flex;align-items:center;height:100%;user-select:none;white-space:nowrap;transition:all .2s}
 .log-btn:hover{background:#f8f9fa}
-.reset-btn{flex:0 0 auto;padding:0 12px;background:transparent;color:#007aff;font-weight:bold;cursor:pointer;border-left:1px solid #ddd;font-size:13px;display:flex;align-items:center;height:100%;user-select:none;white-space:nowrap;transition:all .2s}
+.reset-text{flex:0 0 auto;padding:14px 16px;margin-right:2px;color:#666;font-size:15px;font-weight:bold;line-height:normal;cursor:pointer;display:flex;align-items:center;user-select:none;white-space:nowrap;transition:color .2s;border-bottom:3px solid transparent;position:relative}
+.reset-text::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);height:20px;width:1px;background:#d2d5d9}
+.reset-text:active{color:#007aff}
+.reset-text:hover{color:#007aff}
 .reset-btn:hover{background:#f8f9fa}
 .reset-btn svg{display:block}
 .admin-btn-top{flex:0 0 auto;padding:0 15px;background:transparent;font-size:18px;color:#666;cursor:pointer;height:100%;display:flex;align-items:center;user-select:none;border-left:1px solid #ddd}
 .admin-btn-top:hover{color:#007aff}
 
-.car-empty-btn,.goto-remark-btn{flex:0 0 auto;height:24px;margin:0;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;font-size:11px;font-weight:bold;border-radius:4px;cursor:pointer;transition:all 0.2s}
-.car-empty-btn{border:1px solid #ff9500;background:#fff4e6;color:#ff9500}
-.car-empty-btn.active{border-color:#34c759;background:#e8f8ee;color:#34c759}
+.car-empty-btn,.goto-remark-btn{flex:0 0 auto;padding:2px 8px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;font-size:11px;font-weight:bold;line-height:1;border-radius:12px;cursor:pointer;transition:all 0.2s}
+.car-empty-btn{height:24px;padding:0 10px;font-size:12px;font-weight:bold;border:1px solid #a8d0ff;background:linear-gradient(180deg,#f5faff 0%,#e8f3ff 100%);color:#007aff;border-radius:6px;box-shadow:0 1px 3px rgba(0,122,255,.15);display:inline-flex;align-items:center;justify-content:center}
+.car-empty-btn.active{border-color:#7fd99a;background:linear-gradient(180deg,#f6fff8 0%,#e6f9ec 100%);color:#34c759}
 .car-empty-btn:disabled{opacity:.5;cursor:not-allowed}
 .goto-remark-btn{border:1px solid #5856d6;background:linear-gradient(180deg,#fff 0%,#f0efff 100%);color:#5856d6;box-shadow:0 1px 2px rgba(88,86,214,.15),inset 0 1px 0 rgba(255,255,255,.9)}
 .goto-remark-btn:hover{background:linear-gradient(180deg,#f8f6ff 0%,#e8e3ff 100%)}
 .goto-remark-btn:active{transform:scale(.95)}
 .goto-remark-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
 
-.car-lock-btn{flex:0 0 auto;height:24px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;line-height:1;border:1px solid #c7c7cc;background:#fff;border-radius:4px;cursor:pointer;user-select:none;transition:all .2s;color:#666}
+.car-lock-btn{flex:0 0 auto;height:24px;padding:0 10px;font-size:12px;font-weight:bold;line-height:1;border:1px solid #c7ccd4;background:#fff;color:#1c1c1e;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);cursor:pointer;user-select:none;transition:all .2s;display:inline-flex;align-items:center;justify-content:center}
 .car-lock-btn:hover{background:#f2f2f7}
-.car-lock-btn.locked{border-color:#ff3b30;background:#ffeceb;color:#ff3b30;box-shadow:0 1px 3px rgba(255,59,48,.15)}
+.car-lock-btn.locked{border-color:#ff3b30;background:#ffeceb;color:#ff3b30}
 .car-lock-btn:disabled{opacity:.5;cursor:not-allowed}
 .car-block.car-locked{border-color:#ffc9c5;box-shadow:0 2px 6px rgba(255,59,48,.08)}
 .car-block.car-locked .car-header{border-bottom-color:#ffd6d2}
@@ -44,6 +47,11 @@ body{background:#f2f2f7;margin:0;padding:0;color:#333;font-size:13px;overflow:hi
 .car-block{position:relative}
 .region-hint{position:absolute;left:50%;top:12px;transform:translateX(-50%);font-size:12px;font-weight:900;color:rgba(30,64,175,.45);letter-spacing:6px;pointer-events:none;user-select:none;white-space:nowrap;text-shadow:0 1px 0 rgba(255,255,255,.7);z-index:0}
 
+@keyframes tabSlideIn{
+  from{transform:translateX(var(--slide-from,34px))}
+  to{transform:translateX(0)}
+}
+.tab-slide-in{animation:tabSlideIn .28s cubic-bezier(.32,.72,.28,1);will-change:transform}
 .tab-content{display:block;padding:16px 0 0 0;height:calc(100vh - 52px);height:calc(100dvh - 52px);overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
 .tab-content::-webkit-scrollbar{width:4px}
 .tab-content::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
@@ -62,7 +70,7 @@ body.keyboard-open .tab-content{scroll-snap-type:y mandatory !important;scroll-b
 .car-title{font-size:13px;font-weight:bold;color:#007aff;margin:0;padding-left:5px;border-left:3px solid #007aff;white-space:nowrap;flex:0 0 auto}
 .car-title-red{color:#ff3b30 !important;border-left-color:#ff3b30 !important}
 .car-nav{display:flex;align-items:center;gap:4px;flex:0 0 auto;margin-left:10px}
-.car-nav .slide-btn{background:#fff;border:1px solid #ccc;border-radius:12px;padding:2px 8px;color:#007aff;font-weight:bold;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.1);user-select:none;flex:0 0 auto;font-size:11px}
+.car-nav .slide-btn{background:#fff;border:1px solid #ccc;border-radius:12px;height:24px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;color:#007aff;font-weight:bold;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.1);user-select:none;flex:0 0 auto;font-size:12px}
 .car-nav .slide-btn.toggle-btn{color:#ff9500;border-color:#ff9500;background:#fff4e6}
 
 .field-sep{flex:0 0 auto;align-self:center;color:rgba(0,122,255,.35);font-size:12px;font-weight:normal;line-height:1;padding:0 1px;user-select:none;pointer-events:none;white-space:nowrap}
@@ -133,6 +141,9 @@ body.locked .undo-btn{pointer-events:none;opacity:0!important}
 .one-car-block .sub-car-row{display:flex;align-items:stretch;gap:6px;flex:1;min-height:0}
 .one-car-block .sub-car-row.header-row{margin-bottom:2px;flex:0 0 auto}
 .one-car-block .sub-car-row.header-row .sub-car-label{background:transparent;border:none}
+.header-row{position:relative}
+.swipe-hint{position:absolute;right:2px;top:50%;transform:translateY(-50%);font-size:10.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,#3189ff,#1677ff);padding:1.5px 6px;border-radius:9px;box-shadow:0 1px 4px rgba(22,119,255,.35);pointer-events:none;white-space:nowrap;animation:swipeHintPulse 1.6s ease-in-out infinite}
+@keyframes swipeHintPulse{0%,100%{opacity:1;transform:translateY(-50%) translateX(0)}50%{opacity:.75;transform:translateY(-50%) translateX(2px)}}
 .header-cell{flex:1 1 0;min-width:175px;text-align:center;font-size:11px;font-weight:bold;color:#007aff;background:#e6f0ff;border:1px solid #cce0ff;border-radius:4px;padding:2px 0}
 .one-car-block .sub-car-row .sub-car-label{flex:0 0 34px;width:34px;font-size:11px;padding:4px 2px;align-self:stretch;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#007aff;background:#f0f8ff;border:1px solid #d8e4f5;border-radius:5px;writing-mode:vertical-rl;text-orientation:upright;letter-spacing:1px;line-height:1;white-space:nowrap}
 .one-car-block .sub-car-row .grid-container{flex:1 1 auto;min-width:0;display:flex;flex-direction:row;align-items:stretch;gap:5px;overflow-x:auto;padding-bottom:0}
@@ -150,6 +161,17 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .left-title-input{flex:1 1 0;min-height:0;width:100%;text-align:center;vertical-align:middle;font-size:15px;font-weight:bold;color:#007aff;border:none;background:transparent;padding:0;outline:none;line-height:normal}
 .left-title-input:focus{background:#eef5ff;border-radius:3px;box-shadow:none}
 .left-title-input[readonly]{background:transparent;color:#888;border:none;cursor:not-allowed}
+.left-title-input::placeholder{color:transparent}
+.left-title-input:placeholder-shown{
+  border-bottom:none;
+  background-image:linear-gradient(#9aa0a6,#9aa0a6);
+  background-size:52% 1.5px;
+  background-position:center bottom 7px;
+  background-repeat:no-repeat;
+}
+.left-title-input:placeholder-shown:focus{
+  background-image:linear-gradient(#007aff,#007aff);
+}
 /* 手动改过的位号（与基准车不一致）显示红色，和自动带出的位号区分开 */
 .left-title-input.title-custom{color:#e53935!important;font-weight:bold}
 
@@ -218,6 +240,7 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .top-nav::-webkit-scrollbar{display:none}
 .main-tabs{flex:0 0 auto;min-width:0;overflow:visible}
 .main-tab{flex:0 0 auto;padding:12px 12px;font-size:13px}
+.reset-text{padding:12px 12px;font-size:13px}
 .log-btn{padding:0 8px;font-size:15px}
 .admin-btn-top{padding:0 10px;font-size:16px}
 .reset-btn{padding:0 10px;font-size:12px}
@@ -228,8 +251,8 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .one-car-block .car-header-left{flex:1 1 auto;display:flex!important;align-items:center!important;flex-wrap:wrap;gap:6px}
 .one-car-block .car-title{flex:0 0 auto;font-size:14px;margin-right:0}
 .one-car-block .car-empty-btn,
-.one-car-block .goto-remark-btn{height:22px!important;font-size:11px!important;padding:0 6px!important;margin:0!important;flex:0 0 auto!important}
-.one-car-block .car-lock-btn{height:22px!important;font-size:12px!important;padding:0 5px!important;margin:0!important;flex:0 0 auto!important}
+.one-car-block .goto-remark-btn{height:24px!important;font-size:12px!important;padding:0 10px!important;margin:0!important;flex:0 0 auto!important;border-radius:6px!important}
+.one-car-block .car-lock-btn{height:24px!important;font-size:12px!important;padding:0 10px!important;margin:0!important;flex:0 0 auto!important;border-radius:12px!important}
 .one-car-block .car-nav{margin-left:auto;display:flex;flex-wrap:wrap;gap:4px}
 .one-car-block .car-nav .slide-btn:not(.toggle-btn){display:none!important}
 
@@ -274,6 +297,8 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .one-car-block .sub-cars{gap:2px}
 .one-car-block .sub-car-row{gap:0}
 .one-car-block .sub-car-row .grid-container{gap:4px;overflow-x:auto!important;padding-bottom:0!important;scrollbar-width:none!important;scroll-snap-type:x mandatory}
+body.hscroll-locked .one-car-block .sub-car-row .grid-container,
+body.hscroll-locked .one-car-block .sub-car-row.header-row .grid-container{overflow-x:hidden!important;scroll-snap-type:none!important;touch-action:pan-y!important}
 .one-car-block .sub-car-row .grid-container::-webkit-scrollbar{display:none!important}
 .one-car-block .sub-car-row .grid-container .item-card{flex:0 0 100%!important;min-width:100%!important;padding:3px 5px!important;gap:3px!important;box-sizing:border-box!important;scroll-snap-align:start}
 
@@ -435,7 +460,7 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .modal-input{width:100%}
 .error-text{color:#ff3b30;font-size:13px;margin-bottom:10px;display:none}
 /* ===== 统一弹窗 ===== */
-.modal-overlay{background:rgba(15,23,42,.45)!important;backdrop-filter:blur(1.5px);align-items:flex-start!important;overflow-y:auto!important;padding:12px 12px 24px!important;-webkit-overflow-scrolling:touch!important;max-height:var(--kb-view-h,100vh)!important}
+.modal-overlay{background:rgba(15,23,42,.45)!important;backdrop-filter:blur(1.5px);align-items:flex-start!important;overflow-y:auto!important;padding:88px 12px 24px!important;-webkit-overflow-scrolling:touch!important;max-height:var(--kb-view-h,100vh)!important}
 .modal-box{border-radius:16px!important;padding:20px 18px!important;max-width:420px!important;max-height:none!important;margin:0 auto!important;box-shadow:0 18px 48px rgba(16,24,40,.22)!important}
 .modal-overlay.active .modal-box{animation:modalIn .16s ease}
 @keyframes modalIn{from{opacity:.5;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
@@ -648,14 +673,9 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 <div class="lock-banner" id="lockBanner">🔒 系统已被管理员锁定，禁止修改数据。</div>
 
 <nav class="top-nav">
+    <div class="reset-text" data-action="open-reset" title="重置数据">重置</div>
     <div class="main-tabs" id="main-tabs"></div>
     <span class="region-hint">模板栏</span>
-    <div class="reset-btn" data-action="open-reset" title="重置">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="1 4 1 10 7 10"/>
-            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-        </svg>
-    </div>
     <div class="log-btn" data-action="open-log" title="查看更新日志">📋</div>
     <div class="admin-btn-top" data-action="open-login" title="后台管理">⚙️</div>
 </nav>
@@ -669,22 +689,9 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 <div class="modal-overlay" id="resetModal">
     <div class="modal-box">
         <div class="modal-title">重置数据</div>
-        <p style="font-size:12.5px;color:#64748b;margin:0 0 14px 0;text-align:left;line-height:1.6;">两种方式的区别：清内容只清当班录入，车头栏照旧；重置连车头栏一起还原成初始状态。</p>
 
         <div class="reset-group">
-            <div class="reset-group-title blue">清除录入内容</div>
-            <div class="reset-group-desc">
-                <b>保留</b>批号、工艺时间、系列、旦数、姓名、个数、位号<br>
-                <b>清除</b>时间、车次/班次、备注、台车号，日期回到今天
-            </div>
-            <div class="modal-actions">
-                <button class="modal-btn" data-action="reset-content-current" style="order:0">清除当前模板</button>
-                <button class="modal-btn" data-action="reset-content-all" style="order:1">清除全部模板</button>
-            </div>
-        </div>
-
-        <div class="reset-group">
-            <div class="reset-group-title red">整模板重置</div>
+            <div class="reset-group-title red">重置所有内容</div>
             <div class="reset-group-desc">
                 车头栏、位号、录入内容全部清空，恢复初始状态
             </div>
@@ -694,7 +701,21 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
             </div>
         </div>
 
-        <div class="modal-actions modal-actions-1" style="margin-top:14px">
+        <div class="reset-group">
+            <div class="reset-group-title blue">清除输入内容</div>
+            <div class="reset-group-desc">
+                清除时间、车次/班次、备注、台车号
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn" data-action="reset-content-current" style="order:0">清除当前模板</button>
+                <button class="modal-btn" data-action="reset-content-all" style="order:1">清除全部模板</button>
+            </div>
+        </div>
+
+        <div class="modal-actions modal-actions-1" style="margin-top:10px">
+            <button class="modal-btn cancel" data-action="restore-before-reset">恢复上次清除前的数据</button>
+        </div>
+        <div class="modal-actions modal-actions-1" style="margin-top:10px">
             <button class="modal-btn cancel" data-action="close-modal" data-modal="resetModal">取消</button>
         </div>
     </div>
@@ -740,6 +761,21 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                         <input type="checkbox" id="settingGuideAlways" style="width:18px;height:18px;">
                         每次打开都显示新手引导（默认关闭，只首次显示）
                     </label>
+                </div>
+                <div class="admin-section">
+                    <div class="admin-section-title">模板显示</div>
+                    <div id="tabVisibleList" style="display:flex;flex-direction:column;gap:9px;"></div>
+                    <p style="font-size:11.5px;color:#94a3b8;margin:9px 0 0;line-height:1.6;">取消勾选的模板会从顶部隐藏，数据保留不删除；至少要保留一个。</p>
+                </div>
+                <div class="admin-section">
+                    <div class="admin-section-title">车头栏字段</div>
+                    <div id="headerFieldList" style="display:flex;flex-direction:column;gap:9px;"></div>
+                    <p style="font-size:11.5px;color:#94a3b8;margin:9px 0 0;line-height:1.6;">取消勾选的字段不在车头栏显示，数据保留；整块车头栏与车辆本身始终保留。</p>
+                </div>
+                <div class="admin-section">
+                    <div class="admin-section-title">内容区横滑锁定</div>
+                    <div id="scrollLockList" style="display:flex;flex-direction:column;gap:9px;"></div>
+                    <p style="font-size:11.5px;color:#94a3b8;margin:9px 0 0;line-height:1.6;">勾选后该模板只显示第一张卡片，内容区不能左右滑动；默认模板1～4与故障已锁定。</p>
                 </div>
                 <div class="admin-section">
                     <div class="admin-section-title">排版设置</div>
@@ -788,15 +824,11 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 <div class="modal-overlay" id="renameTabModal">
     <div class="modal-box">
         <div class="modal-title">✏️ 修改模板名称</div>
-        <div class="batch-add-form">
-            <div class="batch-add-field">
-                <label>模板名称</label>
-                <input type="text" id="renameTabInput" class="modal-input" placeholder="留空则恢复默认名称" autocomplete="off">
-            </div>
-            <div class="batch-add-field">
-                <p style="font-size:12px;color:#8a94a6;line-height:1.6;margin:0;">留空保存后，会恢复成「模板1」这类默认名称。</p>
-            </div>
+        <div style="text-align:left;margin-bottom:10px;">
+            <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">模板名称</label>
+            <input type="text" id="renameTabInput" class="modal-input" placeholder="留空则恢复默认名称" autocomplete="off" style="width:100%;box-sizing:border-box;margin:0;">
         </div>
+        <p style="font-size:12px;color:#94a3b8;line-height:1.6;margin:0 0 6px 0;text-align:left;">留空保存后，会恢复成「模板1」这类默认名称。</p>
         <div class="modal-actions">
             <button class="modal-btn cancel" data-action="rename-tab-cancel">取消</button>
             <button class="modal-btn" data-action="rename-tab-ok">确认</button>
@@ -1208,7 +1240,15 @@ const UPDATE_LOGS = [
     '修复：空位填充内部重算与主流程使用同一条方向',
     '调整：手动改时间、改位号、删空也支持撤销，只还原刚改的那一个输入框',
     '调整：撤销不再触发整车重算，不影响其他位号',
-    '优化：清空与撤销按钮加大并统一外观，点击不再出现蓝色高亮'
+    '优化：清空与撤销按钮加大并统一外观，点击不再出现蓝色高亮',
+    '新增：实验模板改为 L侧/M侧/R侧 三张卡片，M、R 的位号与内容跟随 L',
+    '新增：后台管理可隐藏模板、可隐藏车头栏字段（姓名与备注跳转默认隐藏）',
+    '新增：后台管理可锁定模板内容区横滑，锁定后只显示第一张卡片，左右滑动切换模板',
+    '新增：切换模板时内容区横向滑入动画',
+    '调整：重置改为纯文字放在模板前，双击重置直接清除全部模板内容',
+    '调整：重置弹窗新增“恢复上次清除前的数据”入口',
+    '优化：车头栏按钮与字段的圆角、高度、配色统一，空位填充开关按状态显示蓝/绿',
+    '优化：位号为空时显示下划线提示可输入'
   ]},
   { version: 'v1.55', date: '2026-11-23', items: [
     '调整：空位填充可开启范围由 1～2 个空位放宽到 1～5 个空位'
@@ -1626,8 +1666,61 @@ const UndoClear = {
   clearAll(){ this._map = {}; }
 };
 
+/* 车头栏字段显示/隐藏 */
+const HeaderFields = {
+  KEY: 'luotong_hidden_header_fields_v1',
+  ALL: ['batch', 'processTime', 'date', 'series', 'cart', 'denier', 'count', 'headerName', 'remarkJump'],
+  NAME: { batch:'批号', processTime:'工艺时间', date:'日期', series:'系列', cart:'台车号', denier:'旦数', count:'个数', headerName:'姓名', remarkJump:'备注跳转' },
+  DEF: ['remarkJump', 'headerName'],   // 默认隐藏：备注跳转、姓名
+  list(){
+    try {
+      const raw = localStorage.getItem(this.KEY);
+      if(raw === null) return this.DEF.slice();      // 首次使用：默认隐藏备注跳转
+      const a = JSON.parse(raw);
+      return Array.isArray(a) ? a : this.DEF.slice();
+    } catch(e){ return this.DEF.slice(); }
+  },
+  save(arr){ try { localStorage.setItem(this.KEY, JSON.stringify(arr)); } catch(e){} },
+  hidden(k){ return this.list().indexOf(k) >= 0; },
+  toggle(k, hide){
+    const arr = this.list().filter(x => x !== k);
+    if(hide) arr.push(k);
+    this.save(arr);
+  }
+};
+
+/* 内容区横滑锁定：默认模板1～4与故障锁定 */
+const ScrollLock = {
+  KEY: 'luotong_lock_scroll_v1',
+  DEF: [0, 1, 2, 3, 4],
+  list(){ try { const a = JSON.parse(localStorage.getItem(this.KEY)); return Array.isArray(a) ? a : this.DEF.slice(); } catch(e){ return this.DEF.slice(); } },
+  save(arr){ try { localStorage.setItem(this.KEY, JSON.stringify(arr)); } catch(e){} },
+  locked(t){ return this.list().indexOf(t) >= 0; },
+  toggle(t, lock){
+    const arr = this.list().filter(x => x !== t);
+    if(lock) arr.push(t);
+    this.save(arr);
+  }
+};
+
+/* 模板显示/隐藏 */
+const TabVis = {
+  KEY: 'luotong_hidden_tabs_v1',
+  list(){ try { const a = JSON.parse(localStorage.getItem(this.KEY) || '[]'); return Array.isArray(a) ? a.filter(x => typeof x === 'number') : []; } catch(e){ return []; } },
+  save(arr){ try { localStorage.setItem(this.KEY, JSON.stringify(arr)); } catch(e){} },
+  hidden(t){ return this.list().indexOf(t) >= 0; },
+  toggle(t, hide){
+    const arr = this.list().filter(x => x !== t);
+    if(hide) arr.push(t);
+    if(arr.length >= CFG.TEMPLATES) return false;
+    this.save(arr);
+    return true;
+  },
+  firstVisible(){ for(let t = 0; t < CFG.TEMPLATES; t++) if(!this.hidden(t)) return t; return 0; }
+};
+
 const T = () => S.data[S.tab] || (S.data[S.tab] = {});
-const isManualOnlyTab = () => S.tab >= 4;
+const isManualOnlyTab = () => false;   // 实验与 ST-48 也参与自动计算
 
 const fk = {
   manualStart: (c,s) => `manualStart_v${c}_s${s}`,
@@ -1670,7 +1763,7 @@ const CarLock = {
     block.classList.toggle('car-locked', locked);
     const btn = $(`lockBtn_v${c}`);
     if(btn){
-      btn.textContent = locked ? '🔒' : '🔓';
+      btn.textContent = locked ? '解锁' : '锁定';
       btn.classList.toggle('locked', locked);
       btn.title = locked ? '解除锁定' : '锁定该车';
       btn.disabled = S.locked;
@@ -2094,6 +2187,19 @@ const TF = {
 
 const Sync = {
   titles(v, s){
+    // 实验模板：M侧、R侧的位号、车次/班次、备注都跟随本排 L侧
+    if(S.tab === 5){
+      ['title', 'tf', 'shift', 'train', 'name'].forEach(pp => {
+        const s1 = $(`${pp}_${v}_s${s}_i1`);
+        if(!s1) return;
+        for(let col = 2; col <= 3; col++){
+          const el4 = $(`${pp}_${v}_s${s}_i${col}`);
+          if(el4) el4.value = s1.value;
+        }
+      });
+      Sync.remarkPlaceholder(v, s);
+      return;
+    }
     const a = $(`title_${v}_s${s}_i1`);
     if(!a) return;
     const val = a.value.trim();
@@ -2111,6 +2217,7 @@ const Sync = {
     remark.placeholder = tv ? tv + '备注...' : '备注...';
   },
   rowToB_F(v, s, skipSave){
+    if(S.tab === 5){ if(!skipSave) Store.saveDebounced(); return; }
     const timeEl = $(`start_${v}_s${s}_i1`);
     if(!timeEl) return;
     const shiftEl = $(`shift_${v}_s${s}_i1`);
@@ -2214,7 +2321,8 @@ const Scheduler = {
     }
     for(let c = from; c < CFG.CARS; c++){
       if(CarLock.isLocked(c)) continue;
-      Scheduler.processCar(c, dir, dur);
+      if(S.tab === 5) Scheduler.processCar3(c, dir, dur);
+      else Scheduler.processCar(c, dir, dur);
       if(Flags.emptyFill(c)) Scheduler.fillEmptySlots(c);
     }
     Sync.dates(from);
@@ -2305,6 +2413,70 @@ const Scheduler = {
     });
   },
   /* 空位填充：只负责改位号，时间交给普通计算 */
+  /* 实验 / ST-48：每排 3 张卡片各自独立位号，同一位号内依次加工艺时间 */
+  processCar3(c, dir, dur){
+    const v = pref(c);
+    const all = [];
+    for(let s = 0; s < CFG.SUBS; s++){
+      for(let i = 1; i <= 3; i++){
+        const titleEl = $(`title_${v}_s${s}_i${i}`);
+        const startEl = $(`start_${v}_s${s}_i${i}`);
+        if(!titleEl || !startEl) continue;
+        all.push({s, i, titleEl, startEl, title: titleEl.value.trim()});
+      }
+    }
+    const groups = new Map();
+    all.forEach(r => {
+      if(!r.title){ r.startEl.value = ''; return; }
+      if(!groups.has(r.title)) groups.set(r.title, []);
+      groups.get(r.title).push(r);
+    });
+    const placeClock = (value, prior) => {
+      const sec = U.toSec(value);
+      if(sec === null || prior === null) return sec;
+      const day = Math.floor(prior / CFG.DAY);
+      const prevClock = prior % CFG.DAY;
+      const overnight = prevClock >= CFG.SHIFT_2040 && sec < CFG.DAY_START;
+      return sec + (day + (overnight ? 1 : 0)) * CFG.DAY;
+    };
+    const vPrev = pref(c - 1);
+    const cmp = (a, b) => dir === 'forward' ? a - b : b - a;
+    groups.forEach((list, title) => {
+      const order = list.slice().sort((A, B) => {
+        const aHas = String(A.startEl.value || '').trim() ? 0 : 1;
+        const bHas = String(B.startEl.value || '').trim() ? 0 : 1;
+        if(aHas !== bHas) return aHas - bHas;
+        if(A.s !== B.s) return cmp(A.s, B.s);
+        return A.i - B.i;
+      });
+      let prevMax = null;
+      if(c > 0){
+        for(let ps = 0; ps < CFG.SUBS; ps++){
+          for(let pi = 1; pi <= 3; pi++){
+            const pte = $(`title_${vPrev}_s${ps}_i${pi}`);
+            if(!pte || pte.value.trim() !== title) continue;
+            const pse = $(`start_${vPrev}_s${ps}_i${pi}`);
+            if(!pse) continue;
+            const a = placeClock(pse.value, prevMax);
+            if(a !== null && (prevMax === null || a > prevMax)) prevMax = a;
+          }
+        }
+      }
+      let cur = prevMax;
+      let firstKept = false;
+      for(const row of order){
+        const val = String(row.startEl.value || '').trim();
+        if(!firstKept && val){
+          const a = placeClock(val, null);
+          if(a !== null){ cur = a; firstKept = true; }
+          continue;
+        }
+        if(cur === null){ row.startEl.value = ''; continue; }
+        // 同一位号后面的卡片与第一张保持一致，不额外累加工艺时间
+        row.startEl.value = U.fmtTime(cur);
+      }
+    });
+  },
   fillEmptySlots(carIdx){
     const v = pref(carIdx);
     const durEl = $('processTime_v0');
@@ -2549,9 +2721,10 @@ const Renderer = {
   initTabs(){
     let html = '';
     for(let t = 0; t < CFG.TEMPLATES; t++){
+      if(TabVis.hidden(t)) continue;
       const name = S.tabNames[t] || defaultTabName(t);
       const canRename = t < 4;
-      html += `<div class="main-tab${t===0?' active':''}" data-action="switch-tab" data-index="${t}"${canRename?' title="双击重命名"':''}>${U.esc(name)}</div>`;
+      html += `<div class="main-tab${t===S.tab?' active':''}" data-action="switch-tab" data-index="${t}"${canRename?' title="双击重命名"':''}>${U.esc(name)}</div>`;
     }
     $('main-tabs').innerHTML = html;
   },
@@ -2571,46 +2744,45 @@ const Renderer = {
     h += `<div class="car-header">`;
     h += `<div class="car-header-left">`;
     h += `<h2 class="${titleCls}">${CFG.CAR_NAMES[c]}</h2>`;
-    h += `<button type="button" class="car-lock-btn" id="lockBtn_v${c}" data-action="toggle-car-lock" data-car="${c}" title="锁定该车">🔓</button>`;
-    h += `<button type="button" class="car-empty-btn" id="emptySlotBtn_v${c}" data-action="toggle-empty-slot" data-car="${c}">空位填充：关</button>`;
-    h += `<button type="button" class="goto-remark-btn" data-action="goto-remark" data-car="${c}" title="直达备注卡片">备注跳转</button>`;
+    h += `<button type="button" class="car-lock-btn" id="lockBtn_v${c}" data-action="toggle-car-lock" data-car="${c}" title="锁定该车">锁定</button>`;
+    if(!HeaderFields.hidden('remarkJump')) h += `<button type="button" class="goto-remark-btn" data-action="goto-remark" data-car="${c}" title="直达备注卡片">备注跳转</button>`;
     h += `</div>`;
     h += `<div class="car-nav">`;
     h += `<div class="slide-btn" data-action="scroll-cars" data-dir="-1">▲ 上一车</div>`;
     h += `<div class="slide-btn" data-action="scroll-cars" data-dir="1">▼ 下一车</div>`;
     h += `<div class="slide-btn toggle-btn" data-action="toggle-collapse">折叠</div>`;
     h += `</div>`;
-    h += `<div class="header-fields">`;
-    h += `<div class="batch-box"><label>批号:</label><select id="batch_${v}" class="batch-select" data-role="batch"></select></div>`;
-    h += `<span class="field-sep">丨</span>`;
-    h += `<div class="process-time-box"><label>工艺时间:</label><input type="text" id="processTime_${v}" class="calc-input" inputmode="numeric" pattern="[0-9:]*" data-role="header" data-field="processTime" placeholder="时:分:秒" ${processRO}></div>`;
-    h += `<span class="field-sep">丨</span>`;
-    h += `<div class="date-box"><input type="text" id="date_${v}" class="calc-input" readonly></div>`;
-    h += `<span class="field-sep">丨</span>`;
-    h += `<div class="series-box"><label>系列:</label>`;
-    h += `<input type="text" id="series_${v}_1" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="series1" value="" maxlength="2" ${seriesRO}>`;
-    h += `<span class="dash">-</span>`;
-    h += `<input type="text" id="series_${v}_2" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="series2" value="" maxlength="2" ${seriesRO}>`;
+    const hfHidden = kk => HeaderFields.hidden(kk);
+    const hfItems = [];
+    if(!hfHidden('batch')) hfItems.push(`<div class="batch-box"><label>批号:</label><select id="batch_${v}" class="batch-select" data-role="batch"></select></div>`);
+    if(!hfHidden('processTime')) hfItems.push(`<div class="process-time-box"><label>工艺时间:</label><input type="text" id="processTime_${v}" class="calc-input" inputmode="numeric" pattern="[0-9:]*" data-role="header" data-field="processTime" placeholder="时:分:秒" ${processRO}></div>`);
+    if(!hfHidden('date')) hfItems.push(`<div class="date-box"><input type="text" id="date_${v}" class="calc-input" readonly></div>`);
+    if(!hfHidden('series')) hfItems.push(`<div class="series-box"><label>系列:</label>`
+      + `<input type="text" id="series_${v}_1" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="series1" value="" maxlength="2" ${seriesRO}>`
+      + `<span class="dash">-</span>`
+      + `<input type="text" id="series_${v}_2" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="series2" value="" maxlength="2" ${seriesRO}>`
+      + `</div>`);
+    if(!hfHidden('cart')) hfItems.push(`<div class="cart-box"><label>台车号:</label>`
+      + `<button type="button" tabindex="-1" class="opt-btn fg" data-action="toggle-opt" data-type="fg">F</button>`
+      + `<input type="text" id="cart_${v}" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="cart">`
+      + `<button type="button" tabindex="-1" class="opt-btn ab" data-action="toggle-opt" data-type="ab">A</button>`
+      + `</div>`);
+    if(!hfHidden('denier')) hfItems.push(`<div class="input-group-top"><label>旦数:</label><input type="text" id="denier_${v}" class="calc-input" inputmode="numeric" pattern="[0-9.]*" data-role="header" data-field="denier" ${denierRO}></div>`);
+    if(!hfHidden('count')) hfItems.push(`<div class="input-group-top"><label>个数:</label><input type="text" id="count_${v}" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="count" style="text-align:center;">`
+      + `<button type="button" class="opt-btn count-toggle-btn" data-action="toggle-count" data-car="${c}">288/48</button>`
+      + `</div>`);
+    if(!hfHidden('headerName')) hfItems.push(`<div class="input-group-top"><label>姓名:</label><input type="text" id="headerName_${v}" class="calc-input" data-role="header" data-field="headerName"></div>`);
+    hfItems.push(`<button type="button" class="car-empty-btn" id="emptySlotBtn_v${c}" data-action="toggle-empty-slot" data-car="${c}">空位填充：关</button>`);
+    h += `<div class="header-fields">` + hfItems.join('<span class="field-sep">丨</span>') + `</div>`;
     h += `</div>`;
-    h += `<span class="field-sep">丨</span>`;
-    h += `<div class="cart-box"><label>台车号:</label>`;
-    h += `<button type="button" tabindex="-1" class="opt-btn fg" data-action="toggle-opt" data-type="fg">F</button>`;
-    h += `<input type="text" id="cart_${v}" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="cart">`;
-    h += `<button type="button" tabindex="-1" class="opt-btn ab" data-action="toggle-opt" data-type="ab">A</button>`;
-    h += `</div>`;
-    h += `<span class="field-sep">丨</span>`;
-    h += `<div class="input-group-top"><label>旦数:</label><input type="text" id="denier_${v}" class="calc-input" inputmode="numeric" pattern="[0-9.]*" data-role="header" data-field="denier" ${denierRO}></div>`;
-    h += `<span class="field-sep">丨</span>`;
-    h += `<div class="input-group-top"><label>个数:</label><input type="text" id="count_${v}" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="count" style="text-align:center;">`;
-    h += `<button type="button" class="opt-btn count-toggle-btn" data-action="toggle-count" data-car="${c}">288/48</button>`;
-    h += `</div>`;
-    h += `<span class="field-sep">丨</span>`;
-    h += `<div class="input-group-top"><label>姓名:</label><input type="text" id="headerName_${v}" class="calc-input" data-role="header" data-field="headerName"></div>`;
-    h += `</div></div>`;
     h += `<span class="region-hint">车头栏</span>`;
     h += `<div class="sub-cars">`;
     h += `<div class="sub-car-row header-row"><div class="sub-car-label" style="visibility:hidden;"></div><div class="grid-container" id="header_${v}">`;
-    for(let i = 0; i < 6; i++) h += `<div class="header-cell">${CFG.COLS[i]}</div>`;
+    const heads = (S.tab >= 4) ? ['L侧', 'M侧', 'R侧'] : CFG.COLS;
+    heads.forEach((cn, idx) => {
+      const showHint = (idx === 0) && (S.tab >= 4);
+      h += `<div class="header-cell" style="position:relative;">${cn}${showHint ? '<span class="swipe-hint">左滑 ›</span>' : ''}</div>`;
+    });
     h += `<div class="header-cell" style="flex:0 0 155px;min-width:155px;">备注</div>`;
     h += `</div></div>`;
     for(let s = 0; s < CFG.SUBS; s++){
@@ -2621,8 +2793,10 @@ const Renderer = {
   },
   cardHtml(carIdx, sIdx, colIdx){
     const v = pref(carIdx);
-    const isA = colIdx === 1;
-    const ro = isA ? '' : 'readonly';
+    const manual = S.tab >= 4;
+    const isA = colIdx === 1 || manual;
+    const ro = manual ? '' : (colIdx === 1 ? '' : 'readonly');
+    const sideLabel = '位号';
     let timeHtml;
     if(isA){
       timeHtml = `<div class="cell cell-small"><label>时间</label><input type="text" id="start_${v}_s${sIdx}_i${colIdx}" class="calc-input" inputmode="numeric" pattern="[0-9:]*" data-role="start" data-car="${carIdx}" data-s="${sIdx}" placeholder="时间" enterkeyhint="next"></div>`;
@@ -2633,8 +2807,8 @@ const Renderer = {
       <div class="clear-btn" data-action="clear-card" data-car="${carIdx}" data-s="${sIdx}" data-i="${colIdx}" title="清除该位号内容"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></div>
       <div class="undo-btn${UndoClear.has(carIdx,sIdx,colIdx) ? ' on' : ''}" data-action="undo-clear" data-car="${carIdx}" data-s="${sIdx}" data-i="${colIdx}" title="撤销上一步清除">↺</div>
       <div class="card-left-col">
-        <span class="left-label">位号</span>
-        <input type="text" class="left-title-input calc-input" id="title_${v}_s${sIdx}_i${colIdx}" data-role="title" data-car="${carIdx}" data-s="${sIdx}" value="" ${ro}>
+        <span class="left-label">${sideLabel}</span>
+        <input type="text" class="left-title-input calc-input" id="title_${v}_s${sIdx}_i${colIdx}" data-role="title" data-car="${carIdx}" data-s="${sIdx}" value="" placeholder=" " ${ro}>
       </div>
       <div class="card-right-col card-stack">
         <div class="card-line">
@@ -2656,7 +2830,8 @@ const Renderer = {
     const grid = $(`grid_${v}_s${sIdx}`);
     if(!grid) return;
     let html = '';
-    for(let i = 1; i <= 6; i++) html += Renderer.cardHtml(carIdx, sIdx, i);
+    const cols = (S.tab >= 4) ? [1, 2, 3] : [1, 2, 3, 4, 5, 6];
+    for(const i of cols) html += Renderer.cardHtml(carIdx, sIdx, i);
     html += `<div class="item-card remark-card"><textarea class="calc-input" id="remark_${v}_s${sIdx}" data-role="remark" placeholder="备注..."></textarea></div>`;
     grid.innerHTML = html;
   },
@@ -2667,22 +2842,25 @@ const Renderer = {
     Renderer.initScrollSync();
   },
   initScrollSync(){
+    const all = [];
     for(let c = 0; c < CFG.CARS; c++){
       const v = pref(c);
-      const containers = [$(`header_${v}`)];
-      for(let s = 0; s < CFG.SUBS; s++) containers.push($(`grid_${v}_s${s}`));
-      let syncing = false;
-      containers.forEach(cont => {
-        if(!cont) return;
-        cont.addEventListener('scroll', function(){
-          if(syncing) return;
-          syncing = true;
-          const sl = this.scrollLeft;
-          containers.forEach(c2 => { if(c2 && c2 !== this) c2.scrollLeft = sl; });
-          requestAnimationFrame(() => { syncing = false; });
-        }, {passive: true});
-      });
+      all.push($(`header_${v}`));
+      for(let s = 0; s < CFG.SUBS; s++) all.push($(`grid_${v}_s${s}`));
     }
+    const alive = all.filter(Boolean);
+    let syncing = false;
+    alive.forEach(cont => {
+      if(cont._scrollSyncBound) return;    // 每个容器只绑一次
+      cont._scrollSyncBound = true;
+      cont.addEventListener('scroll', function(){
+        if(syncing) return;
+        syncing = true;
+        const sl = this.scrollLeft;
+        alive.forEach(c2 => { if(c2 !== this) c2.scrollLeft = sl; });
+        requestAnimationFrame(() => { syncing = false; });
+      }, {passive: true});
+    });
   },
   updateEmptySlotBtns(){
     const show = S.tab < 4;
@@ -2701,10 +2879,12 @@ const Renderer = {
       }
     }
   },
-  updateActiveTab(){ $$('.main-tab').forEach((tab, i) => tab.classList.toggle('active', i === S.tab)); }
+  updateActiveTab(){ $$('.main-tab').forEach(tab => tab.classList.toggle('active', +tab.dataset.index === S.tab)); }
 };
 
 function syncTitleFromV0(value, s){
+  // 实验/ST-48：位号不跨车跟随，各车各卡片独立填写
+  if(S.tab === 5) return;
   for(let cc = 1; cc < CFG.CARS; cc++){
     if(CarLock.isLocked(cc)) continue;
     if(!Flags.isTitleCustom(cc, s)){
@@ -2753,9 +2933,17 @@ const App = {
     }
     document.querySelectorAll('.fullscreen-car').forEach(el => el.classList.remove('fullscreen-car'));
     document.body.classList.remove('car-fullscreen-active');
+    const prevTab = S.tab;
     S.tab = index;
     Renderer.updateActiveTab();
     App.loadTab();
+    if(container){
+      container.style.setProperty('--slide-from', index > prevTab ? '34px' : '-34px');
+      container.classList.remove('tab-slide-in');
+      void container.offsetWidth;
+      container.classList.add('tab-slide-in');
+      setTimeout(() => { container.classList.remove('tab-slide-in'); container.style.removeProperty('--slide-from'); }, 320);
+    }
     Auth.applyLockState();
     Layout.adjustCarHeightsThrottled();
     // 等模板 DOM 与车辆高度完成更新后，再按车辆锚点恢复；多次校正兼容手机浏览器的异步布局。
@@ -2775,6 +2963,28 @@ const App = {
     setTimeout(restorePosition, 320);
   },
   loadTab(){
+    // 卡片数量与当前模板不一致时重建（实验/ST-48 每排 3 张，其余 6 张）
+    document.body.classList.toggle('hscroll-locked', ScrollLock.locked(S.tab));
+    const wantCols = (S.tab >= 4) ? 3 : 6;
+    const probe = $('grid_v0_s0');
+    if(probe && probe.querySelectorAll('.item-card:not(.remark-card)').length !== wantCols){
+      Renderer.initCars();    // 重建表头与卡片
+      Renderer.initGrids();
+    }
+    // 实验/ST-48 每张卡片的位号都可编辑；其余模板只有第一张可编辑
+    const allEditable = S.tab >= 4;
+    if(Renderer._lastEditable !== allEditable){
+      Renderer._lastEditable = allEditable;
+      for(let c = 0; c < CFG.CARS; c++){
+        const v = pref(c);
+        for(let s = 0; s < CFG.SUBS; s++){
+          for(let i = 1; i <= 6; i++){
+            const el = $(`title_${v}_s${s}_i${i}`);
+            if(el) el.readOnly = allEditable ? false : (i !== 1);
+          }
+        }
+      }
+    }
     const rb = document.getElementById('recoverBar');
     if(rb) rb.remove();
     document.querySelectorAll('.fullscreen-car').forEach(el => el.classList.remove('fullscreen-car'));
@@ -2789,10 +2999,12 @@ const App = {
       const btn = block.querySelector('.toggle-btn');
       if(btn) btn.textContent = collapsed ? '展开' : '折叠';
     }
+    // 只对“值真的变化”的输入框赋值，减少切换时的 DOM 写入
     getAllFields().forEach(el => {
-      if(el.id && !el.id.startsWith('setting') && el.id !== 'adminPassword'){
-        el.value = d[el.id] !== undefined ? d[el.id] : '';
-      }
+      const id = el.id;
+      if(!id || id.startsWith('setting') || id === 'adminPassword') return;
+      const nv = d[id] !== undefined ? d[id] : '';
+      if(el.value !== nv) el.value = nv;
     });
     // F/G、A/B 是按钮状态，不是表单字段；按当前模板单独恢复，避免切换模板串值。
     for(let c = 0; c < CFG.CARS; c++){
@@ -3037,8 +3249,8 @@ const App = {
     if(CarLock.isLocked(carIdx)) return;
     const v = pref(carIdx);
     UndoClear.remember(carIdx, sIdx, colNum, v);   // 清之前先记下，供撤销
-    if(colNum === 1){
-      [`start_${v}_s${sIdx}_i1`, `tf_${v}_s${sIdx}_i1`, `shift_${v}_s${sIdx}_i1`, `train_${v}_s${sIdx}_i1`, `name_${v}_s${sIdx}_i1`].forEach(id => { const el = $(id); if(el) el.value = ''; });
+    if(colNum === 1 || S.tab >= 4){
+      [`start_${v}_s${sIdx}_i${colNum}`, `tf_${v}_s${sIdx}_i${colNum}`, `shift_${v}_s${sIdx}_i${colNum}`, `train_${v}_s${sIdx}_i${colNum}`, `name_${v}_s${sIdx}_i${colNum}`].forEach(id => { const el = $(id); if(el) el.value = ''; });
       Flags.manualStart(carIdx, sIdx, false);
       const titleEl = $(`title_${v}_s${sIdx}_i1`);
       Flags.manualClear(carIdx, sIdx, false);
@@ -3097,6 +3309,23 @@ const App = {
     updateTitleCustomMarks();
     if(typeof TF.checkDuplicates === 'function') TF.checkDuplicates();
     showToast(allTabs ? '已按保留项目重置全部模板并展开' : '已按保留项目重置当前模板并展开');
+  },
+  /* 从重置前快照恢复（优先重置前那份，其次常规快照） */
+  restoreBeforeReset(){
+    if(S.locked) return;
+    const snap = Store.findSnapshot();
+    if(!snap || !snap.data){ showToast('没有可恢复的数据', 'err'); return; }
+    S.data = snap.data;
+    Store.initDefaults();
+    try { localStorage.setItem(CFG.KEY.ALL, JSON.stringify(S.data)); } catch(e){}
+    App.loadTab();
+    Store.save();
+    const d = new Date(snap.at || Date.now());
+    const mm = ('0' + (d.getMonth() + 1)).slice(-2);
+    const dd = ('0' + d.getDate()).slice(-2);
+    const hh = ('0' + d.getHours()).slice(-2);
+    const mi = ('0' + d.getMinutes()).slice(-2);
+    showToast('已恢复到 ' + mm + '-' + dd + ' ' + hh + ':' + mi + ' 的数据');
   },
   resetCurrent(){
     if(S.locked) return;
@@ -3273,6 +3502,73 @@ const AdminPanel = {
   },
   renderAll(){
     AdminPanel.fillSettings();
+    AdminPanel.renderTabVis();
+    AdminPanel.renderScrollLock();
+    AdminPanel.renderHeaderFields();
+  },
+  renderHeaderFields(){
+    const box = $('headerFieldList');
+    if(!box) return;
+    let h = '';
+    HeaderFields.ALL.forEach(kk => {
+      h += `<label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">`
+         + `<input type="checkbox" data-hfield="${kk}" ${HeaderFields.hidden(kk) ? '' : 'checked'} style="width:18px;height:18px;">`
+         + `${HeaderFields.NAME[kk]}</label>`;
+    });
+    box.innerHTML = h;
+    box.querySelectorAll('input[data-hfield]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        HeaderFields.toggle(cb.dataset.hfield, !cb.checked);
+        Renderer.initCars();
+        Renderer.initGrids();
+        App.loadTab();
+        showToast('车头栏字段已更新');
+      });
+    });
+  },
+  renderScrollLock(){
+    const box = $('scrollLockList');
+    if(!box) return;
+    let h = '';
+    for(let t = 0; t < CFG.TEMPLATES; t++){
+      const name = S.tabNames[t] || defaultTabName(t);
+      h += `<label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">`
+         + `<input type="checkbox" data-scrolllock="${t}" ${ScrollLock.locked(t) ? 'checked' : ''} style="width:18px;height:18px;">`
+         + `${U.esc(name)}</label>`;
+    }
+    box.innerHTML = h;
+    box.querySelectorAll('input[data-scrolllock]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        ScrollLock.toggle(+cb.dataset.scrolllock, cb.checked);
+        Renderer.initCars();
+        Renderer.initGrids();
+        App.loadTab();
+        showToast('横滑锁定已更新');
+      });
+    });
+  },
+  renderTabVis(){
+    const box = $('tabVisibleList');
+    if(!box) return;
+    let h = '';
+    for(let t = 0; t < CFG.TEMPLATES; t++){
+      const name = S.tabNames[t] || defaultTabName(t);
+      h += `<label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">`
+         + `<input type="checkbox" data-tabvis="${t}" ${TabVis.hidden(t) ? '' : 'checked'} style="width:18px;height:18px;">`
+         + `${U.esc(name)}</label>`;
+    }
+    box.innerHTML = h;
+    box.querySelectorAll('input[data-tabvis]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const t = +cb.dataset.tabvis;
+        if(!TabVis.toggle(t, !cb.checked)){ cb.checked = true; showToast('至少要保留一个模板', 'err'); return; }
+        if(TabVis.hidden(S.tab)) S.tab = TabVis.firstVisible();
+        Renderer.initTabs();
+        Renderer.updateActiveTab();
+        App.loadTab();
+        showToast('模板显示已更新');
+      });
+    });
   },
   fillSettings(){
     $('settingCarWidthDesktop').value = localStorage.getItem(CFG.KEY.W_DESKTOP) || '';
@@ -3319,6 +3615,48 @@ const Events = {
   _lastWheel: 0,
   _resizeTimer: null,
   _lastTabClick: null,
+  /* 锁定横滑的模板：左右滑动内容区切换模板 */
+  initSwipeTab(){
+    const el = $('main_content');
+    if(!el || el._swipeBound) return;
+    el._swipeBound = true;
+    let sx = 0, sy = 0, tracking = false, inInput = false;
+    el.addEventListener('touchstart', e => {
+      if(!ScrollLock.locked(S.tab)) return;
+      if(e.touches.length !== 1) return;
+      const tg = e.target;
+      inInput = !!(tg && tg.closest && tg.closest('input, textarea, select'));
+      sx = e.touches[0].clientX;
+      sy = e.touches[0].clientY;
+      tracking = true;
+    }, {passive:true});
+    let maxDx = 0;
+    const doSwipe = dx => {
+      const vis = [];
+      for(let i = 0; i < CFG.TEMPLATES; i++) if(!TabVis.hidden(i)) vis.push(i);
+      const idx = vis.indexOf(S.tab);
+      if(idx < 0) return;
+      const next = dx < 0 ? vis[idx + 1] : vis[idx - 1];
+      if(next === undefined) return;
+      App.switchTab(next);
+    };
+    el.addEventListener('touchmove', e => {
+      if(!tracking || e.touches.length !== 1) return;
+      const d = e.touches[0].clientX - sx;
+      if(Math.abs(d) > Math.abs(maxDx)) maxDx = d;
+      // 滑到位立刻切换，不等手指抬起
+      const need = inInput ? 55 : 38;
+      const dy = e.touches[0].clientY - sy;
+      if(Math.abs(maxDx) >= need && Math.abs(maxDx) > Math.abs(dy) * 1.2){
+        const dirDx = maxDx;
+        tracking = false;
+        maxDx = 0;
+        doSwipe(dirDx);
+      }
+    }, {passive:true});
+    el.addEventListener('touchcancel', () => { tracking = false; maxDx = 0; }, {passive:true});
+    el.addEventListener('touchend', () => { tracking = false; maxDx = 0; }, {passive:true});
+  },
   init(){
     document.addEventListener('click', Events.onClick);
     document.addEventListener('input', Events.onInput);
@@ -3363,7 +3701,25 @@ const Events = {
 
     switch(a){
       case 'open-log': Modals.openLog(); break;
-      case 'open-reset': if(!S.locked) Modals.open('resetModal'); break;
+      case 'restore-before-reset': Modals.close('resetModal'); App.restoreBeforeReset(); break;
+      case 'open-reset': {
+        if(S.locked) break;
+        const now = Date.now();
+        // 双击：直接清除全部模板内容；单击：打开弹窗
+        if(Events._lastResetTap && now - Events._lastResetTap < 320){
+          Events._lastResetTap = 0;
+          if(Events._resetTimer){ clearTimeout(Events._resetTimer); Events._resetTimer = null; }
+          App.resetContent(true);
+          break;
+        }
+        Events._lastResetTap = now;
+        if(Events._resetTimer) clearTimeout(Events._resetTimer);
+        Events._resetTimer = setTimeout(() => {
+          Events._resetTimer = null;
+          if(!S.locked) Modals.open('resetModal');
+        }, 300);
+        break;
+      }
       case 'open-login': Modals.openLogin(); break;
       case 'reset-content-current': Modals.close('resetModal'); App.resetContent(false); break;
       case 'reset-content-all': Modals.close('resetModal'); App.resetContent(true); break;
@@ -4052,6 +4408,7 @@ function boot(){
   Layout.apply();
   setTimeout(() => {
     Store.loadTabNames();
+    if(TabVis.hidden(S.tab)) S.tab = TabVis.firstVisible();
     Renderer.initTabs();
     installFaultTemplateTab();
     Renderer.initCars();
@@ -4070,6 +4427,7 @@ function boot(){
     S.locked = localStorage.getItem(CFG.KEY.LOCKED) === 'true';
 
     Events.init();
+    Events.initSwipeTab();
     App.loadTab();
 
     for(let c = 0; c < CFG.CARS; c++){
