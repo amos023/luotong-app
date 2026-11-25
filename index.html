@@ -86,7 +86,7 @@ body.keyboard-open .tab-content{scroll-snap-type:y mandatory !important;scroll-b
 .date-box,.series-box,.cart-box,.input-group-top,.process-time-box,.batch-box{display:flex;align-items:center;height:26px;padding:0 6px;border-radius:6px;border:1px solid #e6e6ea;background:#fafafa;box-shadow:0 1px 2px rgba(0,0,0,.02);transition:border-color .18s ease, box-shadow .18s ease;flex:0 0 auto}
 .date-box:hover,.series-box:hover,.cart-box:hover,.input-group-top:hover,.process-time-box:hover,.batch-box:hover{border-color:#d4d4da;box-shadow:0 2px 6px rgba(0,0,0,.06)}
 .date-box{background:#f4f9ff;border-color:#bcd8f7}
-.process-time-box{background:#fff8ee;border-color:#f5d9a8}
+.process-time-box{background:#fff4e6;border-color:#f5d9a8}
 .batch-box{background:#f2fdf5;border-color:#b8e6c6}
 
 .date-box input,
@@ -96,8 +96,8 @@ body.keyboard-open .tab-content{scroll-snap-type:y mandatory !important;scroll-b
 .cart-box label,.cart-box input,
 .input-group-top label,.input-group-top input{border:none;background:transparent;outline:none;padding:0;text-align:center;font-weight:bold}
 .date-box input{width:auto;min-width:60px;max-width:140px;height:20px;font-size:10px;color:#0a6fd6}
-.process-time-box label{font-size:11px;color:#c47a10;white-space:nowrap;flex:0 0 auto;margin-right:2px}
-.process-time-box input{flex:0 0 auto;width:auto;min-width:45px;max-width:160px;height:20px;font-size:11px;color:#c47a10}
+.process-time-box label{font-size:11px;color:#bf6a00;white-space:nowrap;flex:0 0 auto;margin-right:2px}
+.process-time-box input{flex:0 0 auto;width:auto;min-width:45px;max-width:160px;height:20px;font-size:11px;color:#bf6a00}
 .process-time-box input[readonly]{color:#999;font-weight:normal;cursor:not-allowed}
 
 .batch-box label{font-size:11px;color:#1f9d47;white-space:nowrap;flex:0 0 auto;margin-right:2px}
@@ -463,6 +463,7 @@ body.hscroll-locked .one-car-block .sub-car-row.header-row .grid-container{overf
 <style id="ui-shared">
 /* ===== 弹窗基础 ===== */
 .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;justify-content:center;align-items:center;z-index:1000}
+#confirmModal{z-index:25000!important}
 .modal-overlay.active{display:flex}
 .modal-box{background:#fff;width:90%;text-align:center}
 .modal-input{width:100%}
@@ -514,6 +515,8 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 @keyframes pickerUp{from{transform:translateY(16px);opacity:.6}to{transform:translateY(0);opacity:1}}
 .picker-title{flex:0 0 auto;font-size:var(--fs-14);font-weight:700;color:#0f172a;text-align:center;padding:4px 0 12px}
 .picker-list{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:2px}
+.picker-item{position:relative}
+.picker-del{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:700;color:#e0395b;background:#fff;border:1px solid #fbd0d5;border-radius:8px;padding:6px 12px;line-height:1}
 .picker-item{flex:0 0 auto;min-height:48px;border:1px solid #e6ecf5;background:#f8fafc;color:#1e293b;border-radius:12px;font-size:var(--fs-15);font-weight:600;text-align:center;padding:0 12px;cursor:pointer}
 .picker-item:active{background:#eaf3ff}
 .picker-item.on{border-color:#1677ff;background:#eaf3ff;color:#0d5fcc;box-shadow:0 0 0 2px rgba(22,119,255,.16)}
@@ -557,7 +560,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
     var cancel=document.createElement('button');
     cancel.type='button';
     cancel.className='picker-cancel';
-    cancel.textContent='取消';
+    cancel.textContent='关闭';
     box.appendChild(titleEl);
     box.appendChild(list);
     box.appendChild(cancel);
@@ -586,6 +589,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
     titleEl.textContent=labelOf(sel);
     list.innerHTML='';
     Array.prototype.slice.call(sel.options).forEach(function(opt,index){
+      if(!opt.value) return;
       var btn=document.createElement('button');
       btn.type='button';
       btn.className='picker-item';
@@ -593,6 +597,22 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
       if(opt.value==='__del__') btn.className+=' picker-item-danger';
       if(index===sel.selectedIndex) btn.className+=' on';
       btn.textContent=opt.textContent;
+      try{
+        var isBatch = (sel.className||'').indexOf('batch-select')>=0;
+        var isReal = opt.value && String(opt.value).indexOf('__')!==0;
+        if(isBatch && isReal && window.__delBatch){
+          var delBtn=document.createElement('span');
+          delBtn.className='picker-del';
+          delBtn.textContent='删除';
+          delBtn.addEventListener('click',function(ev){
+            ev.stopPropagation(); ev.preventDefault();
+            window.__delBatch(opt.value).then(function(ok){
+              try{ open(sel); }catch(e){}
+            });
+          });
+          btn.appendChild(delBtn);
+        }
+      }catch(e){}
       btn.addEventListener('click',function(ev){
         ev.stopPropagation();
         sel.value=opt.value;
@@ -627,6 +647,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
   window.__openPicker=open;
   window.__closePicker=close;
 })();
+
 (function(){
   function sync(){
     var vv=window.visualViewport;
@@ -845,7 +866,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 </div>
 <div class="modal-overlay" id="batchAddModal">
     <div class="modal-box">
-        <div class="modal-title">＋ 自定义批号</div>
+        <div class="modal-title" id="batchAddTitle">＋ 自定义批号</div>
         <div class="batch-add-form">
             <div class="batch-add-field">
                 <label>批号名称 *</label>
@@ -1240,6 +1261,9 @@ const CFG = {
 
 const UPDATE_LOGS = [
   { version: 'v1.58', date: '2026-11-25', items: [
+    '调整：工艺时间橙色加深做实，底 #fff4e6、边 #f5d9a8、字 #bf6a00，扫读时更显眼',
+    '调整：「＋ 自定义」改名「＋ 添加批号」，每个批号右侧都有删除按钮，点击直接删除不再确认，「取消」改为「关闭」',
+    '调整：批号框没有选中批号时显示「无批号」提示，该提示项不出现在下拉面板里',
     '调整：Toast 改浅底毛玻璃，白底红字加细边框，替代原来的深灰底白字',
     '调整：车头栏姓名字段改为默认显示，备注跳转仍默认隐藏',
     '调整：Toast 停留时间从 2.2 秒延长到 3 秒'
@@ -2580,10 +2604,9 @@ const Batch = {
       const sel = $(`batch_v${c}`);
       if(!sel) continue;
       const cur = sel.value;
-      let html = `<option value="">无批号</option>`;
+      let html = '<option value="">无批号</option>';
       S.batchOpts.forEach(o => html += `<option value="${U.esc(o)}">${U.esc(o)}</option>`);
-      html += `<option value="__add__">＋ 自定义</option>`;
-      if(S.batchOpts.length) html += `<option value="__del__">🗑 删除当前批号</option>`;
+      html += `<option value="__add__">＋ 添加批号</option>`;
       sel.innerHTML = html;
       if(cur && S.batchOpts.includes(cur)) sel.value = cur;
       else sel.value = '';
@@ -4524,6 +4547,26 @@ document.addEventListener('keydown', function(e){
   e.stopImmediatePropagation();
   handleTfEnter(input);
 }, true);
+
+/* 供 ui-js 脚本块调用（new Function 执行，作用域独立） */
+window.__delBatch = function(name){
+  if(!name) return Promise.resolve(false);
+  try{
+    S.batchOpts = S.batchOpts.filter(function(x){ return x !== name; });
+    delete S.batchDeniers[name]; delete S.batchPT[name]; delete S.batchCounts[name];
+    Store.saveBatchOpts(); Store.saveBatchDeniers(); Store.saveBatchPT(); Store.saveBatchCounts();
+    var wasCurrent = (S.currentBatch === name) || (function(){ var el=document.getElementById('batch_v0'); return el && el.value === name; })();
+    if(wasCurrent) S.currentBatch = '';
+    Batch.refreshSelects();
+    if(wasCurrent) Batch.applyAll('', true, true, true);
+    Store.save();
+    showToast('已删除批号「' + name + '」');
+    return Promise.resolve(true);
+  }catch(e){
+    showToast('删除失败：' + (e && e.message ? e.message : e), 'err');
+    return Promise.resolve(false);
+  }
+};
 
 boot();
 })();
