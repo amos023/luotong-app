@@ -28,16 +28,10 @@ body{background:#f2f2f7;margin:0;padding:0;color:#333;font-size:13px;overflow:hi
 .admin-btn-top:hover{color:#007aff}
 
 .car-empty-btn,.goto-remark-btn{flex:0 0 auto;padding:2px 8px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;font-size:11px;font-weight:bold;line-height:1;border-radius:12px;cursor:pointer;transition:all 0.2s}
-.car-empty-btn{height:24px;padding:0 2px;font-size:14px;font-weight:bold;border:1px solid #e6e6ea;background:#f7f7f9;color:#8e8e93;border-radius:6px;box-shadow:none;display:inline-flex;align-items:center;justify-content:center}
+.car-empty-btn{height:24px;padding:0 2px;font-size:14px;font-weight:bold;border:1px solid #cbd1dd;background:#fcfcfe;color:#6f7580;border-radius:6px;box-shadow:none;display:inline-flex;align-items:center;justify-content:center}
 .car-empty-btn.active{border-color:#b8e6c6;background:#f2fdf5;color:#1f9d47}
 .car-empty-btn:disabled{opacity:.5;cursor:not-allowed}
-.one-car-block .header-fields .series-box:has(input:not([readonly]):placeholder-shown),
-.one-car-block .header-fields .cart-box:has(input:not([readonly]):placeholder-shown),
-.one-car-block .header-fields .input-group-top:has(input:not([readonly]):placeholder-shown){background:#fcfcfd;border-color:#eeeef1}
-.one-car-block .header-fields .series-box:has(input:not([readonly]):placeholder-shown) input::-webkit-input-placeholder,
-.one-car-block .header-fields .cart-box:has(input:not([readonly]):placeholder-shown) input::-webkit-input-placeholder,
-.one-car-block .header-fields .input-group-top:has(input:not([readonly]):placeholder-shown) input::-webkit-input-placeholder{color:transparent}
-.one-car-block .header-fields input:placeholder-shown{color:#b0b0b8}
+
 .goto-remark-btn{border:1px solid #5856d6;background:linear-gradient(180deg,#fff 0%,#f0efff 100%);color:#5856d6;box-shadow:0 1px 2px rgba(88,86,214,.15),inset 0 1px 0 rgba(255,255,255,.9)}
 .goto-remark-btn:hover{background:linear-gradient(180deg,#f8f6ff 0%,#e8e3ff 100%)}
 .goto-remark-btn:active{transform:scale(.95)}
@@ -78,13 +72,13 @@ body.keyboard-open .tab-content{scroll-snap-type:y mandatory !important;scroll-b
 .car-title-red{color:#d93025 !important;border-left-color:#d93025 !important}
 .car-nav{display:flex;align-items:center;gap:4px;flex:0 0 auto;margin-left:10px}
 .car-nav .slide-btn{background:#fff;border:1px solid #ccc;border-radius:12px;height:24px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;color:#007aff;font-weight:bold;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.1);user-select:none;flex:0 0 auto;font-size:12px}
-.car-nav .slide-btn.toggle-btn{color:#1c1c1e;border-color:#c7ccd4;background:#fff;border-radius:12px}
+.car-nav .slide-btn.toggle-btn{color:#1c1c1e;border-color:#c2c7d1;background:#fcfcfe;border-radius:12px}
 .car-block.collapsed .car-nav .slide-btn.toggle-btn{color:#ff9500;border-color:#ff9500;background:#fff4e6}
 
 .field-sep{flex:0 0 auto;align-self:center;color:#d4d4da;font-size:12px;font-weight:normal;line-height:1;padding:0 1px;user-select:none;pointer-events:none;white-space:nowrap}
 
-.date-box,.series-box,.cart-box,.input-group-top,.process-time-box,.batch-box{display:flex;align-items:center;height:26px;padding:0 6px;border-radius:6px;border:1px solid #e6e6ea;background:#fafafa;box-shadow:0 1px 2px rgba(0,0,0,.02);transition:border-color .18s ease, box-shadow .18s ease;flex:0 0 auto}
-.date-box:hover,.series-box:hover,.cart-box:hover,.input-group-top:hover,.process-time-box:hover,.batch-box:hover{border-color:#d4d4da;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.date-box,.series-box,.cart-box,.input-group-top,.process-time-box,.batch-box{display:flex;align-items:center;height:26px;padding:0 6px;border-radius:6px;border:1px solid #cbd1dd;background:#fcfcfe;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:border-color .18s ease, box-shadow .18s ease;flex:0 0 auto}
+.date-box:hover,.series-box:hover,.cart-box:hover,.input-group-top:hover,.process-time-box:hover,.batch-box:hover{border-color:#b6bdca;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .date-box{background:#f4f9ff;border-color:#bcd8f7}
 .process-time-box{background:#fff4e6;border-color:#f5d9a8}
 .batch-box{background:#f2fdf5;border-color:#b8e6c6}
@@ -96,11 +90,11 @@ body.keyboard-open .tab-content{scroll-snap-type:y mandatory !important;scroll-b
 .cart-box label,.cart-box input,
 .input-group-top label,.input-group-top input{border:none;background:transparent;outline:none;padding:0;text-align:center;font-weight:bold}
 .date-box input{width:auto;min-width:60px;max-width:140px;height:20px;font-size:10px;color:#0a6fd6}
-.process-time-box label{font-size:11px;color:#bf6a00;white-space:nowrap;flex:0 0 auto;margin-right:2px}
+.process-time-box label{font-size:12px;color:#bf6a00;white-space:nowrap;flex:0 0 auto;margin-right:2px}
 .process-time-box input{flex:0 0 auto;width:auto;min-width:45px;max-width:160px;height:20px;font-size:11px;color:#bf6a00}
 .process-time-box input[readonly]{color:#999;font-weight:normal;cursor:not-allowed}
 
-.batch-box label{font-size:11px;color:#1f9d47;white-space:nowrap;flex:0 0 auto;margin-right:2px}
+.batch-box label{font-size:12px;color:#1f9d47;white-space:nowrap;flex:0 0 auto;margin-right:2px}
 .batch-box select{flex:0 0 auto;width:auto;min-width:24px;max-width:120px;height:20px;font-size:12px;color:#1f9d47;cursor:pointer;-webkit-appearance:none;-moz-appearance:none;appearance:none;text-align-last:center;text-overflow:ellipsis;padding:0 16px 0 2px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%231f9d47' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:calc(100% - 1px) center;background-size:8px 5px}
 .batch-box select:disabled{color:#999;cursor:not-allowed;background-image:none}
 .batch-box select option{background:#fff;color:#333;padding:6px 10px;font-size:12px}
@@ -108,17 +102,17 @@ body.keyboard-open .tab-content{scroll-snap-type:y mandatory !important;scroll-b
 .batch-box select option[value="__del__"]{color:#ff3b30;font-weight:bold}
 
 .series-box{gap:2px}
-.series-box>label{font-size:11px;color:#8e8e93;white-space:nowrap;flex:0 0 auto;margin-right:2px}
+.series-box>label{font-size:12px;color:#8e8e93;white-space:nowrap;flex:0 0 auto;margin-right:2px}
 .series-box input{flex:0 0 auto;width:auto;min-width:23px;max-width:60px;height:20px;font-size:11px;color:#1c1c1e}
 .series-box .dash{font-weight:bold;color:#8e8e93;font-size:11px;flex:0 0 auto;margin:0 1px}
 .series-box input[readonly]{color:#666;font-weight:normal;cursor:not-allowed}
 
 .cart-box{gap:3px}
-.cart-box label{font-size:11px;color:#8e8e93;white-space:nowrap;flex:0 0 auto}
+.cart-box label{font-size:12px;color:#8e8e93;white-space:nowrap;flex:0 0 auto}
 .cart-box input{flex:0 0 auto;width:auto;min-width:25px;max-width:120px;height:20px;font-size:11px;color:#1c1c1e}
 
 .input-group-top{gap:2px}
-.input-group-top label{font-size:11px;color:#8e8e93;white-space:nowrap;flex:0 0 auto;margin-right:2px}
+.input-group-top label{font-size:12px;color:#8e8e93;white-space:nowrap;flex:0 0 auto;margin-right:2px}
 .input-group-top input{flex:0 0 auto;width:auto;min-width:24px;max-width:120px;height:20px;font-size:11px;color:#1c1c1e}
 .input-group-top input[readonly]{color:#666;cursor:not-allowed}
 
@@ -272,7 +266,7 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .one-car-block .car-header .series-box,
 .one-car-block .car-header .cart-box,
 .one-car-block .car-header .input-group-top{flex:none;width:100%!important;height:24px;padding:0 3px;box-sizing:border-box;min-width:0;max-width:none;display:flex!important;align-items:center!important;justify-content:center!important;gap:2px}
-.one-car-block .car-header .header-fields>div>label{text-align:center!important;font-size:11px!important;padding:0!important;margin:0!important}
+.one-car-block .car-header .header-fields>div>label{text-align:center!important;font-size:12px!important;padding:0!important;margin:0!important}
 .one-car-block .car-header .process-time-box input,
 .one-car-block .car-header .series-box input,
 .one-car-block .car-header .input-group-top input,
@@ -286,14 +280,15 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
   background-position:right 2px center!important;
   background-size:9px 6px!important;
 }
-.one-car-block .car-header .batch-box label{font-size:11px}
-.one-car-block .car-header .process-time-box label{font-size:11px}
+.one-car-block .car-header .batch-box label{font-size:12px}
+.one-car-block .car-header .process-time-box label{font-size:12px}
 .one-car-block .car-header .process-time-box input{font-size:10px}
 .one-car-block .car-header .cart-box{justify-content:center!important;overflow:hidden}
-.one-car-block .car-header .cart-box label{font-size:11px;margin-right:0;flex:0 0 auto}
+.one-car-block .car-header .cart-box label{font-size:12px;margin-right:0;flex:0 0 auto}
 .one-car-block .car-header .cart-box input{flex:1 1 0;width:0;min-width:10px;font-size:10px;padding:0}
-.one-car-block .car-header .cart-box .opt-btn{flex:0 0 15px;width:15px;height:15px;font-size:10px;padding:0}
-.one-car-block .car-header .input-group-top .count-toggle-btn{flex:0 0 auto !important;width:auto !important;min-width:42px !important;font-size:10px !important;padding:0 4px !important}
+.one-car-block .car-header .cart-box .opt-btn{flex:0 0 auto;width:auto;min-width:15px;height:15px;font-size:10px;padding:0 4px;box-sizing:border-box;line-height:1}
+.one-car-block .car-header .cart-box .opt-btn.fg{transform:translateX(1px)}
+.one-car-block .car-header .input-group-top .count-toggle-btn{flex:0 0 auto !important;width:auto !important;min-width:41px !important;height:17px !important;font-size:10px !important;padding:0 4px !important}
 
 .one-car-block .sub-car-row .sub-car-label{display:none!important}
 .one-car-block .sub-car-row.header-row{display:flex!important;margin-bottom:2px;flex:0 0 auto}
@@ -326,6 +321,35 @@ body.hscroll-locked .one-car-block .sub-car-row.header-row .grid-container{overf
 .clear-btn svg{width:19px;height:19px}
 
 .admin-panel-box{max-height:94vh!important}
+/* 后台排版收紧：三组勾选列表改成两列小卡片，区块与输入框整体压缩 */
+#tabVisibleList,#headerFieldList,#scrollLockList{display:grid!important;grid-template-columns:1fr 1fr;gap:8px!important}
+#tabVisibleList>label,#headerFieldList>label,#scrollLockList>label{padding:7px 9px!important;background:#f7f9fc;border:1px solid #e8edf5;border-radius:9px;font-size:12.5px!important;gap:8px!important;min-width:0}
+#tabVisibleList>label:active,#headerFieldList>label:active,#scrollLockList>label:active{background:#eef4ff}
+#tabVisibleList input,#headerFieldList input,#scrollLockList input{width:16px!important;height:16px!important;flex:0 0 auto}
+.admin-section{margin-bottom:14px!important}
+.admin-section:last-child{margin-bottom:0!important}
+.admin-section-title{font-size:13.5px!important;margin-bottom:8px!important;padding-left:7px!important}
+.admin-section>p{margin-top:6px!important;line-height:1.55!important}
+.admin-input-group{margin-bottom:8px!important;gap:7px!important}
+.admin-input-group label{min-width:74px!important;font-size:12px!important}
+.admin-input-group input{padding:7px!important;font-size:12.5px!important;border-radius:7px!important}
+.admin-btn{padding:9px!important;margin-bottom:6px!important;font-size:12.5px!important;border-radius:8px!important}
+.admin-panel-body{padding:12px!important}
+/* 后台二次压缩：区块做成浅灰卡片，勾选列表三列，控件再收一档 */
+.admin-section{background:#fafbfd!important;border:1px solid #eef1f6!important;border-radius:12px!important;padding:11px 11px 9px!important;margin-bottom:9px!important}
+.admin-section:last-child{margin-bottom:0!important}
+.admin-section-title{font-size:12.5px!important;margin:0 0 8px!important;line-height:1.2!important}
+#tabVisibleList,#headerFieldList,#scrollLockList{grid-template-columns:repeat(3,1fr)!important;gap:6px!important}
+#tabVisibleList>label,#headerFieldList>label,#scrollLockList>label{padding:6px 7px!important;font-size:11.8px!important;border-radius:8px!important;border-color:#e6ecf6!important}
+.admin-input-group{margin-bottom:6px!important;gap:6px!important}
+.admin-input-group label{min-width:66px!important;font-size:11.5px!important}
+.admin-input-group input{padding:6px 8px!important;font-size:12.5px!important}
+.admin-btn{padding:8px!important;margin-bottom:4px!important;font-size:12px!important}
+.admin-section>p{font-size:11px!important;margin-top:5px!important;line-height:1.5!important}
+/* 台车号格：标签写全后压缩内部间距与按钮，保证 4 位数字完整显示 */
+.one-car-block .car-header .cart-box{overflow:visible!important;gap:0!important;padding:0 3px!important;justify-content:flex-start!important}
+.one-car-block .car-header .cart-box label{font-size:12px!important;margin-right:0!important}
+.one-car-block .car-header .cart-box input{flex:1 1 auto!important;width:auto!important;min-width:26px!important;font-size:12px!important;padding:0!important}
 .admin-panel-body{padding:12px}
 .admin-tab{font-size:12px;padding:10px 4px}
 .admin-grid-4{gap:6px}
@@ -445,15 +469,20 @@ body.hscroll-locked .one-car-block .sub-car-row.header-row .grid-container{overf
 
 /* ===== 新手引导 ===== */
 #guideMask{position:fixed;inset:0;z-index:30000;display:none}
-#guideMask.on{display:block}
-#guideHole{position:absolute;border:2px solid #f97316;border-radius:8px;box-shadow:0 0 0 9999px rgba(15,23,42,.76);pointer-events:none;transition:left .24s ease,top .24s ease,width .24s ease,height .24s ease}
-#guideBub{position:absolute;left:50%;transform:translateX(-50%);width:calc(100% - 36px);max-width:360px;background:#fff;border-radius:12px;padding:14px 15px 12px;box-shadow:0 12px 32px rgba(0,0,0,.34);transition:top .24s ease}
+#guideMask.on{display:block;animation:gdMaskIn .24s ease both}
+#guideHole{position:absolute;border:2px solid #f97316;border-radius:10px;box-shadow:0 0 0 9999px rgba(15,23,42,.76);pointer-events:none;transition:left .34s cubic-bezier(.32,.72,.28,1),top .34s cubic-bezier(.32,.72,.28,1),width .34s cubic-bezier(.32,.72,.28,1),height .34s cubic-bezier(.32,.72,.28,1),border-radius .2s ease}
+#guideHole::after{content:'';position:absolute;inset:-4px;border-radius:14px;border:2px solid rgba(249,115,22,.5);animation:gdPulse 1.8s ease-out infinite;pointer-events:none}
+#guideBub{position:absolute;left:50%;transform:translateX(-50%);width:calc(100% - 36px);max-width:360px;background:#fff;border-radius:14px;padding:14px 15px 12px;box-shadow:0 16px 40px rgba(0,0,0,.36);transition:top .34s cubic-bezier(.32,.72,.28,1)}
+@keyframes gdMaskIn{from{opacity:0}to{opacity:1}}
+@keyframes gdMaskOut{from{opacity:1}to{opacity:0}}
+@keyframes gdBubIn{from{opacity:0;transform:translateX(-50%) translateY(12px) scale(.96)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+@keyframes gdPulse{0%{transform:scale(.98);opacity:.75}70%{transform:scale(1.045);opacity:0}100%{opacity:0}}
 .gd-step{font-size:11px;font-weight:700;color:#f97316;letter-spacing:.5px;margin:0 0 5px}
 .gd-title{font-size:15px;font-weight:700;color:#0f172a;margin:0 0 6px}
 .gd-desc{font-size:13px;line-height:1.62;color:#475569;margin:0}
 .gd-ft{display:flex;align-items:center;justify-content:space-between;margin:13px 0 0;gap:6px}
 .gd-dots{display:flex;gap:5px;align-items:center;flex:0 0 auto}
-.gd-dots i{display:block;width:6px;height:6px;border-radius:50%;background:#cbd5e1;transition:all .2s}
+.gd-dots i{display:block;width:6px;height:6px;border-radius:50%;background:#cbd5e1;transition:all .26s cubic-bezier(.34,1.4,.64,1)}
 .gd-dots i.on{background:#f97316;width:16px;border-radius:3px}
 .gd-nav{display:flex;align-items:center;gap:2px;flex:0 0 auto}
 .gd-btn{background:#f97316;color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:700;padding:8px 16px;cursor:pointer;font-family:inherit;white-space:nowrap}
@@ -790,6 +819,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                         <input type="checkbox" id="settingGuideAlways" style="width:18px;height:18px;">
                         每次打开都显示新手引导（默认关闭，只首次显示）
                     </label>
+                    <button class="admin-btn" type="button" id="guideResetBtn" style="margin-top:12px;">重看新手引导</button>
                 </div>
                 <div class="admin-section">
                     <div class="admin-section-title">模板显示</div>
@@ -842,7 +872,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.58<br>
+                    满卷时间计算工具 v1.59<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1260,6 +1290,18 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.59', date: '2026-11-25', items: [
+    '调整：新手引导换新动画，气泡淡入上滑并轻微放大，换步时重播',
+    '调整：挖空框移动改用弹性曲线，外圈加橙色脉冲光环',
+    '调整：引导遮罩整体淡入淡出，进度点切换带弹性展开',
+    '调整：引导文案按现版本更新，模板数量、重置选项、空位填充规则同步；后台提醒设置新增「重看新手引导」按钮',
+    '修复：引导「重置」一步的定位选择器失效被跳过，改指向现版本的「重置」文字按钮',
+    '优化：后台管理排版收紧，每个区块做成浅灰卡片，三组勾选列表排成三列小卡片，间距、输入框与按钮再压缩一档，整页基本一屏放下',
+    '调整：中性输入框底色改近白 #fcfcfe，边框用 #cbd1dd（保持 1px），靠轮廓区分而不是整块压灰；已去掉空值弱化',
+    '调整：车头栏字段标签字号定为 12px，比输入内容略小一号，兼顾清楚与不挤',
+    '调整：车头栏标签统一 12px，台车号保留全称，该格内边距恢复 3px；F/A 按钮沿用 288/48 的内边距与圆角，尺寸定在 15px，F 右移 1px；4 位数字靠溢出可见不裁切',
+    '调整：「🛠 故障记录」入口默认隐藏，需要时在后台「模板显示」里勾选打开；「故障」模板仍按原设置显示'
+  ]},
   { version: 'v1.58', date: '2026-11-25', items: [
     '调整：工艺时间橙色加深做实，底 #fff4e6、边 #f5d9a8、字 #bf6a00，扫读时更显眼',
     '调整：「＋ 自定义」改名「＋ 添加批号」，每个批号右侧都有删除按钮，点击直接删除不再确认，「取消」改为「关闭」',
@@ -1765,6 +1807,13 @@ const TabVis = {
     return true;
   },
   firstVisible(){ for(let t = 0; t < CFG.TEMPLATES; t++) if(!this.hidden(t)) return t; return 0; }
+};
+
+/* 「🛠 故障记录」独立入口：默认隐藏，后台可打开 */
+const FaultTab = {
+  KEY: 'luotong_fault_tab_visible_v1',
+  visible(){ try { return localStorage.getItem(this.KEY) === 'true'; } catch(e){ return false; } },
+  set(v){ try { localStorage.setItem(this.KEY, v ? 'true' : 'false'); } catch(e){} }
 };
 
 const T = () => S.data[S.tab] || (S.data[S.tab] = {});
@@ -3604,6 +3653,9 @@ const AdminPanel = {
          + `<input type="checkbox" data-tabvis="${t}" ${TabVis.hidden(t) ? '' : 'checked'} style="width:18px;height:18px;">`
          + `${U.esc(name)}</label>`;
     }
+    h += `<label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">`
+       + `<input type="checkbox" data-faulttab ${FaultTab.visible() ? 'checked' : ''} style="width:18px;height:18px;">`
+       + `🛠 故障记录</label>`;
     box.innerHTML = h;
     box.querySelectorAll('input[data-tabvis]').forEach(cb => {
       cb.addEventListener('change', () => {
@@ -3615,6 +3667,12 @@ const AdminPanel = {
         App.loadTab();
         showToast('模板显示已更新');
       });
+    });
+    const fb = box.querySelector('input[data-faulttab]');
+    if(fb) fb.addEventListener('change', () => {
+      FaultTab.set(fb.checked);
+      showToast(fb.checked ? '故障记录入口已打开' : '故障记录入口已隐藏');
+      setTimeout(() => location.reload(), 700);
     });
   },
   fillSettings(){
@@ -4156,7 +4214,7 @@ function installFaultTemplateTab(){
   tab.textContent = '🛠 故障记录';
   tab.title = '打开故障记录模板';
   tab.addEventListener('click', openFaultTemplate);
-  tabs.appendChild(tab);
+  if(FaultTab.visible()) tabs.appendChild(tab);
   const panel = document.createElement('div');
   panel.id = 'fault-template-panel';
   panel.style.cssText = 'display:none;height:calc(100vh - 52px);height:calc(100dvh - 52px);overflow:hidden;background:#f3f5f9;';
@@ -4263,9 +4321,9 @@ const Guide = {
 
   STEPS: [
     { sel: '#main-tabs', title: '模板标签',
-      desc: '这里有 4 个模板，各自的数据完全独立。做不同批号时切一下就行，不会互相影响。' },
-    { sel: '.reset-btn', title: '重置',
-      desc: '这里可以重置数据。点开可选「只清当前模板」或「只清全部模板」；只保留批号、工艺时间、系列、旦数、姓名、个数和位号，其余全部重置。' },
+      desc: '这里有 7 个模板：模板 1～4、故障、实验、ST-48，各自数据完全独立。做不同批号时切一下就行，不会互相影响。' },
+    { sel: '.reset-text', title: '重置',
+      desc: '点开可选「重置所有内容」或「清除输入内容」，也能恢复上次清除前的数据。双击这个按钮直接清空全部模板。' },
     { sel: '#block_v0 .batch-box', title: '批号',
       desc: '先选批号，会自动带出旦数、个数和工艺时间，不用一个个手填。' },
     { sel: ['#title_v0_s0_i1', '#start_v0_s0_i1'], title: '自动计算',
@@ -4273,7 +4331,7 @@ const Guide = {
     { sel: '#block_v0 .cart-box', title: '台车号',
       desc: '填台车号。左边的 F 和右边的 A 都能点，点了会切换成 G 和 B。' },
     { sel: '#emptySlotBtn_v0', title: '空位填充',
-      desc: '有 1～2 个排还没填时间时点它，能自动补齐。空位超过 2 个不让开，避免填乱。' },
+      desc: '有 1～5 个排还没填时间时点它，会自动补齐位号并标红，时间交给普通计算推出，不用手填。' },
     { sel: '#lockBtn_v0', title: '车锁定',
       desc: '一车填完点这里锁住，防止误改。只锁这一车，其他车照常使用。' },
     { sel: ['#block_v0 .goto-remark-btn', '#block_v0 .toggle-btn'], title: '备注跳转 / 折叠',
@@ -4295,6 +4353,13 @@ const Guide = {
       if(e.target === wrap || e.target === this.hole) this.next();
     });
     this.bub.addEventListener('click', (e) => e.stopPropagation());
+
+    // 后台「重看新手引导」按钮
+    const rb = document.getElementById('guideResetBtn');
+    if(rb) rb.addEventListener('click', () => {
+      try { Modals.close('adminPanelModal'); } catch(e) {}
+      setTimeout(() => this.reset(), 220);
+    });
 
     // 自动播放：后台开关开启时每次都弹（便于反复查看），否则只在首次弹一次
     let seen = false, always = false;
@@ -4320,6 +4385,7 @@ const Guide = {
     // 顶部标签栏可能被之前的横向滚动带偏，引导开始时复位到最左
     const nav = document.querySelector('.top-nav');
     if(nav) nav.scrollLeft = 0;
+    this.bub.style.animation = 'none';
     this.mask.classList.add('on');
     this.show(0);
   },
@@ -4391,6 +4457,10 @@ const Guide = {
         '</div>' +
       '</div>';
     this._bind();
+    /* 换步重播入场：淡入 + 上滑 + 轻微放大 */
+    this.bub.style.animation = 'none';
+    void this.bub.offsetWidth;
+    this.bub.style.animation = 'gdBubIn .32s cubic-bezier(.32,.72,.28,1) both';
   },
 
   _bind(){
@@ -4444,9 +4514,31 @@ const Guide = {
     else this.end();
   },
 
+  /* 清掉已看记录并立刻重播 */
+  reset(){
+    try { localStorage.removeItem(this.KEY); } catch(e) {}
+    this.running = false;
+    if(this.mask){
+      this.mask.classList.remove('on');
+      this.mask.style.animation = '';
+    }
+    this.idx = 0;
+    this._shown = false;
+    if(this.bub) this.bub.style.animation = 'none';
+    setTimeout(() => this.start(), 60);
+  },
+
   end(){
     this.running = false;
-    if(this.mask) this.mask.classList.remove('on');
+    const m = this.mask;
+    if(m){
+      m.style.animation = 'gdMaskOut .2s ease both';
+      setTimeout(() => {
+        m.classList.remove('on');
+        m.style.animation = '';
+        if(this.bub) this.bub.style.animation = 'none';
+      }, 200);
+    }
     try { localStorage.setItem(this.KEY, '1'); } catch(e) {}
   }
 };
