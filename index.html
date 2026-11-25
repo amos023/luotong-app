@@ -28,9 +28,16 @@ body{background:#f2f2f7;margin:0;padding:0;color:#333;font-size:13px;overflow:hi
 .admin-btn-top:hover{color:#007aff}
 
 .car-empty-btn,.goto-remark-btn{flex:0 0 auto;padding:2px 8px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;font-size:11px;font-weight:bold;line-height:1;border-radius:12px;cursor:pointer;transition:all 0.2s}
-.car-empty-btn{height:24px;padding:0 10px;font-size:12px;font-weight:bold;border:1px solid #a8d0ff;background:linear-gradient(180deg,#f5faff 0%,#e8f3ff 100%);color:#007aff;border-radius:6px;box-shadow:0 1px 3px rgba(0,122,255,.15);display:inline-flex;align-items:center;justify-content:center}
-.car-empty-btn.active{border-color:#7fd99a;background:linear-gradient(180deg,#f6fff8 0%,#e6f9ec 100%);color:#34c759}
+.car-empty-btn{height:24px;padding:0 2px;font-size:14px;font-weight:bold;border:1px solid #e6e6ea;background:#f7f7f9;color:#8e8e93;border-radius:6px;box-shadow:none;display:inline-flex;align-items:center;justify-content:center}
+.car-empty-btn.active{border-color:#b8e6c6;background:#f2fdf5;color:#1f9d47}
 .car-empty-btn:disabled{opacity:.5;cursor:not-allowed}
+.one-car-block .header-fields .series-box:has(input:not([readonly]):placeholder-shown),
+.one-car-block .header-fields .cart-box:has(input:not([readonly]):placeholder-shown),
+.one-car-block .header-fields .input-group-top:has(input:not([readonly]):placeholder-shown){background:#fcfcfd;border-color:#eeeef1}
+.one-car-block .header-fields .series-box:has(input:not([readonly]):placeholder-shown) input::-webkit-input-placeholder,
+.one-car-block .header-fields .cart-box:has(input:not([readonly]):placeholder-shown) input::-webkit-input-placeholder,
+.one-car-block .header-fields .input-group-top:has(input:not([readonly]):placeholder-shown) input::-webkit-input-placeholder{color:transparent}
+.one-car-block .header-fields input:placeholder-shown{color:#b0b0b8}
 .goto-remark-btn{border:1px solid #5856d6;background:linear-gradient(180deg,#fff 0%,#f0efff 100%);color:#5856d6;box-shadow:0 1px 2px rgba(88,86,214,.15),inset 0 1px 0 rgba(255,255,255,.9)}
 .goto-remark-btn:hover{background:linear-gradient(180deg,#f8f6ff 0%,#e8e3ff 100%)}
 .goto-remark-btn:active{transform:scale(.95)}
@@ -38,7 +45,7 @@ body{background:#f2f2f7;margin:0;padding:0;color:#333;font-size:13px;overflow:hi
 
 .car-lock-btn{flex:0 0 auto;height:24px;padding:0 10px;font-size:12px;font-weight:bold;line-height:1;border:1px solid #c7ccd4;background:#fff;color:#1c1c1e;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);cursor:pointer;user-select:none;transition:all .2s;display:inline-flex;align-items:center;justify-content:center}
 .car-lock-btn:hover{background:#f2f2f7}
-.car-lock-btn.locked{border-color:#ff3b30;background:#ffeceb;color:#ff3b30}
+.car-lock-btn.locked{border-color:#ffc9c4;background:#fff1f0;color:#d93025}
 .car-lock-btn:disabled{opacity:.5;cursor:not-allowed}
 .car-block.car-locked{border-color:#ffc9c5;box-shadow:0 2px 6px rgba(255,59,48,.08)}
 .car-block.car-locked .car-header{border-bottom-color:#ffd6d2}
@@ -68,18 +75,19 @@ body.keyboard-open .tab-content{scroll-snap-type:y mandatory !important;scroll-b
 .car-header-left{display:flex;align-items:center;flex:0 0 auto;gap:8px}
 .header-fields{display:flex;flex-wrap:nowrap;align-items:center;gap:2px;margin-left:auto;flex:1 1 auto;min-width:0;justify-content:flex-end}
 .car-title{font-size:13px;font-weight:bold;color:#007aff;margin:0;padding-left:5px;border-left:3px solid #007aff;white-space:nowrap;flex:0 0 auto}
-.car-title-red{color:#ff3b30 !important;border-left-color:#ff3b30 !important}
+.car-title-red{color:#d93025 !important;border-left-color:#d93025 !important}
 .car-nav{display:flex;align-items:center;gap:4px;flex:0 0 auto;margin-left:10px}
 .car-nav .slide-btn{background:#fff;border:1px solid #ccc;border-radius:12px;height:24px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;color:#007aff;font-weight:bold;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.1);user-select:none;flex:0 0 auto;font-size:12px}
-.car-nav .slide-btn.toggle-btn{color:#ff9500;border-color:#ff9500;background:#fff4e6}
+.car-nav .slide-btn.toggle-btn{color:#1c1c1e;border-color:#c7ccd4;background:#fff;border-radius:12px}
+.car-block.collapsed .car-nav .slide-btn.toggle-btn{color:#ff9500;border-color:#ff9500;background:#fff4e6}
 
-.field-sep{flex:0 0 auto;align-self:center;color:rgba(0,122,255,.35);font-size:12px;font-weight:normal;line-height:1;padding:0 1px;user-select:none;pointer-events:none;white-space:nowrap}
+.field-sep{flex:0 0 auto;align-self:center;color:#d4d4da;font-size:12px;font-weight:normal;line-height:1;padding:0 1px;user-select:none;pointer-events:none;white-space:nowrap}
 
-.date-box,.series-box,.cart-box,.input-group-top,.process-time-box,.batch-box{display:flex;align-items:center;height:26px;padding:0 6px;border-radius:6px;border:1px solid #d5dbe2;background:linear-gradient(180deg,#f8fafc 0%,#eef2f7 100%);box-shadow:0 1px 2px rgba(0,0,0,.03),inset 0 1px 0 rgba(255,255,255,.9);transition:border-color .18s ease, box-shadow .18s ease;flex:0 0 auto}
-.date-box:hover,.series-box:hover,.cart-box:hover,.input-group-top:hover,.process-time-box:hover,.batch-box:hover{border-color:#b8c5d6;box-shadow:0 2px 6px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.9)}
-.date-box{background:linear-gradient(180deg,#f5faff 0%,#e8f3ff 100%);border-color:#a8d0ff}
-.process-time-box{background:linear-gradient(180deg,#fffaf3 0%,#ffeede 100%);border-color:#ffc98c}
-.batch-box{background:linear-gradient(180deg,#f6fff8 0%,#e6f9ec 100%);border-color:#7fd99a}
+.date-box,.series-box,.cart-box,.input-group-top,.process-time-box,.batch-box{display:flex;align-items:center;height:26px;padding:0 6px;border-radius:6px;border:1px solid #e6e6ea;background:#fafafa;box-shadow:0 1px 2px rgba(0,0,0,.02);transition:border-color .18s ease, box-shadow .18s ease;flex:0 0 auto}
+.date-box:hover,.series-box:hover,.cart-box:hover,.input-group-top:hover,.process-time-box:hover,.batch-box:hover{border-color:#d4d4da;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.date-box{background:#f4f9ff;border-color:#bcd8f7}
+.process-time-box{background:#fff8ee;border-color:#f5d9a8}
+.batch-box{background:#f2fdf5;border-color:#b8e6c6}
 
 .date-box input,
 .process-time-box label,.process-time-box input,
@@ -87,31 +95,31 @@ body.keyboard-open .tab-content{scroll-snap-type:y mandatory !important;scroll-b
 .series-box>label,.series-box input,
 .cart-box label,.cart-box input,
 .input-group-top label,.input-group-top input{border:none;background:transparent;outline:none;padding:0;text-align:center;font-weight:bold}
-.date-box input{width:auto;min-width:60px;max-width:140px;height:20px;font-size:10px;color:#007aff}
-.process-time-box label{font-size:11px;color:#ff9500;white-space:nowrap;flex:0 0 auto;margin-right:2px}
-.process-time-box input{flex:0 0 auto;width:auto;min-width:45px;max-width:160px;height:20px;font-size:11px;color:#ff9500}
+.date-box input{width:auto;min-width:60px;max-width:140px;height:20px;font-size:10px;color:#0a6fd6}
+.process-time-box label{font-size:11px;color:#c47a10;white-space:nowrap;flex:0 0 auto;margin-right:2px}
+.process-time-box input{flex:0 0 auto;width:auto;min-width:45px;max-width:160px;height:20px;font-size:11px;color:#c47a10}
 .process-time-box input[readonly]{color:#999;font-weight:normal;cursor:not-allowed}
 
-.batch-box label{font-size:11px;color:#34c759;white-space:nowrap;flex:0 0 auto;margin-right:2px}
-.batch-box select{flex:0 0 auto;width:auto;min-width:24px;max-width:120px;height:20px;font-size:12px;color:#1d8f3a;cursor:pointer;-webkit-appearance:none;-moz-appearance:none;appearance:none;text-align-last:center;text-overflow:ellipsis;padding:0 16px 0 2px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%2334c759' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:calc(100% - 1px) center;background-size:8px 5px}
+.batch-box label{font-size:11px;color:#1f9d47;white-space:nowrap;flex:0 0 auto;margin-right:2px}
+.batch-box select{flex:0 0 auto;width:auto;min-width:24px;max-width:120px;height:20px;font-size:12px;color:#1f9d47;cursor:pointer;-webkit-appearance:none;-moz-appearance:none;appearance:none;text-align-last:center;text-overflow:ellipsis;padding:0 16px 0 2px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%231f9d47' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:calc(100% - 1px) center;background-size:8px 5px}
 .batch-box select:disabled{color:#999;cursor:not-allowed;background-image:none}
 .batch-box select option{background:#fff;color:#333;padding:6px 10px;font-size:12px}
 .batch-box select option[value="__add__"]{color:#5856d6;font-weight:bold}
 .batch-box select option[value="__del__"]{color:#ff3b30;font-weight:bold}
 
 .series-box{gap:2px}
-.series-box>label{font-size:11px;color:#666;white-space:nowrap;flex:0 0 auto;margin-right:2px}
-.series-box input{flex:0 0 auto;width:auto;min-width:23px;max-width:60px;height:20px;font-size:11px;color:#007aff}
-.series-box .dash{font-weight:bold;color:#666;font-size:11px;flex:0 0 auto;margin:0 1px}
+.series-box>label{font-size:11px;color:#8e8e93;white-space:nowrap;flex:0 0 auto;margin-right:2px}
+.series-box input{flex:0 0 auto;width:auto;min-width:23px;max-width:60px;height:20px;font-size:11px;color:#1c1c1e}
+.series-box .dash{font-weight:bold;color:#8e8e93;font-size:11px;flex:0 0 auto;margin:0 1px}
 .series-box input[readonly]{color:#666;font-weight:normal;cursor:not-allowed}
 
 .cart-box{gap:3px}
-.cart-box label{font-size:11px;color:#666;white-space:nowrap;flex:0 0 auto}
-.cart-box input{flex:0 0 auto;width:auto;min-width:25px;max-width:120px;height:20px;font-size:11px;color:#333}
+.cart-box label{font-size:11px;color:#8e8e93;white-space:nowrap;flex:0 0 auto}
+.cart-box input{flex:0 0 auto;width:auto;min-width:25px;max-width:120px;height:20px;font-size:11px;color:#1c1c1e}
 
 .input-group-top{gap:2px}
-.input-group-top label{font-size:11px;color:#666;white-space:nowrap;flex:0 0 auto;margin-right:2px}
-.input-group-top input{flex:0 0 auto;width:auto;min-width:24px;max-width:120px;height:20px;font-size:11px;color:#333}
+.input-group-top label{font-size:11px;color:#8e8e93;white-space:nowrap;flex:0 0 auto;margin-right:2px}
+.input-group-top input{flex:0 0 auto;width:auto;min-width:24px;max-width:120px;height:20px;font-size:11px;color:#1c1c1e}
 .input-group-top input[readonly]{color:#666;cursor:not-allowed}
 
 .opt-btn{width:20px;height:20px;padding:0;border:1px solid #007aff;background:#e6f0ff;color:#007aff;border-radius:4px;font-size:10px;font-weight:bold;cursor:pointer;flex:0 0 auto;display:flex;align-items:center;justify-content:center;line-height:1;transition:all .15s}
@@ -250,7 +258,7 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .one-car-block .car-header{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;padding-bottom:6px;overflow:visible}
 .one-car-block .car-header-left{flex:1 1 auto;display:flex!important;align-items:center!important;flex-wrap:wrap;gap:6px}
 .one-car-block .car-title{flex:0 0 auto;font-size:14px;margin-right:0}
-.one-car-block .car-empty-btn,
+.one-car-block .car-empty-btn{height:24px!important;font-size:14px!important;padding:0 2px!important;margin:0!important;flex:0 0 auto!important;border-radius:6px!important}
 .one-car-block .goto-remark-btn{height:24px!important;font-size:12px!important;padding:0 10px!important;margin:0!important;flex:0 0 auto!important;border-radius:6px!important}
 .one-car-block .car-lock-btn{height:24px!important;font-size:12px!important;padding:0 10px!important;margin:0!important;flex:0 0 auto!important;border-radius:12px!important}
 .one-car-block .car-nav{margin-left:auto;display:flex;flex-wrap:wrap;gap:4px}
@@ -813,7 +821,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.56<br>
+                    满卷时间计算工具 v1.57<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1231,6 +1239,17 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.57', date: '2026-11-25', items: [
+    '调整：车头栏收敛为三色语义，批号绿、工艺时间橙、日期蓝统一压暗一档，底色改为纯色',
+    '调整：系列、台车号、旦数、个数、姓名等字段改中性灰，不再与三色抢视线',
+    '新增：空字段整格变淡，浅底浅边灰字，一眼看出哪几项还没填',
+    '调整：锁定、折叠、空位填充按钮退回中性底，只在「开」态上色',
+    '调整：空位填充开启复用批号绿，锁定开启用红，与一车红竖条同色系',
+    '调整：折叠保留橙色文字，去掉橙色实底',
+    '调整：空位填充按钮字号从 12px 提到 14px，与车头栏日期等字段同号',
+    '调整：折叠按钮改成与锁定按钮同款的白底黑字，展开态为橙字橙底',
+    '调整：台车号 F 蓝、A 绿保持原样，不加前后标注'
+  ]},
   { version: 'v1.56', date: '2026-11-25', items: [
     '新增：空位填充重做，1～5 个空位可开启，只改位号，时间交给普通计算推出',
     '调整：1～2 个空位取时间最早的源值位号，3～5 个取最晚的位号',
@@ -2758,20 +2777,20 @@ const Renderer = {
     if(!hfHidden('processTime')) hfItems.push(`<div class="process-time-box"><label>工艺时间:</label><input type="text" id="processTime_${v}" class="calc-input" inputmode="numeric" pattern="[0-9:]*" data-role="header" data-field="processTime" placeholder="时:分:秒" ${processRO}></div>`);
     if(!hfHidden('date')) hfItems.push(`<div class="date-box"><input type="text" id="date_${v}" class="calc-input" readonly></div>`);
     if(!hfHidden('series')) hfItems.push(`<div class="series-box"><label>系列:</label>`
-      + `<input type="text" id="series_${v}_1" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="series1" value="" maxlength="2" ${seriesRO}>`
+      + `<input type="text" id="series_${v}_1" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="series1" value="" maxlength="2" placeholder=" " ${seriesRO}>`
       + `<span class="dash">-</span>`
-      + `<input type="text" id="series_${v}_2" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="series2" value="" maxlength="2" ${seriesRO}>`
+      + `<input type="text" id="series_${v}_2" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="series2" value="" maxlength="2" placeholder=" " ${seriesRO}>`
       + `</div>`);
     if(!hfHidden('cart')) hfItems.push(`<div class="cart-box"><label>台车号:</label>`
       + `<button type="button" tabindex="-1" class="opt-btn fg" data-action="toggle-opt" data-type="fg">F</button>`
-      + `<input type="text" id="cart_${v}" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="cart">`
+      + `<input type="text" id="cart_${v}" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="cart" placeholder=" ">`
       + `<button type="button" tabindex="-1" class="opt-btn ab" data-action="toggle-opt" data-type="ab">A</button>`
       + `</div>`);
-    if(!hfHidden('denier')) hfItems.push(`<div class="input-group-top"><label>旦数:</label><input type="text" id="denier_${v}" class="calc-input" inputmode="numeric" pattern="[0-9.]*" data-role="header" data-field="denier" ${denierRO}></div>`);
-    if(!hfHidden('count')) hfItems.push(`<div class="input-group-top"><label>个数:</label><input type="text" id="count_${v}" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="count" style="text-align:center;">`
+    if(!hfHidden('denier')) hfItems.push(`<div class="input-group-top"><label>旦数:</label><input type="text" id="denier_${v}" class="calc-input" inputmode="numeric" pattern="[0-9.]*" data-role="header" data-field="denier" placeholder=" " ${denierRO}></div>`);
+    if(!hfHidden('count')) hfItems.push(`<div class="input-group-top"><label>个数:</label><input type="text" id="count_${v}" class="calc-input" inputmode="numeric" pattern="[0-9]*" data-role="header" data-field="count" placeholder=" " style="text-align:center;">`
       + `<button type="button" class="opt-btn count-toggle-btn" data-action="toggle-count" data-car="${c}">288/48</button>`
       + `</div>`);
-    if(!hfHidden('headerName')) hfItems.push(`<div class="input-group-top"><label>姓名:</label><input type="text" id="headerName_${v}" class="calc-input" data-role="header" data-field="headerName"></div>`);
+    if(!hfHidden('headerName')) hfItems.push(`<div class="input-group-top"><label>姓名:</label><input type="text" id="headerName_${v}" class="calc-input" data-role="header" data-field="headerName" placeholder=" "></div>`);
     hfItems.push(`<button type="button" class="car-empty-btn" id="emptySlotBtn_v${c}" data-action="toggle-empty-slot" data-car="${c}">空位填充：关</button>`);
     h += `<div class="header-fields">` + hfItems.join('<span class="field-sep">丨</span>') + `</div>`;
     h += `</div>`;
