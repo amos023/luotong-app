@@ -1198,7 +1198,12 @@ const CFG = {
 
 const UPDATE_LOGS = [
   { version: 'v1.56', date: '2026-11-25', items: [
-    '调整：清空空位填充的全部计算规则，保留开关与按钮，等待重新定义'
+    '新增：空位填充重做，1～5 个空位可开启，只改位号，时间交给普通计算推出',
+    '调整：1～2 个空位取时间最早的源值位号，3～5 个取最晚的位号',
+    '调整：空位位号固定数字小的放最下面，位号不够时循环使用',
+    '调整：空位填充改过的位号显示红色',
+    '调整：计算方向由第一车第 1 排是否有手动时间决定，所有车共用同一方向',
+    '修复：空位填充内部重算与主流程使用同一条方向'
   ]},
   { version: 'v1.55', date: '2026-11-23', items: [
     '调整：空位填充可开启范围由 1～2 个空位放宽到 1～5 个空位'
@@ -2180,6 +2185,7 @@ const Scheduler = {
       return Flags.isManualStart(c, s) && !T()[fk.autoFill(c, s)];
     };
     const dir = manualAtRow(0, 0) ? 'forward' : 'backward';
+    Scheduler._dir = dir;   // 供空位填充复用同一方向
     for(let c = from; c < CFG.CARS; c++){ if(!CarLock.isLocked(c)) Scheduler.clearAutoFill(c); }
     for(let c = from; c < CFG.CARS; c++){
       if(CarLock.isLocked(c)) continue;
@@ -2287,9 +2293,53 @@ const Scheduler = {
       Sync.rowToB_F(pref(c), r.s, true);
     });
   },
+  /* 空位填充：只负责改位号，时间交给普通计算 */
   fillEmptySlots(carIdx){
-    // 空位填充规则已清空，等待重新定义；当前不做任何填充。
-    return;
+    const v = pref(carIdx);
+    const durEl = $('processTime_v0');
+    const dur = durEl ? U.toSec(durEl.value) : null;
+    if(dur === null) return;
+    const d = T();
+
+    // 收集源值（有时间）与空位（没时间且非手动清空）
+    const valid = [], empty = [];
+    for(let s = 0; s < CFG.SUBS; s++){
+      const titleEl = $(`title_${v}_s${s}_i1`);
+      const startEl = $(`start_${v}_s${s}_i1`);
+      if(!titleEl || !startEl) continue;
+      const title = titleEl.value.trim();
+      if(!title) continue;
+      const absSec = Scheduler.absSecOf(startEl.value);
+      if(absSec !== null) valid.push({title, absSec, sIdx: s});
+      else if(!Flags.isManualClear(carIdx, s)) empty.push({sIdx: s});
+    }
+    if(!empty.length || !valid.length) return;
+
+    const nEmpty = empty.length;
+    const byTime = valid.slice().sort((a,b) => a.absSec - b.absSec);   // 时间从早到晚
+    const take = Math.min(nEmpty, byTime.length);
+    // 1～2 个空位取时间最小的；3～5 个取时间最大的
+    const picked = (nEmpty <= 2) ? byTime.slice(0, take) : byTime.slice(byTime.length - take);
+
+    // 位号按数字从小到大，数字小的放最下面
+    const numOf = tt => { const m = String(tt).match(/\d+/); return m ? parseInt(m[0], 10) : Number.MAX_SAFE_INTEGER; };
+    const titles = picked.map(pp => pp.title).sort((a,b) => numOf(a) - numOf(b));
+    const slots = empty.slice().sort((a,b) => b.sIdx - a.sIdx);   // 从第 6 排往上
+
+    // 位号不够时循环使用，把空位填满
+    for(let i = 0; i < slots.length; i++){
+      const s = slots[i].sIdx;
+      const titleEl = $(`title_${v}_s${s}_i1`);
+      if(!titleEl || !titles.length) continue;
+      d[fk.autoFillOldTitle(carIdx, s)] = titleEl.value;
+      d[fk.autoFillOldCustom(carIdx, s)] = Flags.isTitleCustom(carIdx, s);
+      titleEl.value = titles[i % titles.length];
+      d[fk.autoFill(carIdx, s)] = true;
+      Sync.titles(v, s);
+    }
+    // 位号改完，用同一个方向跑一遍普通计算产出时间
+    Scheduler.processCar(carIdx, Scheduler._dir || Flags.direction(), dur);
+    updateTitleCustomMarks();
   },
   clearAutoFill(carIdx){
     const d = T();
@@ -3723,7 +3773,8 @@ function updateTitleCustomMarks(){
       var base = $('title_v' + c + '_s' + s + '_i1');
       var want = String((6 - s + S.tab * 6) + '#').replace(/#+$/, '');
       var val = base ? String(base.value || '').trim().replace(/#+$/, '') : '';
-      var custom = val !== '' && val !== want;
+      var isAuto = !!T()['autoFill_v' + c + '_s' + s];   // 空位填充改过的位号
+      var custom = isAuto || (val !== '' && val !== want);
       for(var i = 1; i <= 6; i++){
         var el = $('title_v' + c + '_s' + s + '_i' + i);
         if(el) el.classList.toggle('title-custom', custom);
