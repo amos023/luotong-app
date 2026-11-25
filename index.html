@@ -1315,6 +1315,8 @@ const UPDATE_LOGS = [
     '整理：把满卷时间的核心规则抽成纯函数 Calc（跨天推断、同组排序、边界推进），processCar 改为调用它，便于跑回归测试',
     '新增：车班次重复的 Toast 列出重复组里涉及的所有车，如「车班次与一车、二车重复」',
     '调整：Toast 提示下移到顶部标签栏下方，不再压住模板标签',
+    '修复：上一车位号没有时间时，本格已填的时间被重算清空，连带后面同排也被清；现在把本格时间当起点继续推',
+    '说明：空位填充只重算当前这一辆车，后面车不跟着变，需要在后面车录时间时才级联重算',
     '调整：「🛠 故障记录」入口默认隐藏，需要时在后台「模板显示」里勾选打开；「故障」模板仍按原设置显示'
   ]},
   { version: 'v1.58', date: '2026-11-25', items: [
@@ -2532,7 +2534,12 @@ const Scheduler = {
           continue;
         }
         if(Flags.isManualClear(c, s)){ newStarts.set(s, ''); cur = null; continue; }
-        if(cur === null){ newStarts.set(s, ''); continue; }
+        if(cur === null){
+          /* 上游没有可继承的时间时，本格自己还留着时间就当作起点，避免整条链被清空 */
+          const ownSec = U.toSec(row.startEl.value);
+          if(ownSec !== null){ cur = Calc.placeClock(ownSec, null); continue; }
+          newStarts.set(s, ''); continue;
+        }
         if(dur !== null){
           const r = Calc.advance(cur, dur);
           newStarts.set(s, r.out);
