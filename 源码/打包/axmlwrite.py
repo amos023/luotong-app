@@ -137,8 +137,7 @@ class Writer:
 
 
 def build_manifest(package, version_code, version_name, label, activity_class,
-                   min_sdk=21, target_sdk=34, config_changes=0x0DB0, icon_rid=None,
-                   permissions=None, receivers=None):
+                   min_sdk=21, target_sdk=34, config_changes=0x0DB0, icon_rid=None):
     act = El("activity", [
         (True, "name", T_STRING, activity_class),
         (True, "exported", T_BOOL, True),
@@ -150,12 +149,6 @@ def build_manifest(package, version_code, version_name, label, activity_class,
             El("category", [(True, "name", T_STRING, "android.intent.category.LAUNCHER")]),
         ]),
     ])
-    app_children = [act]
-    for r in (receivers or []):
-        app_children.append(El("receiver", [
-            (True, "name", T_STRING, r),
-            (True, "exported", T_BOOL, False),
-        ]))
     app_attrs = [(True, "label", T_STRING, label)]
     if icon_rid is not None:
         app_attrs.append((True, "icon", T_REF, icon_rid))
@@ -163,19 +156,14 @@ def build_manifest(package, version_code, version_name, label, activity_class,
         (True, "allowBackup", T_BOOL, True),
         (True, "hardwareAccelerated", T_BOOL, True),
         (True, "usesCleartextTraffic", T_BOOL, True),
-    ], app_children)
+    ], [act])
     uses_sdk = El("uses-sdk", [
         (True, "minSdkVersion", T_INT, min_sdk),
         (True, "targetSdkVersion", T_INT, target_sdk),
     ])
-    children = []
-    for perm in (permissions or []):
-        children.append(El("uses-permission", [(True, "name", T_STRING, perm)]))
-    children.append(uses_sdk)
-    children.append(app)
     manifest = El("manifest", [
         (False, "package", T_STRING, package),
         (True, "versionCode", T_INT, version_code),
         (True, "versionName", T_STRING, version_name),
-    ], children)
+    ], [uses_sdk, app])
     return Writer(manifest).encode()

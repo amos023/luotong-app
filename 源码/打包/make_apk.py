@@ -18,8 +18,8 @@ OUT = os.path.join(ROOT, "out")
 APK = os.path.join(OUT, "落筒录入.apk")
 
 PKG = "io.github.mcool.luotong"
-VERSION_CODE = 59
-VERSION_NAME = "1.59"
+VERSION_CODE = 56
+VERSION_NAME = "1.56"
 LABEL = "落筒录入"
 ACTIVITY = "io.github.mcool.luotong.MainActivity"
 ICON_RID = 0x7F010000
@@ -59,15 +59,7 @@ def assemble(manifest, dex, html, arsc, icons, pad_size):
 
 
 def main():
-    manifest = build_manifest(
-        PKG, VERSION_CODE, VERSION_NAME, LABEL, ACTIVITY, icon_rid=ICON_RID,
-        permissions=[
-            "android.permission.POST_NOTIFICATIONS",
-            "android.permission.SCHEDULE_EXACT_ALARM",
-            "android.permission.USE_EXACT_ALARM",
-        ],
-        receivers=["io.github.mcool.luotong.MainActivity$AlarmReceiver"],
-    )
+    manifest = build_manifest(PKG, VERSION_CODE, VERSION_NAME, LABEL, ACTIVITY, icon_rid=ICON_RID)
     dex = open(os.path.join(OUT, "dex", "classes.dex"), "rb").read()
     html = open(os.path.join(ROOT, "assets", "index.html"), "rb").read()
     arsc = open(os.path.join(OUT, "resources.arsc"), "rb").read()

@@ -39,13 +39,6 @@ body{background:#f2f2f7;margin:0;padding:0;color:#333;font-size:13px;overflow:hi
 
 .car-lock-btn{flex:0 0 auto;height:24px;padding:0 10px;font-size:12px;font-weight:bold;line-height:1;border:1px solid #c7ccd4;background:#fff;color:#1c1c1e;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);cursor:pointer;user-select:none;transition:all .2s;display:inline-flex;align-items:center;justify-content:center}
 .car-lock-btn:hover{background:#f2f2f7}
-.copy-title-btn{flex:0 0 auto;height:24px;padding:0 10px;font-size:12px;font-weight:bold;line-height:1;border:1px solid #bcd8f7;background:#f4f9ff;color:#0a6fd6;border-radius:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;transition:all .2s}
-.copy-title-btn:active{background:#e6f1ff}
-.alert-btn{flex:0 0 auto;height:24px;padding:0 10px;font-size:12px;font-weight:bold;line-height:1;border:1px solid #ffc55c;background:#fff8ec;color:#bf6a00;border-radius:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;transition:all .2s}
-.alert-btn:active{background:#fff0d8}
-.alert-btn.on{background:#ffedd5;border-color:#f59e0b}
-.one-car-block .alert-btn{height:24px!important;font-size:12px!important;padding:0 10px!important;margin:0!important;border-radius:12px!important}
-.one-car-block .copy-title-btn{height:24px!important;font-size:12px!important;padding:0 10px!important;margin:0!important;border-radius:12px!important}
 .car-lock-btn.locked{border-color:var(--c-danger-bd);background:var(--c-danger-bg);color:var(--c-danger)}
 .car-lock-btn:disabled{opacity:.5;cursor:not-allowed}
 .car-block.car-locked{border-color:#ffc9c5;box-shadow:0 2px 6px rgba(255,59,48,.08)}
@@ -837,23 +830,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                         每次打开都显示新手引导（默认关闭，只首次显示）
                     </label>
                     <button class="admin-btn" type="button" id="guideResetBtn" style="margin-top:12px;">重看新手引导</button>
-                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:12px;flex-wrap:wrap;">
-                        <input type="checkbox" id="settingTimeAlert" style="width:18px;height:18px;">
-                        <span>满卷时间到点提醒</span>
-                        <span style="color:#6f7580;font-size:12px;">提前</span>
-                        <select id="settingTimeAlertLead" style="padding:4px 6px;border:1px solid #cfd5e0;border-radius:8px;font-size:12px;">
-                            <option value="0">0 分钟</option>
-                            <option value="1">1 分钟</option>
-                            <option value="3">3 分钟</option>
-                            <option value="5">5 分钟</option>
-                        </select>
-                    </label>
-                    <div style="display:flex;align-items:center;gap:6px;margin-top:10px;">
-                        <input type="text" id="taCustomTime" placeholder="14:30" inputmode="numeric" style="width:72px;padding:6px 8px;border:1px solid #cfd5e0;border-radius:8px;font-size:12.5px;text-align:center;">
-                        <input type="text" id="taCustomText" placeholder="提醒内容（可留空）" style="flex:1;min-width:80px;padding:6px 8px;border:1px solid #cfd5e0;border-radius:8px;font-size:12.5px;">
-                        <button type="button" class="admin-btn" id="taAddBtn" style="width:auto;padding:6px 12px;margin:0;">添加</button>
-                    </div>
-                    <div id="taCustomList" style="margin-top:7px;font-size:12px;color:#6f7580;line-height:1.7;"></div>
+
                 </div>
                 <div class="admin-section">
                     <div class="admin-section-title">模板显示</div>
@@ -952,16 +929,6 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
         <div class="modal-actions">
             <button class="modal-btn cancel" data-action="batch-add-cancel">取消</button>
             <button class="modal-btn" data-action="batch-add-ok">确认</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="alertPickModal">
-    <div class="modal-box">
-        <div class="modal-title" id="alertPickTitle">选择要提醒的位号</div>
-        <div id="alertPickList" style="max-height:48vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
-        <div class="modal-actions">
-            <button class="modal-btn cancel" data-action="close-modal" data-modal="alertPickModal">关闭</button>
         </div>
     </div>
 </div>
@@ -1344,15 +1311,10 @@ const UPDATE_LOGS = [
     '调整：中性输入框底色改近白 #fcfcfe，边框用 #cbd1dd（保持 1px），靠轮廓区分而不是整块压灰；已去掉空值弱化',
     '调整：车头栏字段标签字号定为 12px，比输入内容略小一号，兼顾清楚与不挤',
     '调整：车头栏标签统一 12px，台车号保留全称，该格内边距恢复 3px；F/A 按钮沿用 288/48 的内边距与圆角，尺寸定在 15px，F 右移 1px；4 位数字靠溢出可见不裁切',
-    '新增：车头栏加「复制上一车」，把上一车的位号整段搬过来，时间与备注不动',
     '整理：车头栏配色收进 CSS 变量（--fld-* / --c-batch / --c-pt / --c-date / --c-danger），以后换色只改一处',
     '整理：把满卷时间的核心规则抽成纯函数 Calc（跨天推断、同组排序、边界推进），processCar 改为调用它，便于跑回归测试',
     '新增：车班次重复的 Toast 列出重复组里涉及的所有车，如「车班次与一车、二车重复」',
     '调整：Toast 提示下移到顶部标签栏下方，不再压住模板标签',
-    '新增：车头栏「提醒」按钮，列出当前车已填时间的位号，勾选后到点提醒（不做全量扫描）',
-    '修复：提醒弹窗的关闭按钮点了无反应，改走通用的关闭动作',
-    '新增：勾选的提醒同步到系统闹钟，页面被系统回收或锁屏也能收到通知（需装新包）',
-    '新增：后台可添加自定义提醒时间与文字，逐条删除',
     '调整：「🛠 故障记录」入口默认隐藏，需要时在后台「模板显示」里勾选打开；「故障」模板仍按原设置显示'
   ]},
   { version: 'v1.58', date: '2026-11-25', items: [
@@ -2459,142 +2421,6 @@ const Calc = {
   }
 };
 
-/* 到点提醒：时间来自满卷时间输入值、工艺时间推算、自定义 */
-const TimeAlert = {
-  KEY: 'luotong_time_alert_v1',
-  CUSTOM_KEY: 'luotong_time_alert_custom_v1',
-  fired: Object.create(null),
-  timer: null,
-
-  enabled(){ try { return localStorage.getItem(this.KEY) === 'on'; } catch(e){ return false; } },
-  setEnabled(v){ try { localStorage.setItem(this.KEY, v ? 'on' : 'off'); } catch(e){} },
-  leadMs(){ try { return (+(localStorage.getItem(this.KEY + '_lead') || 1)) * 60000; } catch(e){ return 60000; } },
-  setLead(n){ try { localStorage.setItem(this.KEY + '_lead', String(n)); } catch(e){} },
-
-  WATCH_KEY: 'luotong_time_alert_watch_v1',
-  watched(){
-    try { const a = JSON.parse(localStorage.getItem(this.WATCH_KEY) || '[]'); return Array.isArray(a) ? a : []; }
-    catch(e){ return []; }
-  },
-  saveWatched(a){ try { localStorage.setItem(this.WATCH_KEY, JSON.stringify(a)); } catch(e){} },
-  setWatched(id, on){
-    const arr = this.watched().filter(x => x !== id);
-    if(on) arr.push(id);
-    this.saveWatched(arr);
-    try {
-      const B = window.LuotongAlarm;
-      if(B && typeof B.cancel === 'function' && !on) B.cancel(id);
-      if(on) this.syncNative();
-    } catch(e) {}
-  },
-
-  /* 把勾选的时间交给系统闹钟，页面被杀也能响 */
-  syncNative(){
-    const B = window.LuotongAlarm;
-    if(!B || typeof B.schedule !== 'function') return;
-    const now = Date.now(), lead = this.leadMs(), win = 2 * 3600 * 1000;
-    this.watched().forEach(id => {
-      try {
-        const el = $(id);
-        if(!el || !el.value){ B.cancel(id); return; }
-        const at = this.stampOf(el.value);
-        if(at === null || at < now - 60000 || at > now + win){ B.cancel(id); return; }
-        B.schedule(id, at - lead, this.labelOf(id));
-      } catch(e) {}
-    });
-    this.customList().forEach(it => {
-      try {
-        const key = 'cus_' + it.id;
-        const at = this.stampOf(it.time);
-        if(at === null || at < now - 60000 || at > now + win){ B.cancel(key); return; }
-        B.schedule(key, at - lead, it.text || it.time);
-      } catch(e) {}
-    });
-  },
-
-  cancelAllNative(){
-    const B = window.LuotongAlarm;
-    if(!B || typeof B.cancel !== 'function') return;
-    this.watched().forEach(id => { try { B.cancel(id); } catch(e){} });
-    this.customList().forEach(it => { try { B.cancel('cus_' + it.id); } catch(e){} });
-  },
-
-  customList(){
-    try { const a = JSON.parse(localStorage.getItem(this.CUSTOM_KEY) || '[]'); return Array.isArray(a) ? a : []; }
-    catch(e){ return []; }
-  },
-  saveCustom(a){ try { localStorage.setItem(this.CUSTOM_KEY, JSON.stringify(a)); } catch(e){} },
-  addCustom(time, text){
-    const arr = this.customList();
-    arr.push({ id: 'c' + Date.now(), time: time, text: text || '' });
-    this.saveCustom(arr);
-  },
-  removeCustom(id){ this.saveCustom(this.customList().filter(x => x.id !== id)); },
-
-  /* HH:MM → 今天（或次日）的时间戳 */
-  stampOf(str){
-    const sec = U.toSec(str);
-    if(sec === null) return null;
-    const d = new Date();
-    const base = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-    let at = base + sec * 1000;
-    if(Date.now() - at > 12 * 3600 * 1000) at += 86400000;
-    return at;
-  },
-
-  collect(){
-    const now = Date.now(), lead = this.leadMs(), win = 2 * 3600 * 1000;
-    const hits = [];
-    const push = (key, at, label) => {
-      if(at === null || at < now || at > now + win) return;
-      if(this.fired[key]) return;
-      if(now < at - lead) return;
-      this.fired[key] = 1;
-      hits.push({ at: at, label: label });
-    };
-
-    /* 来源 1：只处理在弹窗里勾选过的位号 */
-    this.watched().forEach(id => {
-      const el = $(id);
-      if(!el || !el.value) return;
-      const m = String(id).match(/^start_v(\d+)_s(\d+)_i(\d+)$/);
-      const car = m ? +m[1] : 0;
-      const sIdx = m ? +m[2] : 0;
-      const posEl = m ? $('title_' + id.replace(/^start_/, '')) : null;
-      const pos = posEl ? String(posEl.value || '').trim() : '';
-      push('in|' + id + '|' + el.value, this.stampOf(el.value),
-           (CFG.CAR_NAMES[car] || '') + ' 第' + (sIdx + 1) + '排' + (pos ? ' 位号' + pos : ''));
-    });
-
-    /* 来源 3：自定义提醒 */
-    this.customList().forEach(it => {
-      push('cus|' + it.id + '|' + it.time, this.stampOf(it.time), it.text || it.time);
-    });
-
-    return hits;
-  },
-
-  show(hits){
-    const names = hits.slice(0, 3).map(h => h.label).join(' · ');
-    showToast(hits.length > 3 ? names + ' 等 ' + hits.length + ' 处到点' : names + ' 到点', 'dup');
-    try { if(navigator.vibrate) navigator.vibrate(150); } catch(e){}
-  },
-
-  tick(){
-    try {
-      if(!this.enabled()){ this.cancelAllNative(); return; }
-      this.syncNative();
-    } catch(e) {}
-    const hits = this.collect();
-    if(hits.length) this.show(hits);
-  },
-
-  start(){
-    if(this.timer) return;
-    this.timer = setInterval(() => { try { this.tick(); } catch(e){} }, 20000);
-  }
-};
-
 const Scheduler = {
   _timer: null,
   updateAll(){ Scheduler._doUpdate(); },
@@ -3047,8 +2873,6 @@ const Renderer = {
     h += `<div class="car-header-left">`;
     h += `<h2 class="${titleCls}">${CFG.CAR_NAMES[c]}</h2>`;
     h += `<button type="button" class="car-lock-btn" id="lockBtn_v${c}" data-action="toggle-car-lock" data-car="${c}" title="锁定该车">锁定</button>`;
-    h += `<button type="button" class="alert-btn" data-action="open-alert-pick" data-car="${c}" title="挑几个位号，到点提醒">提醒</button>`;
-    if(!isFirst) h += `<button type="button" class="copy-title-btn" data-action="copy-titles" data-car="${c}" title="把上一车的位号复制过来，时间不动">复制上一车</button>`;
     if(!HeaderFields.hidden('remarkJump')) h += `<button type="button" class="goto-remark-btn" data-action="goto-remark" data-car="${c}" title="直达备注卡片">备注跳转</button>`;
     h += `</div>`;
     h += `<div class="car-nav">`;
@@ -3432,29 +3256,6 @@ const App = {
     });
     return idx;
   },
-  /* 把上一车的位号整段复制到本车，时间与备注保持不动 */
-  copyTitlesFromPrev(carIdx){
-    if(S.locked) return;
-    if(carIdx <= 0) return;
-    if(CarLock.isLocked(carIdx)) return;
-    const v = pref(carIdx), pv = pref(carIdx - 1);
-    const cols = (S.tab >= 4) ? [1, 2, 3] : [1, 2, 3, 4, 5, 6];
-    let n = 0;
-    for(let s = 0; s < CFG.SUBS; s++){
-      for(const i of cols){
-        const src = $(`title_${pv}_s${s}_i${i}`);
-        const dst = $(`title_${v}_s${s}_i${i}`);
-        if(!src || !dst) continue;
-        const val = String(src.value || '').trim();
-        dst.value = val;
-        if(val) n++;
-      }
-    }
-    Store.saveDebounced();
-    if(typeof updateTitleCustomMarks === 'function') updateTitleCustomMarks();
-    if(!n){ showToast('上一车还没有位号可以复制', 'err'); return; }
-    showToast('已复制 ' + n + ' 个位号，时间保持不变');
-  },
   toggleCollapse(btn){
     const block = btn.closest('.one-car-block');
     if(!block) return;
@@ -3707,80 +3508,12 @@ const App = {
   }
 };
 
-/* 后台「提醒设置」的开关绑定 */
-const AdminPanelBind = {
-  timeAlert(){
-    const en = $('settingTimeAlert'), lead = $('settingTimeAlertLead');
-    const addBtn = $('taAddBtn'), tIn = $('taCustomTime'), xIn = $('taCustomText'), list = $('taCustomList');
-    if(en){ en.checked = TimeAlert.enabled(); en.onchange = () => TimeAlert.setEnabled(en.checked); }
-    if(lead){ lead.value = String(Math.round(TimeAlert.leadMs() / 60000)); lead.onchange = () => TimeAlert.setLead(+lead.value); }
-    const render = () => {
-      if(!list) return;
-      const arr = TimeAlert.customList();
-      if(!arr.length){ list.textContent = '暂无自定义提醒'; return; }
-      list.innerHTML = arr.map(it =>
-        '<span style="display:inline-flex;align-items:center;gap:6px;background:#f1f3f7;border:1px solid #dbe0ea;border-radius:8px;padding:3px 8px;margin:0 6px 6px 0;">'
-        + it.time + (it.text ? ' ' + U.esc(it.text) : '')
-        + '<b data-ta-del="' + it.id + '" style="color:#d93025;cursor:pointer;font-weight:bold;">✕</b></span>').join('');
-    };
-    if(addBtn && tIn) addBtn.onclick = () => {
-      const t = String(tIn.value || '').trim();
-      if(U.toSec(t) === null){ showToast('时间格式应为 8:45 或 8:45:00', 'err'); return; }
-      TimeAlert.addCustom(t, String(xIn && xIn.value || '').trim());
-      tIn.value = ''; if(xIn) xIn.value = '';
-      render();
-      showToast('已添加提醒 ' + t);
-    };
-    if(list) list.onclick = (e) => {
-      const b = e.target.closest('[data-ta-del]');
-      if(!b) return;
-      TimeAlert.removeCustom(b.dataset.taDel);
-      render();
-    };
-    render();
-  }
-};
-
 const Modals = {
   _confirmOk: null,
   _confirmCancel: null,
   open(id){ $(id).classList.add('active'); },
   close(id){ $(id).classList.remove('active'); },
   /* 打开自定义批号弹窗并清空各字段 */
-  /* 列出当前车所有已填时间的位号，勾选即登记到点提醒 */
-  openAlertPick(carIdx){
-    const v = pref(carIdx);
-    const box = $('alertPickList');
-    const title = $('alertPickTitle');
-    if(!box) return;
-    if(title) title.textContent = (CFG.CAR_NAMES[carIdx] || '当前车') + ' · 选择要提醒的位号';
-    const watch = TimeAlert.watched();
-    let h = '';
-    for(let s = 0; s < CFG.SUBS; s++){
-      for(let i = 1; i <= 6; i++){
-        const el = $('start_' + v + '_s' + s + '_i' + i);
-        if(!el || !String(el.value || '').trim()) continue;
-        const tid = $('title_' + v + '_s' + s + '_i' + i);
-        const pos = tid ? String(tid.value || '').trim() : '';
-        const on = watch.indexOf(el.id) >= 0;
-        h += '<label style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#f7f9fc;border:1px solid #e8edf5;border-radius:9px;font-size:13px;">'
-           + '<input type="checkbox" data-alert-id="' + el.id + '"' + (on ? ' checked' : '') + ' style="width:17px;height:17px;flex:0 0 auto;">'
-           + '<span>第 ' + (s + 1) + ' 排' + (pos ? ' · 位号 ' + U.esc(pos) : '') + '</span>'
-           + '<b style="margin-left:auto;color:#0a6fd6;">' + U.esc(el.value) + '</b>'
-           + '</label>';
-      }
-    }
-    if(!h) h = '<p style="font-size:13px;color:#8e8e93;text-align:center;margin:18px 0;">这辆车还没有填时间的位号</p>';
-    box.innerHTML = h;
-    box.querySelectorAll('input[data-alert-id]').forEach(cb => {
-      cb.addEventListener('change', () => {
-        TimeAlert.setWatched(cb.dataset.alertId, cb.checked);
-        showToast(cb.checked ? '已加入提醒' : '已移出提醒');
-      });
-    });
-    Modals.open('alertPickModal');
-  },
-
   openBatchAdd(){
     $('batchAddName').value = '';
     $('batchAddDenier').value = '';
@@ -4143,8 +3876,6 @@ const Events = {
       case 'goto-remark': App.gotoRemark(+t.dataset.car); break;
       case 'scroll-cars': App.scrollCars(+t.dataset.dir); break;
       case 'toggle-collapse': App.toggleCollapse(t); break;
-      case 'copy-titles': App.copyTitlesFromPrev(+t.dataset.car); break;
-      case 'open-alert-pick': Modals.openAlertPick(+t.dataset.car); break;
       case 'toggle-opt': {
         const prev = document.activeElement;
         App.toggleOpt(t);
@@ -4882,8 +4613,6 @@ function boot(){
     AutoSize.allHeaders();
 
     Guide.init();
-    TimeAlert.start();
-    AdminPanelBind.timeAlert();
 
     const mask = $('loading-mask');
     if(mask){
