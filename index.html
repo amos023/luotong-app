@@ -333,7 +333,7 @@ body.hscroll-locked .one-car-block .sub-car-row.header-row .grid-container{overf
 }
 
 /* 非阻塞轻提示：时间输入错误时使用，不显示系统弹窗 */
-.app-toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top, 0px));transform:translate(-50%,-8px);z-index:12000;max-width:calc(100vw - 32px);padding:10px 15px;border-radius:9px;background:#1f2937;color:#fff;font-size:13px;line-height:1.45;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.20);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease;}
+.app-toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top, 0px));transform:translate(-50%,-8px);z-index:12000;max-width:calc(100vw - 32px);padding:10px 15px;border-radius:9px;background:#ffffff;color:#d93025;font-size:13px;line-height:1.45;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.20);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease;}
 .app-toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
 /* v1.42：所有提示统一为深灰底 #1f2937（原为橙红渐变） */
 
@@ -523,10 +523,10 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 /* ===== Toast ===== */
 /* ===== 字号变量 ===== */
 :root{--fs-10:10px;--fs-11:11px;--fs-12:12px;--fs-13:13px;--fs-14:14px;--fs-15:15px;--fs-16:16px}
-.app-toast{position:fixed!important;left:50%!important;top:calc(16px + env(safe-area-inset-top,0px))!important;transform:translate(-50%,-10px)!important;z-index:40000!important;max-width:calc(100vw - 40px)!important;padding:12px 16px!important;border-radius:12px!important;background:#1f2937!important;color:#fff!important;font-size:14px!important;line-height:1.45!important;font-weight:600!important;text-align:center!important;box-shadow:0 6px 18px rgba(16,24,40,.22)!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:opacity .2s ease,transform .2s ease!important;letter-spacing:0!important;font-size:var(--fs-14)!important}
+.app-toast{position:fixed!important;left:50%!important;top:calc(16px + env(safe-area-inset-top,0px))!important;transform:translate(-50%,-10px)!important;z-index:40000!important;max-width:calc(100vw - 40px)!important;padding:12px 16px!important;border-radius:12px!important;background:rgba(255,255,255,.97)!important;color:#d93025!important;border:1px solid #e2e4ea!important;font-size:14px!important;line-height:1.45!important;font-weight:600!important;text-align:center!important;box-shadow:0 6px 18px rgba(16,24,40,.16)!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:opacity .2s ease,transform .2s ease!important;letter-spacing:0!important;font-size:var(--fs-14)!important}
 .app-toast.show{opacity:1!important;visibility:visible!important;transform:translate(-50%,0)!important}
 /* v1.42：所有提示统一深灰底（含 dup 类型，保持一致） */
-.app-toast.dup{background:#1f2937!important}
+.app-toast.dup{background:rgba(255,255,255,.97)!important}
 /* v1.42：快照恢复提示条 */
 .recover-bar{position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:50000;
   background:#1f2937;color:#fff;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;
@@ -668,7 +668,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
     void el.offsetWidth;
     el.classList.add('show');
     clearTimeout(toast._t);
-    toast._t=setTimeout(function(){el.classList.remove('show')},2200);
+    toast._t=setTimeout(function(){el.classList.remove('show')},3000);
   }
   window.showToast=toast;
   window.__toast=toast;
@@ -821,7 +821,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.57<br>
+                    满卷时间计算工具 v1.58<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1080,7 +1080,7 @@ function populateReasons(){const s=$('reason'),v=s.value;[...s.querySelectorAll(
 function openReasonModal(){$('reasonModal').classList.add('active');$('reasonModal').setAttribute('aria-hidden','false');$('customReason').value='';$('customReason').focus()}
 function closeReasonModal(){$('reasonModal').classList.remove('active');$('reasonModal').setAttribute('aria-hidden','true')}
 /* 故障页统一提示：转发共用 toast，未就绪时本地兜底 */
-function showNotice(message,kind){ if(window.__toast){window.__toast(message,kind||'');return;} var el=document.getElementById('appToast'); if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);} el.className='app-toast'+(kind?' '+kind:''); el.textContent=message||''; window.requestAnimationFrame(function(){el.classList.add('show');}); setTimeout(function(){el.classList.remove('show');},2200); }
+function showNotice(message,kind){ if(window.__toast){window.__toast(message,kind||'');return;} var el=document.getElementById('appToast'); if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);} el.className='app-toast'+(kind?' '+kind:''); el.textContent=message||''; window.requestAnimationFrame(function(){el.classList.add('show');}); setTimeout(function(){el.classList.remove('show');},3000); }
 function closeNotice(){$('noticeModal').classList.remove('active');$('noticeModal').setAttribute('aria-hidden','true')}
 $('noticeOk').addEventListener('click',closeNotice);$('noticeModal').addEventListener('click',e=>{if(e.target===$('noticeModal'))closeNotice()});
 $('reason').addEventListener('change',()=>{if($('reason').value==='__add__'){openReasonModal();$('reason').value=''}});
@@ -1239,6 +1239,11 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.58', date: '2026-11-25', items: [
+    '调整：Toast 改浅底毛玻璃，白底红字加细边框，替代原来的深灰底白字',
+    '调整：车头栏姓名字段改为默认显示，备注跳转仍默认隐藏',
+    '调整：Toast 停留时间从 2.2 秒延长到 3 秒'
+  ]},
   { version: 'v1.57', date: '2026-11-25', items: [
     '调整：车头栏收敛为三色语义，批号绿、工艺时间橙、日期蓝统一压暗一档，底色改为纯色',
     '调整：系列、台车号、旦数、个数、姓名等字段改中性灰，不再与三色抢视线',
@@ -1537,7 +1542,7 @@ function resetBatchBaseDate(tab){
 const $ = id => document.getElementById(id);
 const $$ = (sel, root) => (root || document).querySelectorAll(sel);
 let toastTimer = null;
-function showToast(message,kind){ if(window.__toast){window.__toast(message,kind||'');return;} var el=document.getElementById('appToast'); if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);} el.className='app-toast'+(kind?' '+kind:''); el.textContent=message||''; window.requestAnimationFrame(function(){el.classList.add('show');}); setTimeout(function(){el.classList.remove('show');},2200); }
+function showToast(message,kind){ if(window.__toast){window.__toast(message,kind||'');return;} var el=document.getElementById('appToast'); if(!el){el=document.createElement('div');el.id='appToast';el.className='app-toast';document.body.appendChild(el);} el.className='app-toast'+(kind?' '+kind:''); el.textContent=message||''; window.requestAnimationFrame(function(){el.classList.add('show');}); setTimeout(function(){el.classList.remove('show');},3000); }
 const pref = c => 'v' + c;
 function getAllFields(){ return $$('#main_content input, #main_content textarea, #main_content select'); }
 function defaultTabName(t){ return CFG.TEMPLATE_NAMES[t] || ('模板' + (t + 1)); }
@@ -1687,10 +1692,10 @@ const UndoClear = {
 
 /* 车头栏字段显示/隐藏 */
 const HeaderFields = {
-  KEY: 'luotong_hidden_header_fields_v1',
+  KEY: 'luotong_hidden_header_fields_v2',
   ALL: ['batch', 'processTime', 'date', 'series', 'cart', 'denier', 'count', 'headerName', 'remarkJump'],
   NAME: { batch:'批号', processTime:'工艺时间', date:'日期', series:'系列', cart:'台车号', denier:'旦数', count:'个数', headerName:'姓名', remarkJump:'备注跳转' },
-  DEF: ['remarkJump', 'headerName'],   // 默认隐藏：备注跳转、姓名
+  DEF: ['remarkJump'],   // 默认隐藏：备注跳转（姓名默认显示）
   list(){
     try {
       const raw = localStorage.getItem(this.KEY);
