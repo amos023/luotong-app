@@ -896,7 +896,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.62<br>
+                    满卷时间计算工具 v1.64<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1314,6 +1314,13 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.64', date: '2026-11-27', items: [
+    '调整：登记用的飞书群机器人地址已接入，首次使用会要求填姓名与工号'
+  ]},
+  { version: 'v1.63', date: '2026-11-27', items: [
+    '新增：首次使用登记，填写姓名与工号后提交到飞书群机器人，填过之后不再询问',
+    '说明：飞书地址留空时不拦截任何人；提交失败也会放行，下次打开再试'
+  ]},
   { version: 'v1.62', date: '2026-11-26', items: [
     '新增：新手引导增加「反向」一步，说明这是做 60 头时才用，48 头保持关闭'
   ]},
@@ -4916,6 +4923,56 @@ boot();
   var el=document.getElementById('ui-js');
   if(!el) return;
   try{ (new Function(el.textContent))(); }catch(e){ console.error('[ui-js]', e); }
+})();
+</script>
+
+<script>
+/* 首次使用登记：姓名 + 工号，提交到飞书群机器人
+   FEISHU_HOOK 留空则完全不拦截，页面照常用 */
+(function(){
+  var FEISHU_HOOK = 'https://open.feishu.cn/open-apis/bot/v2/hook/a447e79c-5337-483f-ad98-9f44209cd82b';
+  if(!FEISHU_HOOK) return;
+  var KEY = 'lt_user_v1';
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e){}
+  if(saved && saved.name && saved.code) return;
+
+  var mask = document.createElement('div');
+  mask.id = 'ltGate';
+  mask.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#f5f6f9;display:flex;align-items:center;justify-content:center;';
+  mask.innerHTML = '<div style="width:86%;max-width:340px;background:#fff;border-radius:16px;padding:22px;box-shadow:0 8px 30px rgba(16,24,40,.12);">'
+    + '<div style="font-size:17px;font-weight:700;margin-bottom:6px;">落筒录入</div>'
+    + '<div style="font-size:13px;color:#8e8e93;margin-bottom:16px;">首次使用请填写姓名与工号</div>'
+    + '<input id="ltName" placeholder="姓名" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d5d9e0;border-radius:10px;font-size:15px;margin-bottom:10px;outline:none;">'
+    + '<input id="ltCode" placeholder="工号" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d5d9e0;border-radius:10px;font-size:15px;margin-bottom:16px;outline:none;">'
+    + '<button id="ltGo" type="button" style="width:100%;padding:12px;border:0;border-radius:10px;background:#007aff;color:#fff;font-size:15px;font-weight:700;">进入</button>'
+    + '<div id="ltTip" style="font-size:12px;color:#d93025;margin-top:10px;min-height:16px;"></div>'
+    + '</div>';
+  document.body.appendChild(mask);
+
+  mask.querySelector('#ltGo').onclick = function(){
+    var name = String(mask.querySelector('#ltName').value || '').trim();
+    var code = String(mask.querySelector('#ltCode').value || '').trim();
+    var tip = mask.querySelector('#ltTip');
+    if(!name || !code){ tip.style.color = '#d93025'; tip.textContent = '姓名和工号都要填'; return; }
+    tip.style.color = '#8e8e93';
+    tip.textContent = '提交中…';
+    var at = new Date().toLocaleString('zh-CN');
+    var done = function(){
+      try { localStorage.setItem(KEY, JSON.stringify({ name: name, code: code })); } catch(e){}
+      if(mask.parentNode) mask.parentNode.removeChild(mask);
+    };
+    fetch(FEISHU_HOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ msg_type: 'text', content: { text: '【落筒录入】' + name + '  工号 ' + code + '  ' + at } })
+    }).then(done).catch(function(){
+      try { localStorage.setItem(KEY, JSON.stringify({ name: name, code: code })); } catch(e){}
+      tip.style.color = '#b45309';
+      tip.textContent = '登记同步失败，已放行，下次打开会再试一次';
+      setTimeout(function(){ if(mask.parentNode) mask.parentNode.removeChild(mask); }, 1400);
+    });
+  };
 })();
 </script>
 </body>
