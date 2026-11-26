@@ -839,6 +839,10 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                         每次打开都显示新手引导（默认关闭，只首次显示）
                     </label>
                     <button class="admin-btn" type="button" id="guideResetBtn" style="margin-top:12px;">重看新手引导</button>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:12px;">
+                        <input type="checkbox" id="settingDateAutoRoll" style="width:18px;height:18px;">
+                        日期按班次自动更新（7:00 换日，默认开启）
+                    </label>
 
                 </div>
                 <div class="admin-section">
@@ -892,7 +896,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.60<br>
+                    满卷时间计算工具 v1.61<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1310,6 +1314,10 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.61', date: '2026-11-26', items: [
+    '新增：打开应用时按班次自动更新批次日期，7:00 换日，默认开启',
+    '说明：7:00 之前打开仍算前一天，夜班跨午夜重启不会跳日期；只往前滚，系统时间被调早时不倒退'
+  ]},
   { version: 'v1.60', date: '2026-11-26', items: [
     '新增：顶栏「反向」开关，打开后每排的上下顺序反过来（位号从上到下 1→6）、计算方向固定从上往下；切换前先确认，并清空所有模板重新开始',
     '新增：反向模式下空位填充的填充顺序也跟着从上往下',
@@ -1637,6 +1645,24 @@ function getBatchBaseDate(tab){
 function resetBatchBaseDate(tab){
   const date = new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate());
   try { localStorage.setItem(DATE_BASE_PREFIX + tab, dateToLocalISO(date)); } catch(e) {}
+}
+/* 打开应用时按班次滚动批次日期：7:00 换日，只往前滚不倒退 */
+function rollBaseDates(){
+  try {
+    if(localStorage.getItem('luotong_date_auto_roll_v1') === 'off') return;
+    const now = new Date();
+    const hm = now.getHours() * 60 + now.getMinutes();
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if(hm < CFG.DAY_START / 60) d.setDate(d.getDate() - 1);   // 7:00 之前仍算前一天
+    const target = dateToLocalISO(d);
+    for(let t = 0; t < CFG.TEMPLATES; t++){
+      let cur = null;
+      try { cur = localStorage.getItem(DATE_BASE_PREFIX + t); } catch(e){}
+      if(cur === target) continue;
+      if(cur && cur > target) continue;   // 系统时间被调早时不倒退
+      try { localStorage.setItem(DATE_BASE_PREFIX + t, target); } catch(e){}
+    }
+  } catch(e) {}
 }
 
 const $ = id => document.getElementById(id);
@@ -4766,6 +4792,7 @@ function boot(){
     Batch.applyAll('', true, true, true);
 
     Store.load();
+    rollBaseDates();
     for(let t = 0; t < CFG.TEMPLATES; t++){
       if(!S.data[t]) S.data[t] = {};
       if(S.data[t].globalDirection === undefined) S.data[t].globalDirection = 'backward';
@@ -4787,12 +4814,18 @@ function boot(){
     Auth.applyLockState();
     Layout.adjustCarHeights();
     AutoSize.allHeaders();
+    try { Sync.dates(0); } catch(e) {}
 
     Guide.init();
     TimeTip.bind();
     ScrollGuard.bind();
     const rvBtn = document.querySelector('.reverse-text');
     if(rvBtn) rvBtn.classList.toggle('on', Reverse.on());
+    const drCb = $('settingDateAutoRoll');
+    if(drCb){
+      drCb.checked = localStorage.getItem('luotong_date_auto_roll_v1') !== 'off';
+      drCb.onchange = () => { try { localStorage.setItem('luotong_date_auto_roll_v1', drCb.checked ? 'on' : 'off'); } catch(e) {} };
+    }
 
     const mask = $('loading-mask');
     if(mask){
