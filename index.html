@@ -896,7 +896,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.61<br>
+                    满卷时间计算工具 v1.62<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1314,6 +1314,9 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.62', date: '2026-11-26', items: [
+    '新增：新手引导增加「反向」一步，说明这是做 60 头时才用，48 头保持关闭'
+  ]},
   { version: 'v1.61', date: '2026-11-26', items: [
     '新增：打开应用时按班次自动更新批次日期，7:00 换日，默认开启',
     '说明：7:00 之前打开仍算前一天，夜班跨午夜重启不会跳日期；只往前滚，系统时间被调早时不倒退'
@@ -4556,6 +4559,8 @@ const Guide = {
   STEPS: [
     { sel: '#main-tabs', title: '模板标签',
       desc: '这里有 7 个模板：模板 1～4、故障、实验、ST-48，各自数据完全独立。做不同批号时切一下就行，不会互相影响。' },
+    { sel: '.reverse-text', title: '反向（60 头）',
+      desc: '做 60 头时才打开：位号从上到下变成 1→6，计算方向固定从上往下。做 48 头保持关闭。切换会清空所有模板重新开始。' },
     { sel: '.reset-text', title: '重置',
       desc: '点开可选「重置所有内容」或「清除输入内容」，也能恢复上次清除前的数据。双击这个按钮直接清空全部模板。' },
     { sel: '#block_v0 .batch-box', title: '批号',
