@@ -1319,6 +1319,7 @@ const UPDATE_LOGS = [
     '说明：空位填充只重算当前这一辆车，后面车不跟着变，需要在后面车录时间时才级联重算',
     '新增：长按卡片上的「位号」标签并轻震一次，提示这一排时间的来历，手动填的、还是继承自哪一车哪一排',
     '调整：时间格式错误的提示统一为「时间输入错误」',
+    '调整：手指滑动页面时不再误聚焦输入框；已经聚焦的格子保持不动，键盘不会因为滚动被收起',
     '调整：「🛠 故障记录」入口默认隐藏，需要时在后台「模板显示」里勾选打开；「故障」模板仍按原设置显示'
   ]},
   { version: 'v1.58', date: '2026-11-25', items: [
@@ -2385,6 +2386,38 @@ const TimeTip = {
       }
     }
     showToast('自动计算 ' + val + (dur !== null ? '（工艺 ' + U.fmtTime(dur) + '）' : ''), 'dup');
+  }
+};
+
+/* 防误触：手指在屏幕上滑动（滚动页面）时，不聚焦输入框、不弹键盘 */
+const ScrollGuard = {
+  bind(){
+    let sx = 0, sy = 0, moved = false, t0 = 0;
+    document.addEventListener('touchstart', (e) => {
+      const t = e.touches && e.touches[0];
+      if(!t) return;
+      sx = t.clientX; sy = t.clientY; moved = false; t0 = Date.now();
+    }, { passive: true, capture: true });
+    document.addEventListener('touchmove', (e) => {
+      if(moved) return;
+      const t = e.touches && e.touches[0];
+      if(!t) return;
+      if(Math.abs(t.clientX - sx) > 8 || Math.abs(t.clientY - sy) > 8){
+        moved = true;   /* 只拦截滑动期间的新聚焦，已聚焦的格子保持不动 */
+      }
+    }, { passive: true, capture: true });
+    const reset = () => {
+      if(Date.now() - t0 < 4000) setTimeout(() => { moved = false; }, 80);
+      else moved = false;
+    };
+    document.addEventListener('touchend', reset, { passive: true, capture: true });
+    document.addEventListener('touchcancel', reset, { passive: true, capture: true });
+    document.addEventListener('focusin', (e) => {
+      if(!moved) return;
+      const el = e.target;
+      if(!el || el.tagName !== 'INPUT') return;
+      try { el.blur(); } catch(err) {}
+    }, true);
   }
 };
 
@@ -4695,6 +4728,7 @@ function boot(){
 
     Guide.init();
     TimeTip.bind();
+    ScrollGuard.bind();
 
     const mask = $('loading-mask');
     if(mask){
