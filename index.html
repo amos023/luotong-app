@@ -897,7 +897,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                 </div>
                 <div class="admin-footer">
                     <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
-                    满卷时间计算工具 v1.69<br>
+                    满卷时间计算工具 v1.71<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1315,6 +1315,9 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.71', date: '2026-11-27', items: [
+    '调整：飞书上报改成「用户：机型 · 系统版本 · 累计 N 台设备」的格式'
+  ]},
   { version: 'v1.69', date: '2026-11-27', items: [
     '调整：在用设备按手机去重，同一台手机无论浏览器还是 App 打开都只算一台',
     '说明：识别依据是机型、系统版本、屏幕分辨率、时区与语言，同型号同配置的两台会合并'
@@ -5054,8 +5057,8 @@ boot();
   }).then(function(st){
     if(st.n > 0){ showUsage(st.n); cacheCount(st.n); } else { showUsage(cachedCount()); }
     if(!st.isNew) return;
-    var line = '【落筒录入】' + (model || '未知机型') + ' · Android ' + (osVer || '?')
-             + (st.n > 0 ? (' · 在用 ' + st.n + ' 台') : '');
+    var line = '用户：' + (model || '未知机型') + ' · Android ' + (osVer || '?')
+             + (st.n > 0 ? (' · 累计 ' + st.n + ' 台设备') : '');
     if(FEISHU_HOOK){
       try {
         fetch(FEISHU_HOOK, {
