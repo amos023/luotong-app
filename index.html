@@ -896,7 +896,8 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.65<br>
+                    <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
+                    满卷时间计算工具 v1.69<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1314,6 +1315,22 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.69', date: '2026-11-27', items: [
+    '调整：在用设备按手机去重，同一台手机无论浏览器还是 App 打开都只算一台',
+    '说明：识别依据是机型、系统版本、屏幕分辨率、时区与语言，同型号同配置的两台会合并'
+  ]},
+  { version: 'v1.68', date: '2026-11-27', items: [
+    '调整：飞书上报去掉时间，改为附带当前在用设备数'
+  ]},
+  { version: 'v1.67', date: '2026-11-27', items: [
+    '调整：上报内容精简为机型名称、系统版本、时间三项',
+    '新增：后台页显示当前在用设备数量',
+    '调整：机型按常见型号映射为市场名称，未收录的显示品牌与型号'
+  ]},
+  { version: 'v1.66', date: '2026-11-27', items: [
+    '调整：首次使用不再填写姓名工号，改为自动上报设备型号、系统版本、分辨率与时区',
+    '说明：上报失败不影响使用，也不再反复提示；曾经登记过的姓名仍会一并带上'
+  ]},
   { version: 'v1.65', date: '2026-11-27', items: [
     '新增：登记用的飞书群机器人地址已接入，首次使用会要求填姓名与工号',
     '修复：反向模式下跨零点时，车头日期漏算的情况'
@@ -4927,52 +4944,129 @@ boot();
 </script>
 
 <script>
-/* 首次使用登记：姓名 + 工号，提交到飞书群机器人
-   FEISHU_HOOK 留空则完全不拦截，页面照常用 */
+/* 设备登记：上报 机型名称 + 系统版本 + 在用设备数
+   设备按「机型 + 系统版本 + 分辨率 + 时区 + 语言」去重，浏览器与 App 视为同一台
+   FEISHU_HOOK 留空则完全不上报，页面照常用 */
 (function(){
   var FEISHU_HOOK = 'https://open.feishu.cn/open-apis/bot/v2/hook/a447e79c-5337-483f-ad98-9f44209cd82b';
-  if(!FEISHU_HOOK) return;
-  var KEY = 'lt_user_v1';
-  var saved = null;
-  try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e){}
-  if(saved && saved.name && saved.code) return;
+  var COUNT_BASE = 'https://abacus.jasoncameron.dev';
+  var COUNT_NS = 'luotong-mcool';
+  var TOTAL_KEY = 'devices_v2';
+  var LOCAL_KEY = 'lt_device_v1';
 
-  var mask = document.createElement('div');
-  mask.id = 'ltGate';
-  mask.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#f5f6f9;display:flex;align-items:center;justify-content:center;';
-  mask.innerHTML = '<div style="width:86%;max-width:340px;background:#fff;border-radius:16px;padding:22px;box-shadow:0 8px 30px rgba(16,24,40,.12);">'
-    + '<div style="font-size:17px;font-weight:700;margin-bottom:6px;">落筒录入</div>'
-    + '<div style="font-size:13px;color:#8e8e93;margin-bottom:16px;">首次使用请填写姓名与工号</div>'
-    + '<input id="ltName" placeholder="姓名" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d5d9e0;border-radius:10px;font-size:15px;margin-bottom:10px;outline:none;">'
-    + '<input id="ltCode" placeholder="工号" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d5d9e0;border-radius:10px;font-size:15px;margin-bottom:16px;outline:none;">'
-    + '<button id="ltGo" type="button" style="width:100%;padding:12px;border:0;border-radius:10px;background:#007aff;color:#fff;font-size:15px;font-weight:700;">进入</button>'
-    + '<div id="ltTip" style="font-size:12px;color:#d93025;margin-top:10px;min-height:16px;"></div>'
-    + '</div>';
-  document.body.appendChild(mask);
-
-  mask.querySelector('#ltGo').onclick = function(){
-    var name = String(mask.querySelector('#ltName').value || '').trim();
-    var code = String(mask.querySelector('#ltCode').value || '').trim();
-    var tip = mask.querySelector('#ltTip');
-    if(!name || !code){ tip.style.color = '#d93025'; tip.textContent = '姓名和工号都要填'; return; }
-    tip.style.color = '#8e8e93';
-    tip.textContent = '提交中…';
-    var at = new Date().toLocaleString('zh-CN');
-    var done = function(){
-      try { localStorage.setItem(KEY, JSON.stringify({ name: name, code: code })); } catch(e){}
-      if(mask.parentNode) mask.parentNode.removeChild(mask);
-    };
-    fetch(FEISHU_HOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ msg_type: 'text', content: { text: '【落筒录入】' + name + '  工号 ' + code + '  ' + at } })
-    }).then(done).catch(function(){
-      try { localStorage.setItem(KEY, JSON.stringify({ name: name, code: code })); } catch(e){}
-      tip.style.color = '#b45309';
-      tip.textContent = '登记同步失败，已放行，下次打开会再试一次';
-      setTimeout(function(){ if(mask.parentNode) mask.parentNode.removeChild(mask); }, 1400);
-    });
+  var MODEL_NAMES = {
+    'PME110':'OPPO Find X9s Pro','CPH2385':'OPPO A57','CPH2477':'OPPO A58',
+    'CPH2487':'OPPO A1 Pro','CPH2565':'OPPO A78','CPH2529':'OPPO Reno11',
+    'PHK110':'OPPO Reno10','PJD110':'OPPO Find X6','PJZ110':'OPPO Find X8',
+    'PFTM20':'OPPO A57','PGBM10':'OPPO A17','CPH2455':'OPPO A98',
+    'RMX3870':'realme GT Neo5','RMX3630':'realme 10 Pro','RMX3561':'realme GT2',
+    '22081212C':'Redmi K50 至尊版','23113RKC6C':'Redmi K60 至尊版',
+    '23049RAD8C':'Redmi Note 12 Turbo','2312DRA50C':'Redmi 13C',
+    'M2102J20SG':'Redmi K40','SM-S9180':'三星 Galaxy S23 Ultra',
+    'SM-A5460':'三星 Galaxy A54','SM-G9910':'三星 Galaxy S21',
+    'V2241A':'vivo X90','V2227A':'vivo X80','V2312A':'vivo Y100',
+    'ELS-AN00':'HUAWEI P40 Pro','ANA-AN00':'HUAWEI P40',
+    'BVL-AN00':'荣耀 Magic 6','ANY-AN00':'荣耀 80',
+    'ALN-AL80':'HUAWEI Mate 60 Pro','ALN-AL00':'HUAWEI Mate 60 Pro'
   };
+  var BRAND_RULES = [
+    [/^PME|^CPH|^PJZ|^PJD|^PHK|^PFTM|^PGB|^PGT/i, 'OPPO'],
+    [/^RMX/i, 'realme'],
+    [/^V\d{4}/i, 'vivo'],
+    [/^SM-/i, '三星'],
+    [/^(ELS|ANA|ALN|NOH|JAD|TAS)-/i, 'HUAWEI'],
+    [/^(BVL|ALI|ANY|REA|CRT|ELP)-/i, '荣耀'],
+    [/^(2\d{7}[A-Z]{0,3}|M[12]\d{3})/i, '小米']
+  ];
+  function guessBrand(model){
+    for(var i = 0; i < BRAND_RULES.length; i++){
+      if(BRAND_RULES[i][0].test(model)) return BRAND_RULES[i][1];
+    }
+    return '';
+  }
+  function prettyModel(model){
+    if(!model) return '';
+    var hit = MODEL_NAMES[model.toUpperCase()] || MODEL_NAMES[model];
+    if(hit) return hit;
+    var brand = guessBrand(model);
+    return brand ? (brand + ' ' + model) : model;
+  }
+
+  var ua = navigator.userAgent || '';
+  var m = ua.match(/Android\s+([0-9.]+)[^;]*;\s*([^;)]+?)(?:\s+Build|\)|;)/);
+  var osVer = m ? m[1] : '';
+  var rawModel = m ? m[2].replace(/\bwv\b/g, '').trim() : '';
+  var model = prettyModel(rawModel);
+
+  /* 同一台手机的浏览器与 WebView 应当算出同一个串：
+     只用机型、系统版本、物理分辨率（不分横竖）、时区、语言，不掺 Chrome 版本和 wv 标记 */
+  function fingerprint(){
+    var w = Math.round((screen.width || 0) * (window.devicePixelRatio || 1));
+    var h = Math.round((screen.height || 0) * (window.devicePixelRatio || 1));
+    var lo = Math.min(w, h), hi = Math.max(w, h);
+    var tz = '';
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch(e){}
+    var lang = navigator.language || '';
+    var base = [rawModel, osVer, lo + 'x' + hi, tz, lang].join('|');
+    var hv = 5381;
+    for(var i = 0; i < base.length; i++) hv = ((hv << 5) + hv + base.charCodeAt(i)) >>> 0;
+    return ('00000000' + hv.toString(16)).slice(-8);
+  }
+
+  var selfFp = '';
+  function showUsage(n){
+    var el = document.getElementById('ltUsage');
+    if(!el) return;
+    var txt = n > 0 ? ('在用 ' + n + ' 台设备') : '';
+    if(selfFp) txt += (txt ? ' · ' : '') + '本机 ' + selfFp;
+    el.textContent = txt;
+  }
+  function cacheCount(n){ try { localStorage.setItem('lt_count_v1', String(n)); } catch(e){} }
+  function cachedCount(){ try { return +localStorage.getItem('lt_count_v1') || 0; } catch(e){ return 0; } }
+  function getJSON(url){
+    return fetch(url, { cache: 'no-store' }).then(function(r){
+      return r.ok ? r.json() : null;
+    }).catch(function(){ return null; });
+  }
+  function hit(url){
+    return fetch(url, { cache: 'no-store' }).then(function(r){
+      return r.ok ? r.json() : null;
+    }).catch(function(){ return null; });
+  }
+  function api(verb, key){ return COUNT_BASE + '/' + verb + '/' + COUNT_NS + '/' + key; }
+
+  var fp = fingerprint();
+  selfFp = fp;
+
+  getJSON(api('get', 'd_' + fp)).then(function(mark){
+    if(mark) return { isNew: false, n: null };
+    return hit(api('hit', 'd_' + fp)).then(function(){
+      return hit(api('hit', TOTAL_KEY)).then(function(d){
+        return { isNew: true, n: (d && d.value) || 0 };
+      });
+    });
+  }).then(function(st){
+    if(st.n !== null) return st;
+    return getJSON(api('get', TOTAL_KEY)).then(function(d){
+      st.n = d && d.value;
+      return st;
+    });
+  }).then(function(st){
+    if(st.n > 0){ showUsage(st.n); cacheCount(st.n); } else { showUsage(cachedCount()); }
+    if(!st.isNew) return;
+    var line = '【落筒录入】' + (model || '未知机型') + ' · Android ' + (osVer || '?')
+             + (st.n > 0 ? (' · 在用 ' + st.n + ' 台') : '');
+    if(FEISHU_HOOK){
+      try {
+        fetch(FEISHU_HOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ msg_type: 'text', content: { text: line } })
+        }).catch(function(){});
+      } catch(e){}
+    }
+    try { localStorage.setItem(LOCAL_KEY, JSON.stringify({ id: fp, model: model, raw: rawModel, os: osVer })); } catch(e){}
+  });
 })();
 </script>
 </body>
