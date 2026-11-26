@@ -896,7 +896,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.64<br>
+                    满卷时间计算工具 v1.65<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1314,8 +1314,9 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
-  { version: 'v1.64', date: '2026-11-27', items: [
-    '调整：登记用的飞书群机器人地址已接入，首次使用会要求填姓名与工号'
+  { version: 'v1.65', date: '2026-11-27', items: [
+    '新增：登记用的飞书群机器人地址已接入，首次使用会要求填姓名与工号',
+    '修复：反向模式下跨零点时，车头日期漏算的情况'
   ]},
   { version: 'v1.63', date: '2026-11-27', items: [
     '新增：首次使用登记，填写姓名与工号后提交到飞书群机器人，填过之后不再询问',
@@ -2532,9 +2533,8 @@ const Sync = {
         const startM = startEl ? U.toMins(startEl.value) : null;
         if(startM === null) continue;
         for(let col = 1; col <= 6; col++){
-          let tv = '';
-          if(col === 1){ const el = $(`start_${v}_s${s}_i1`); if(el) tv = el.value; }
-          else { const el = $(`time_${v}_s${s}_i${col}`); if(el) tv = el.value; }
+          const cellEl = $(`start_${v}_s${s}_i${col}`) || $(`time_${v}_s${s}_i${col}`);
+          const tv = cellEl ? cellEl.value : '';
           if(tv){
             const cm = U.toMins(tv);
             if(cm !== null && cm >= 420 && cm < startM){ cross = true; break; }
