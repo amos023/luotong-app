@@ -21,6 +21,11 @@ body{background:#f2f2f7;margin:0;padding:0;color:#333;font-size:13px;overflow:hi
 .reset-text{flex:0 0 auto;padding:14px 16px;margin-right:2px;color:#666;font-size:15px;font-weight:bold;line-height:normal;cursor:pointer;display:flex;align-items:center;user-select:none;white-space:nowrap;transition:color .2s;border-bottom:3px solid transparent;position:relative}
 .reset-text::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);height:20px;width:1px;background:#d2d5d9}
 .reset-text:active{color:#007aff}
+.reverse-text{flex:0 0 auto;padding:14px 16px;margin-right:2px;color:#666;font-size:15px;font-weight:bold;line-height:normal;cursor:pointer;display:flex;align-items:center;user-select:none;white-space:nowrap;transition:color .2s;border-bottom:3px solid transparent;position:relative}
+.reverse-text::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);height:20px;width:1px;background:#d2d5d9}
+.reverse-text:active{color:#007aff}
+.reverse-text:hover{color:#007aff}
+.reverse-text.on{color:#ff9500}
 .reset-text:hover{color:#007aff}
 .reset-btn:hover{background:#f8f9fa}
 .reset-btn svg{display:block}
@@ -244,6 +249,9 @@ html.missing-time-highlight .one-car-block .sub-car-row .grid-container .item-ca
 .main-tabs{flex:0 0 auto;min-width:0;overflow:visible}
 .main-tab{flex:0 0 auto;padding:12px 12px;font-size:13px}
 .reset-text{padding:12px 12px;font-size:13px}
+.reverse-text{padding:12px 12px;font-size:13px}
+/* 两个文字按钮等宽，分隔线落在同一像素网格上，避免一条深一条浅 */
+.reverse-text,.reset-text{width:42px;box-sizing:border-box;padding-left:0;padding-right:0;justify-content:center}
 .log-btn{padding:0 8px;font-size:15px}
 .admin-btn-top{padding:0 10px;font-size:16px}
 .reset-btn{padding:0 10px;font-size:12px}
@@ -741,6 +749,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 <div class="lock-banner" id="lockBanner">🔒 系统已被管理员锁定，禁止修改数据。</div>
 
 <nav class="top-nav">
+    <div class="reverse-text" data-action="toggle-reverse" title="位号与方向反向">反向</div>
     <div class="reset-text" data-action="open-reset" title="重置数据">重置</div>
     <div class="main-tabs" id="main-tabs"></div>
     <span class="region-hint">模板栏</span>
@@ -883,7 +892,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <button class="admin-btn danger" id="lockToggleBtn" data-action="toggle-lock">🔒 锁定系统</button>
                 </div>
                 <div class="admin-footer">
-                    满卷时间计算工具 v1.59<br>
+                    满卷时间计算工具 v1.60<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1301,6 +1310,11 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.60', date: '2026-11-26', items: [
+    '新增：顶栏「反向」开关，打开后每排的上下顺序反过来（位号从上到下 1→6）、计算方向固定从上往下；切换前先确认，并清空所有模板重新开始',
+    '新增：反向模式下空位填充的填充顺序也跟着从上往下',
+    '整理：移除隐藏且无用的排号标签，每排少一层空节点'
+  ]},
   { version: 'v1.59', date: '2026-11-25', items: [
     '调整：新手引导换新动画，气泡淡入上滑并轻微放大，换步时重播',
     '调整：挖空框移动改用弹性曲线，外圈加橙色脉冲光环',
@@ -2503,6 +2517,14 @@ const Sync = {
 };
 
 /* 纯计算内核：不碰 DOM，processCar 与回归测试共用 */
+/* 反向模式：位号顺序 1→6，计算方向固定从上往下 */
+const Reverse = {
+  KEY: 'luotong_reverse_v1',
+  on(){ try { return localStorage.getItem(this.KEY) === 'on'; } catch(e){ return false; } },
+  set(v){ try { localStorage.setItem(this.KEY, v ? 'on' : 'off'); } catch(e){} },
+  cols(base){ return this.on() ? base.slice().reverse() : base; }
+};
+
 const Calc = {
   /* 把「当天内秒数」结合前一个绝对秒，推断是否需要跨天 */
   placeClock(sec, prior){
@@ -2566,7 +2588,7 @@ const Scheduler = {
       if(!el || !String(el.value || '').trim()) return false;
       return Flags.isManualStart(c, s) && !T()[fk.autoFill(c, s)];
     };
-    const dir = manualAtRow(0, 0) ? 'forward' : 'backward';
+    const dir = Reverse.on() ? 'forward' : (manualAtRow(0, 0) ? 'forward' : 'backward');
     Scheduler._dir = dir;   // 供空位填充复用同一方向
     for(let c = from; c < CFG.CARS; c++){ if(!CarLock.isLocked(c)) Scheduler.clearAutoFill(c); }
     for(let c = from; c < CFG.CARS; c++){
@@ -2750,7 +2772,7 @@ const Scheduler = {
     // 位号按数字从小到大，数字小的放最下面
     const numOf = tt => { const m = String(tt).match(/\d+/); return m ? parseInt(m[0], 10) : Number.MAX_SAFE_INTEGER; };
     const titles = picked.map(pp => pp.title).sort((a,b) => numOf(a) - numOf(b));
-    const slots = empty.slice().sort((a,b) => b.sIdx - a.sIdx);   // 从第 6 排往上
+    const slots = empty.slice().sort((a,b) => (Scheduler._dir === 'forward') ? (a.sIdx - b.sIdx) : (b.sIdx - a.sIdx));
 
     // 位号不够时循环使用，把空位填满
     for(let i = 0; i < slots.length; i++){
@@ -3019,7 +3041,7 @@ const Renderer = {
     h += `</div>`;
     h += `<span class="region-hint">车头栏</span>`;
     h += `<div class="sub-cars">`;
-    h += `<div class="sub-car-row header-row"><div class="sub-car-label" style="visibility:hidden;"></div><div class="grid-container" id="header_${v}">`;
+    h += `<div class="sub-car-row header-row"><div class="grid-container" id="header_${v}">`;
     const heads = (S.tab >= 4) ? ['L侧', 'M侧', 'R侧'] : CFG.COLS;
     heads.forEach((cn, idx) => {
       const showHint = (idx === 0) && (S.tab >= 4);
@@ -3027,8 +3049,10 @@ const Renderer = {
     });
     h += `<div class="header-cell" style="flex:0 0 155px;min-width:155px;">备注</div>`;
     h += `</div></div>`;
-    for(let s = 0; s < CFG.SUBS; s++){
-      h += `<div class="sub-car-row"><div class="sub-car-label">${s+1}排</div><div class="grid-container" id="grid_${v}_s${s}"></div></div>`;
+    const rowOrder = [];
+    for(let s = 0; s < CFG.SUBS; s++) rowOrder.push(Reverse.on() ? (CFG.SUBS - 1 - s) : s);
+    for(const s of rowOrder){
+      h += `<div class="sub-car-row"><div class="grid-container" id="grid_${v}_s${s}"></div></div>`;
     }
     h += `</div></div>`;
     return h;
@@ -3369,6 +3393,43 @@ const App = {
       if(d < min){ min = d; idx = i; }
     });
     return idx;
+  },
+  /* 切换反向模式：位号左右镜像 + 方向固定从上往下 */
+  toggleReverse(){
+    const target = Reverse.on() ? '默认顺序（位号 6→1，计算从下往上）' : '反向顺序（位号 1→6，计算从上往下）';
+    Modals.askConfirm('切换顺序', '将切换到' + target + '，并清空所有模板的内容。\n（故障记录不受影响）').then(function(ok){
+      if(!ok) return;
+      Reverse.set(!Reverse.on());
+      const btn = document.querySelector('.reverse-text');
+      if(btn) btn.classList.toggle('on', Reverse.on());
+      /* 清空所有模板，按新顺序重画 */
+      S.data = Array.from({length: CFG.TEMPLATES}, () => ({}));
+      for(let t = 0; t < CFG.TEMPLATES; t++) resetBatchBaseDate(t);
+      Renderer._lastEditable = null;
+      Renderer.initCars();
+      Renderer.initGrids();
+      try { Store.initDefaults(); } catch(e) {}
+      App.loadTab();
+      /* 兜底：重建后清掉可能残留的禁用/只读状态，保证能继续录入 */
+      try {
+        document.querySelectorAll('.one-car-block input, .one-car-block select, .one-car-block textarea').forEach(el => { el.disabled = false; });
+        const exp = S.tab >= 4;
+        for(let c = 0; c < CFG.CARS; c++){
+          const v = pref(c);
+          for(let s = 0; s < CFG.SUBS; s++){
+            for(let i = 1; i <= 6; i++){
+              const only1 = !exp && i !== 1;
+              ['title_', 'start_', 'tf_', 'name_'].forEach(function(pre){
+                const el = $(pre + v + '_s' + s + '_i' + i);
+                if(el) el.readOnly = only1;
+              });
+            }
+          }
+        }
+      } catch(e) {}
+      try { Store.save(); } catch(e) {}
+      showToast(Reverse.on() ? '已反向：位号 1→6，方向从上往下' : '已恢复默认：位号 6→1，方向从下往上');
+    });
   },
   toggleCollapse(btn){
     const block = btn.closest('.one-car-block');
@@ -3990,6 +4051,7 @@ const Events = {
       case 'goto-remark': App.gotoRemark(+t.dataset.car); break;
       case 'scroll-cars': App.scrollCars(+t.dataset.dir); break;
       case 'toggle-collapse': App.toggleCollapse(t); break;
+      case 'toggle-reverse': App.toggleReverse(); break;
       case 'toggle-opt': {
         const prev = document.activeElement;
         App.toggleOpt(t);
@@ -4729,6 +4791,8 @@ function boot(){
     Guide.init();
     TimeTip.bind();
     ScrollGuard.bind();
+    const rvBtn = document.querySelector('.reverse-text');
+    if(rvBtn) rvBtn.classList.toggle('on', Reverse.on());
 
     const mask = $('loading-mask');
     if(mask){
