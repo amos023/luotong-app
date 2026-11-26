@@ -1317,6 +1317,8 @@ const UPDATE_LOGS = [
     '调整：Toast 提示下移到顶部标签栏下方，不再压住模板标签',
     '修复：上一车位号没有时间时，本格已填的时间被重算清空，连带后面同排也被清；现在把本格时间当起点继续推',
     '说明：空位填充只重算当前这一辆车，后面车不跟着变，需要在后面车录时间时才级联重算',
+    '新增：长按卡片上的「位号」标签并轻震一次，提示这一排时间的来历，手动填的、还是继承自哪一车哪一排',
+    '调整：时间格式错误的提示统一为「时间输入错误」',
     '调整：「🛠 故障记录」入口默认隐藏，需要时在后台「模板显示」里勾选打开；「故障」模板仍按原设置显示'
   ]},
   { version: 'v1.58', date: '2026-11-25', items: [
@@ -2311,6 +2313,78 @@ const TF = {
       if(el !== document.activeElement) el.value = TF.text(t, k);
     }
     TF.checkDuplicates();
+  }
+};
+
+/* 长按时间格：说明这个时间是手动填的，还是从哪一格算出来的 */
+const TimeTip = {
+  _t: null,
+  _x: 0,
+  _y: 0,
+  bind(){
+    document.addEventListener('pointerdown', (e) => {
+      const el = e.target;
+      /* 只认卡片左侧那个「位号」标签 */
+      if(!el || !el.classList || !el.classList.contains('left-label')) return;
+      const card = el.closest ? el.closest('.item-card') : null;
+      if(!card) return;
+      const ti = card.querySelector('input[id^="title_"]');
+      if(!ti) return;
+      const m = /^title_v(\d+)_s(\d+)_i(\d+)$/.exec(ti.id || '');
+      if(!m) return;
+      TimeTip._x = e.clientX; TimeTip._y = e.clientY;
+      clearTimeout(TimeTip._t);
+      TimeTip._t = setTimeout(() => {
+        TimeTip._t = null;
+        try { if(navigator.vibrate) navigator.vibrate(20); } catch(err) {}
+        TimeTip.show(+m[1], +m[2], +m[3]);
+      }, 550);
+    }, true);
+    document.addEventListener('pointermove', (e) => {
+      if(!TimeTip._t) return;
+      if(Math.abs(e.clientX - TimeTip._x) > 12 || Math.abs(e.clientY - TimeTip._y) > 12){
+        clearTimeout(TimeTip._t); TimeTip._t = null;
+      }
+    }, true);
+    const stop = () => { if(TimeTip._t){ clearTimeout(TimeTip._t); TimeTip._t = null; } };
+    document.addEventListener('pointerup', stop, true);
+    document.addEventListener('pointercancel', stop, true);
+  },
+  show(carIdx, sIdx, iIdx){
+    const v = pref(carIdx);
+    const tEl = $('title_' + v + '_s' + sIdx + '_i' + iIdx);
+    const sEl = $('start_' + v + '_s' + sIdx + '_i' + iIdx);
+    if(!sEl) return;
+    const title = tEl ? String(tEl.value || '').trim() : '';
+    const val = String(sEl.value || '').trim();
+    const manual = Flags.isManualStart(carIdx, sIdx) && !T()[fk.autoFill(carIdx, sIdx)];
+    if(!val){
+      showToast(manual ? '这一格是手动清空的。' : '没有可用的起点，先填一个时间或填上一车', 'dup');
+      return;
+    }
+    if(manual){ showToast('手动填入 ' + val, 'dup'); return; }
+    const durEl = $('processTime_v0');
+    const dur = durEl ? U.toSec(durEl.value) : null;
+    /* 往前找同一视号的来源：先看前一车，再往前逐辆找 */
+    for(let c = carIdx - 1; c >= 0; c--){
+      const pv = pref(c);
+      let best = null;
+      for(let ps = 0; ps < CFG.SUBS; ps++){
+        const pt = $('title_' + pv + '_s' + ps + '_i' + iIdx);
+        const pe = $('start_' + pv + '_s' + ps + '_i' + iIdx);
+        if(!pt || !pe) continue;
+        if(String(pt.value || '').trim() !== title) continue;
+        const sec = Scheduler.absSecOf(pe.value);
+        if(sec !== null && (best === null || sec > best.sec)){
+          best = { sec: sec, label: CFG.CAR_NAMES[c] + ' 第' + (ps + 1) + '排', val: String(pe.value).trim() };
+        }
+      }
+      if(best){
+        showToast('来自 ' + best.label + ' ' + best.val + (dur !== null ? '（工艺 ' + U.fmtTime(dur) + '）' : ''), 'dup');
+        return;
+      }
+    }
+    showToast('自动计算 ' + val + (dur !== null ? '（工艺 ' + U.fmtTime(dur) + '）' : ''), 'dup');
   }
 };
 
@@ -3536,7 +3610,7 @@ const Modals = {
     const denier = $('batchAddDenier').value.trim();
     const ptRaw = $('batchAddPT').value.trim();
     if(ptRaw && !U.isValidDurationInput(ptRaw)){
-      showToast('时间错误：小时须在 0-23 之间，分钟和秒须在 0-59 之间。','err');
+      showToast('时间输入错误','err');
       $('batchAddPT').focus();
       return;
     }
@@ -4009,7 +4083,7 @@ const Events = {
         const beforePT = el.value;
         const raw = el.value.trim();
         if(raw && !U.isValidDurationInput(raw)){
-          showToast('时间错误：小时须在 0-23 之间，分钟和秒须在 0-59 之间。','err');
+          showToast('时间输入错误','err');
           el.value = '';
         } else {
           el.value = U.autoFormatDuration(raw);
@@ -4029,7 +4103,7 @@ const Events = {
     const before = el.value;
     const raw = el.value.trim();
     if(raw && !U.isValidClockInput(raw)){
-      showToast('时间错误：小时须在 0-23 之间，分钟和秒须在 0-59 之间。','err');
+      showToast('时间输入错误','err');
       el.value = '';
     } else {
       el.value = U.autoFormat(raw);
@@ -4620,6 +4694,7 @@ function boot(){
     AutoSize.allHeaders();
 
     Guide.init();
+    TimeTip.bind();
 
     const mask = $('loading-mask');
     if(mask){
