@@ -898,7 +898,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                 </div>
                 <div class="admin-footer">
                     <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
-                    满卷时间计算工具 v1.73<br>
+                    满卷时间计算工具 v1.75<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1316,6 +1316,13 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.75', date: '2026-11-27', items: [
+    '修复：反向模式下输入框按回车往上跳，改为和正向一样往下走'
+  ]},
+  { version: 'v1.74', date: '2026-11-27', items: [
+    '修复：第一排有手动时间（从上往下算）时，空位填充的位号顺序反了，数字小的跑到上面',
+    '说明：位号数字小的仍放最下面，两个计算方向都按这一条走'
+  ]},
   { version: 'v1.73', date: '2026-11-27', items: [
     '调整：作者署名改为「暴龙战士」'
   ]},
@@ -2832,9 +2839,11 @@ const Scheduler = {
     // 1～2 个空位取时间最小的；3～5 个取时间最大的
     const picked = (nEmpty <= 2) ? byTime.slice(0, take) : byTime.slice(byTime.length - take);
 
-    // 位号按数字从小到大，数字小的放最下面
+    // 位号数字小的放最下面：先按数字升序，再按计算方向决定配对顺序
+    // forward 从上往下填（s 递增），需把大数给上面的空位；backward 反之
     const numOf = tt => { const m = String(tt).match(/\d+/); return m ? parseInt(m[0], 10) : Number.MAX_SAFE_INTEGER; };
-    const titles = picked.map(pp => pp.title).sort((a,b) => numOf(a) - numOf(b));
+    const ascTitles = picked.map(pp => pp.title).sort((a,b) => numOf(a) - numOf(b));
+    const titles = (Scheduler._dir === 'forward') ? ascTitles.slice().reverse() : ascTitles;
     const slots = empty.slice().sort((a,b) => (Scheduler._dir === 'forward') ? (a.sIdx - b.sIdx) : (b.sIdx - a.sIdx));
 
     // 位号不够时循环使用，把空位填满
@@ -4433,7 +4442,10 @@ const Events = {
     }
   },
   nextRowId(kind, vPrefix, sIdx){
-    if(sIdx + 1 < CFG.SUBS) return `${kind}_${vPrefix}_s${sIdx+1}_i1`;
+    // 反向时排顺序上下翻转，回车仍往视觉下方走，因此索引反向推进
+    const step = Reverse.on() ? -1 : 1;
+    const next = sIdx + step;
+    if(next >= 0 && next < CFG.SUBS) return `${kind}_${vPrefix}_s${next}_i1`;
     return null;
   },
   onWheel(e){
