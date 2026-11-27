@@ -898,7 +898,8 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                 </div>
                 <div class="admin-footer">
                     <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
-                    满卷时间计算工具 v1.77<br>
+                    <div id="ltUseCount" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
+                    满卷时间计算工具 v1.78<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1316,6 +1317,13 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.78', date: '2026-11-27', items: [
+    '新增：记住上次停留的车，重开直接回到那一车；重置后回到第一车',
+    '新增：使用次数，每次打开 +1，1 小时内重复打开不重复计，按全部设备合计',
+    '新增：双击表头第一格（L1）跳到最上面没有折叠的车',
+    '调整：恢复上次停留的车时直接定位，不再先闪一下第一车',
+    '调整：每个模板各自记住停留的车，切换模板和重开都回到该模板上次那一车'
+  ]},
   { version: 'v1.77', date: '2026-11-27', items: [
     '调整：锁定时的台车号检查只保留「必须填写」和「与前车不重复」，不再限制首字母'
   ]},
@@ -1951,6 +1959,90 @@ const Flags = {
   isTitleCustom(c, s){ return Flags.get('titleCustom', c, s); },
   emptyFill(c, v){ const d = T(); const k = fk.emptyFill(c); if(v === undefined) return !!d[k]; if(v) d[k] = true; else delete d[k]; },
   direction(){ return 'backward'; }
+};
+
+/* 记住上次停留的车：关闭重开回到那一车，重置后回第一车 */
+const ViewPos = {
+  KEY: 'lt_view_pos_v1',
+  all(){
+    try { return JSON.parse(localStorage.getItem(this.KEY) || '{}') || {}; } catch(e){ return {}; }
+  },
+  lastTab(){
+    const t = this.all().__tab;
+    return (typeof t === 'number' && t >= 0 && t < CFG.TEMPLATES) ? t : null;
+  },
+  save(){
+    const c = $('main_content');
+    if(!c) return;
+    const blocks = Array.from(c.querySelectorAll('.car-block'));
+    if(!blocks.length) return;
+    const all = this.all();
+    all[S.tab] = App.nearestBlock(c, blocks);
+    all.__tab = S.tab;
+    try { localStorage.setItem(this.KEY, JSON.stringify(all)); } catch(e){}
+  },
+  restore(){
+    const c = $('main_content');
+    if(!c) return;
+    const idx = this.all()[S.tab];
+    if(idx === undefined || idx === null || isNaN(idx) || idx <= 0) return;
+    /* 直接赋值 scrollTop，并临时关掉 CSS 的平滑滚动，避免先显示第一车再滑过去 */
+    const apply = () => {
+      const blocks = Array.from(c.querySelectorAll('.car-block'));
+      const b = blocks[idx];
+      if(!b) return;
+      const prev = c.style.scrollBehavior;
+      c.style.scrollBehavior = 'auto';
+      c.scrollTop = b.offsetTop - c.offsetTop;
+      requestAnimationFrame(() => { c.style.scrollBehavior = prev || ''; });
+    };
+    apply();
+    setTimeout(apply, 60);
+    setTimeout(apply, 180);
+  },
+  clear(){
+    try { localStorage.removeItem(this.KEY); } catch(e){}
+    const c = $('main_content');
+    if(c) c.scrollTo({ top: 0, behavior: 'auto' });
+  }
+};
+
+/* 使用次数：每打开一次 +1，1 小时内重复打开不重复计；总数各设备合并统计 */
+const Usage = {
+  KEY: 'lt_usage_v1',
+  HOUR: 3600000,
+  BASE: 'https://abacus.jasoncameron.dev',
+  NS: 'luotong-mcool',
+  NAME: 'opens',
+  show(n, local){
+    const el = $('ltUseCount');
+    if(!el) return;
+    if(n > 0){ el.textContent = '使用次数 ' + n + ' 次（全部设备合计）'; }
+    else if(local > 0){ el.textContent = '本机使用 ' + local + ' 次（联网后显示合计）'; }
+  },
+  read(){
+    return fetch(this.BASE + '/get/' + this.NS + '/' + this.NAME, { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(x => { if(x && x.value > 0) Usage.show(x.value); })
+      .catch(function(){});
+  },
+  bump(){
+    let d = null;
+    try { d = JSON.parse(localStorage.getItem(this.KEY) || 'null'); } catch(e){}
+    const now = Date.now();
+    const isNew = !d || typeof d.count !== 'number' || !d.at || (now - d.at) >= this.HOUR;
+    if(isNew){
+      d = { count: ((d && d.count) || 0) + 1, at: now };
+      try { localStorage.setItem(this.KEY, JSON.stringify(d)); } catch(e){}
+    }
+    const local = (d && d.count) || 0;
+    const url = this.BASE + '/' + (isNew ? 'hit' : 'get') + '/' + this.NS + '/' + this.NAME;
+    fetch(url, { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(x => { if(x && x.value > 0){ Usage.show(x.value); } else { Usage.show(0, local); } })
+      .catch(function(){ Usage.show(0, local); });
+    return local;
+  }
 };
 
 const CarLock = {
@@ -3328,8 +3420,17 @@ const App = {
         const offset = Number.isFinite(anchor.offset) ? anchor.offset : 0;
         container.scrollTop += target.getBoundingClientRect().top - container.getBoundingClientRect().top - offset;
       }else{
-        container.scrollTop = Number.isFinite(S.scroll[index]) ? S.scroll[index] : 0;
+        const vi = ViewPos.all()[index];
+        if(vi !== undefined && vi !== null && blocks[vi]){
+          const prevBh = container.style.scrollBehavior;
+          container.style.scrollBehavior = 'auto';
+          container.scrollTop = blocks[vi].offsetTop - container.offsetTop;
+          requestAnimationFrame(() => { container.style.scrollBehavior = prevBh || ''; });
+        }else{
+          container.scrollTop = Number.isFinite(S.scroll[index]) ? S.scroll[index] : 0;
+        }
       }
+      try { ViewPos.save(); } catch(e) {}
     };
     requestAnimationFrame(() => { restorePosition(); requestAnimationFrame(restorePosition); });
     setTimeout(restorePosition, 120);
@@ -3491,6 +3592,22 @@ const App = {
     S.navTimer = setTimeout(() => { S.navIdx = null; }, 450);
     const top = blocks[target].offsetTop - container.offsetTop;
     container.scrollTo({top, behavior: 'smooth'});
+  },
+  jumpFirstOpenCar(){
+    const container = $('main_content');
+    if(!container) return;
+    const blocks = Array.from(container.querySelectorAll('.car-block'));
+    if(!blocks.length) return;
+    const d = T();
+    let target = blocks[0];
+    for(const b of blocks){
+      if(!d[`collapse_${b.id}`]){ target = b; break; }
+    }
+    const idx = blocks.indexOf(target);
+    S.navIdx = idx;
+    if(S.navTimer) clearTimeout(S.navTimer);
+    S.navTimer = setTimeout(() => { S.navIdx = null; }, 450);
+    container.scrollTo({ top: (target.offsetTop - container.offsetTop), behavior: 'smooth' });
   },
   nearestBlock(container, blocks){
     const ct = container.getBoundingClientRect().top;
@@ -3766,6 +3883,7 @@ const App = {
       Renderer.updateActiveTab();
     }
     App.loadTab();
+    try { ViewPos.clear(); } catch(e) {}
     Store.save();
   },
   resetAll(){
@@ -3786,6 +3904,7 @@ const App = {
     Renderer.updateActiveTab();
     Store.initDefaults();
     App.loadTab();
+    try { ViewPos.clear(); } catch(e) {}
     Store.save();
   }
 };
@@ -4091,13 +4210,26 @@ const Events = {
     document.addEventListener('focusout', Events.onFocusOut);
     document.addEventListener('keydown', Events.onKeyDown, true);
     $('main_content').addEventListener('wheel', Events.onWheel, {passive: false});
+    let _vpTimer = null;
+    $('main_content').addEventListener('scroll', function(){
+      if(_vpTimer) clearTimeout(_vpTimer);
+      _vpTimer = setTimeout(function(){ try { ViewPos.save(); } catch(e) {} }, 260);
+    }, {passive: true});
+    document.addEventListener('dblclick', function(e){
+      const cell = (e.target && e.target.closest) ? e.target.closest('.header-row .header-cell') : null;
+      if(!cell) return;
+      const grid = cell.parentElement;
+      if(!grid || grid.querySelector('.header-cell') !== cell) return;
+      e.preventDefault();
+      App.jumpFirstOpenCar();
+    }, false);
     window.addEventListener('resize', Events.onResize);
     window.addEventListener('orientationchange', Events.onResize);
     if(window.visualViewport){
       window.visualViewport.addEventListener('resize', Events.onViewportResize, {passive:true});
       window.visualViewport.addEventListener('scroll', Events.onViewportResize, {passive:true});
     }
-    window.addEventListener('beforeunload', () => Store.flush());
+    window.addEventListener('beforeunload', () => { Store.flush(); try { ViewPos.save(); } catch(e) {} });
   },
   onClick(e){
     const t = e.target.closest('[data-action]');
@@ -4139,7 +4271,7 @@ const Events = {
         }, 300);
         break;
       }
-      case 'open-login': Modals.openLogin(); break;
+      case 'open-login': Modals.openLogin(); try { Usage.read(); } catch(e) {} break;
       case 'reset-content-current': Modals.close('resetModal'); App.resetContent(false); break;
       case 'reset-content-all': Modals.close('resetModal'); App.resetContent(true); break;
       case 'reset-current': Modals.close('resetModal'); App.resetCurrent(); break;
@@ -4867,6 +4999,8 @@ function boot(){
   Layout.apply();
   setTimeout(() => {
     Store.loadTabNames();
+    const lastTab = ViewPos.lastTab();
+    if(lastTab !== null && !TabVis.hidden(lastTab)) S.tab = lastTab;
     if(TabVis.hidden(S.tab)) S.tab = TabVis.firstVisible();
     Renderer.initTabs();
     installFaultTemplateTab();
@@ -4900,6 +5034,8 @@ function boot(){
     Auth.applyLockState();
     Layout.adjustCarHeights();
     AutoSize.allHeaders();
+    try { Usage.bump(); } catch(e) {}
+    try { ViewPos.restore(); } catch(e) {}
     try { Sync.dates(0); } catch(e) {}
 
     Guide.init();
