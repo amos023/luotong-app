@@ -898,7 +898,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                 </div>
                 <div class="admin-footer">
                     <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
-                    满卷时间计算工具 v1.75<br>
+                    满卷时间计算工具 v1.77<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1316,6 +1316,12 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.77', date: '2026-11-27', items: [
+    '调整：锁定时的台车号检查只保留「必须填写」和「与前车不重复」，不再限制首字母'
+  ]},
+  { version: 'v1.76', date: '2026-11-27', items: [
+    '新增：锁定车辆前检查台车号，没填不让锁；与前一台车整串相同或首字母不同也不让锁'
+  ]},
   { version: 'v1.75', date: '2026-11-27', items: [
     '修复：反向模式下输入框按回车往上跳，改为和正向一样往下走'
   ]},
@@ -1950,11 +1956,39 @@ const Flags = {
 const CarLock = {
   key(c){ return `carLock_v${c}`; },
   isLocked(c){ return !!T()[CarLock.key(c)]; },
+  cartNo(c){
+    const v = pref(c);
+    const numEl = $(`cart_${v}`);
+    const block = $(`block_${v}`);
+    const box = block ? block.querySelector('.cart-box') : null;
+    const fgEl = box ? box.querySelector('.opt-btn.fg') : null;
+    const abEl = box ? box.querySelector('.opt-btn.ab') : null;
+    const fg = fgEl ? String(fgEl.textContent || '').trim().toUpperCase() : '';
+    const ab = abEl ? String(abEl.textContent || '').trim().toUpperCase() : '';
+    const num = numEl ? String(numEl.value || '').trim() : '';
+    return { fg: fg, ab: ab, num: num, full: (fg + num + ab) };
+  },
+  /* 锁定前的台车号检查：本车必须填；与前一台车整串不能相同 */
+  checkCartNo(c){
+    const cur = CarLock.cartNo(c);
+    if(!cur.num) return '请先填写台车号再锁定';
+    if(c <= 0) return '';
+    const prev = CarLock.cartNo(c - 1);
+    if(!prev.num) return '';
+    if(prev.full === cur.full) return '台车号重复：' + cur.full + ' 与前车相同，禁止锁定';
+    return '';
+  },
   toggle(c){
     if(S.locked) return;
     const d = T();
     const k = CarLock.key(c);
-    if(d[k]) delete d[k]; else d[k] = true;
+    if(d[k]){
+      delete d[k];
+    } else {
+      const err = CarLock.checkCartNo(c);
+      if(err){ showToast(err, 'err'); return; }
+      d[k] = true;
+    }
     CarLock.apply(c);
     Store.saveDebounced();
   },
