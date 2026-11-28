@@ -514,6 +514,17 @@ body.hscroll-locked .one-car-block .sub-car-row.header-row .grid-container{overf
 .modal-overlay{background:rgba(15,23,42,.45)!important;backdrop-filter:blur(1.5px);align-items:flex-start!important;overflow-y:auto!important;padding:88px 12px 24px!important;-webkit-overflow-scrolling:touch!important;max-height:var(--kb-view-h,100vh)!important}
 .modal-box{border-radius:16px!important;padding:20px 18px!important;max-width:420px!important;max-height:none!important;margin:0 auto!important;box-shadow:0 18px 48px rgba(16,24,40,.22)!important}
 .modal-overlay.active .modal-box{animation:modalIn .16s ease}
+#resetModal{padding-top:126px!important}
+.shift-sum{display:flex;gap:4px;margin:0 0 10px}
+.sum-cell{flex:1 1 0;min-width:0;background:#f3f6fb;border-radius:8px;padding:5px 2px 6px;text-align:center;overflow:hidden}
+.sum-label{font-size:12.5px;font-weight:600;color:#7d93b0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+.sum-val{display:flex;align-items:baseline;justify-content:center;gap:0;margin-top:1px;line-height:1.15;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sum-val span{font-size:13px;font-weight:700;color:#55606e;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.sum-val i{font-size:9px;font-style:normal;color:#9aa4b2;font-weight:500;transform:translateY(-0.5px);margin-left:0.5px}
+.sum-cell.total{background:#e6f0ff}
+.sum-cell.total .sum-label{color:#007aff;font-weight:700}
+.sum-cell.total .sum-val span{font-size:14px;color:#3f6ea8}
+.sum-cell.total .sum-val i{color:#5d8fd6}
 @keyframes modalIn{from{opacity:.5;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .modal-title{font-size:17px!important;font-weight:700!important;color:#1677ff!important;margin-bottom:16px!important;letter-spacing:.3px!important;text-align:center!important}
 .modal-input,.modal-box input[type="text"],.modal-box input[type="password"],.modal-box input[type="number"]{min-height:46px!important;border:1px solid #dfe5ee!important;border-radius:12px!important;background:#f8fafc!important;color:#0f172a!important;font-size:14px!important;font-weight:500!important;padding:9px 12px!important;letter-spacing:0!important;text-align:left!important;margin-bottom:10px!important}
@@ -776,6 +787,14 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
     <div class="modal-box">
         <div class="modal-title">重置数据</div>
 
+        <div class="shift-sum" id="shiftSum">
+            <div class="sum-cell"><div class="sum-label" id="sumL0">模板1</div><div class="sum-val"><span id="sumV0">0</span><i>车</i></div></div>
+            <div class="sum-cell"><div class="sum-label" id="sumL1">模板2</div><div class="sum-val"><span id="sumV1">0</span><i>车</i></div></div>
+            <div class="sum-cell"><div class="sum-label" id="sumL2">模板3</div><div class="sum-val"><span id="sumV2">0</span><i>车</i></div></div>
+            <div class="sum-cell"><div class="sum-label" id="sumL3">模板4</div><div class="sum-val"><span id="sumV3">0</span><i>车</i></div></div>
+            <div class="sum-cell total"><div class="sum-label" id="sumL4">总计</div><div class="sum-val"><span id="sumV4">0</span><i>车</i></div></div>
+        </div>
+
         <div class="reset-group reset-row">
             <div class="reset-row-text">
                 <div class="reset-group-title blue">60头模式</div>
@@ -907,7 +926,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                 <div class="admin-footer">
                     <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
                     <div id="ltUseCount" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
-                    满卷时间计算工具 v1.80<br>
+                    满卷时间计算工具 v1.81<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1325,6 +1344,10 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.81', date: '2026-11-28', items: [
+    '调整：双击「重置」改为重置当前模板（原来会清空全部模板）',
+    '新增：重置弹窗顶部显示班次汇总条，四个模板与总计按 12 个满卷折一车显示'
+  ]},
   { version: 'v1.80', date: '2026-11-27', items: [
     '调整：计算方向改为顶栏箭头手动切换，不再根据第一排有没有填时间自动判断',
     '说明：方向按模板记住，▼ 从上往下、▲ 从下往上；反向开启时固定从上往下',
@@ -2076,6 +2099,42 @@ const Usage = {
       .then(x => { if(x && x.value > 0){ Usage.show(x.value); } else { Usage.show(0, local); } })
       .catch(function(){ Usage.show(0, local); });
     return local;
+  }
+};
+
+/* 重置弹窗里的班次汇总条：满卷条数 ÷ 12 折算成车，只改文本不重建 DOM */
+const ShiftSum = {
+  _timer: null,
+  countOf(t){
+    const d = S.data[t] || {};
+    let n = 0;
+    /* 只算「位号和时间都有」的格子：位号被清空后残留的时间不计 */
+    for(const k in d){
+      const m = k.match(/^(start|time)_(v\d+_s\d+_i\d+)$/);
+      if(!m) continue;
+      const v = d[k];
+      if(v === null || v === undefined || !String(v).trim()) continue;
+      const tv = d['title_' + m[2]];
+      if(tv !== null && tv !== undefined && String(tv).trim()) n++;
+    }
+    return n;
+  },
+  render(){
+    let total = 0;
+    for(let t = 0; t < 4; t++){
+      const n = this.countOf(t);
+      total += n;
+      const l = $('sumL' + t), v = $('sumV' + t);
+      if(l) l.textContent = S.tabNames[t] || ('模板' + (t + 1));
+      if(v) v.textContent = n > 0 ? (n / 12).toFixed(1) : '0';
+    }
+    const tv = $('sumV4');
+    if(tv) tv.textContent = total > 0 ? (total / 12).toFixed(1) : '0';
+  },
+  update(){
+    clearTimeout(this._timer);
+    /* 只重算显示，不落盘：打开弹窗时已经存过一次，数据是最新的 */
+    this._timer = setTimeout(() => { this.render(); }, 200);
   }
 };
 
@@ -4272,6 +4331,11 @@ const Events = {
       if(!t || !t.closest) return;
       if(t.closest('[data-action="toggle-opt"]')) e.preventDefault();
     }, true);
+    document.addEventListener('input', function(e){
+      const m = $('resetModal');
+      if(!m || !m.classList.contains('active')) return;
+      try { ShiftSum.update(); } catch(_e) {}
+    }, true);
     document.addEventListener('focusin', Events.onFocusIn);
     document.addEventListener('focusout', Events.onFocusOut);
     document.addEventListener('keydown', Events.onKeyDown, true);
@@ -4326,14 +4390,19 @@ const Events = {
         if(Events._lastResetTap && now - Events._lastResetTap < 320){
           Events._lastResetTap = 0;
           if(Events._resetTimer){ clearTimeout(Events._resetTimer); Events._resetTimer = null; }
-          App.resetContent(true);
+          App.resetCurrent();
           break;
         }
         Events._lastResetTap = now;
         if(Events._resetTimer) clearTimeout(Events._resetTimer);
         Events._resetTimer = setTimeout(() => {
           Events._resetTimer = null;
-          if(!S.locked){ App.syncReverseBtn(); Modals.open('resetModal'); }
+          if(!S.locked){
+            try { Store.save(); } catch(e) {}
+            try { ShiftSum.render(); } catch(e) {}
+            App.syncReverseBtn();
+            Modals.open('resetModal');
+          }
         }, 300);
         break;
       }
@@ -4840,7 +4909,7 @@ const Guide = {
     { sel: '#main-tabs', title: '模板标签',
       desc: '这里有 7 个模板：模板 1～4、故障、实验、ST-48，各自数据完全独立。做不同批号时切一下就行，不会互相影响。' },
     { sel: '.reset-text', title: '重置与反向',
-      desc: '点开可选「重置所有内容」或「清除输入内容」，也能恢复上次清除前的数据。做 60 头时在这里打开「反向模式」：位号从上到下变成 1→6，计算固定从上往下。双击按钮直接清空全部模板。' },
+      desc: '点开可选「重置当前」「重置全部」，也能恢复上次数据。做 60 头时在这里打开「60头模式」：位号 1→6，计算固定从上往下。双击按钮直接重置当前模板。' },
     { sel: '#block_v0 .batch-box', title: '批号',
       desc: '先选批号，会自动带出旦数、个数和工艺时间，不用一个个手填。' },
     { sel: ['#title_v0_s0_i1', '#start_v0_s0_i1'], title: '自动计算',
