@@ -575,13 +575,14 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 .picker-title{flex:0 0 auto;font-size:var(--fs-14);font-weight:700;color:#0f172a;text-align:center;padding:4px 0 12px}
 .picker-list{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:2px}
 .picker-item{position:relative}
-.picker-del{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:700;color:#e0395b;background:#fff;border:1px solid #fbd0d5;border-radius:8px;padding:6px 12px;line-height:1}
+.picker-del{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:400;color:#e0395b;background:#fff;border:1px solid #fbd0d5;border-radius:50%;padding:0;line-height:1}
 .picker-item{flex:0 0 auto;min-height:48px;border:1px solid #e6ecf5;background:#f8fafc;color:#1e293b;border-radius:12px;font-size:var(--fs-15);font-weight:600;text-align:center;padding:0 12px;cursor:pointer}
 .picker-item:active{background:#eaf3ff}
 .picker-item.on{border-color:#1677ff;background:#eaf3ff;color:#0d5fcc;box-shadow:0 0 0 2px rgba(22,119,255,.16)}
 .picker-item.picker-item-action{border-style:dashed;color:#5856d6;background:#f7f6ff}
 .picker-item.picker-item-danger{color:#e0395b;background:#fff5f6;border-color:#fbd0d5}
 .picker-cancel{flex:0 0 auto;margin-top:10px;min-height:50px;border:1px solid #e2e8f0;background:#f1f4f8;color:#475569;border-radius:12px;font-size:15px;font-weight:700}
+.picker-add{flex:0 0 auto;margin-top:10px;min-height:48px;border:1px dashed #9dc1ff;background:#eef5ff;color:#1677ff;border-radius:12px;font-size:15px;font-weight:700}
 /* ===== Toast ===== */
 /* ===== 字号变量 ===== */
 :root{--fs-10:10px;--fs-11:11px;--fs-12:12px;--fs-13:13px;--fs-14:14px;--fs-15:15px;--fs-16:16px}
@@ -656,22 +657,26 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
     openedAt=Date.now();
     titleEl.textContent=labelOf(sel);
     list.innerHTML='';
+    var addOpt=null;
     Array.prototype.slice.call(sel.options).forEach(function(opt,index){
       if(!opt.value) return;
+      if(opt.value==='__add__'){ addOpt=opt; return; }
       var btn=document.createElement('button');
       btn.type='button';
       btn.className='picker-item';
       if(opt.value==='__add__') btn.className+=' picker-item-action';
       if(opt.value==='__del__') btn.className+=' picker-item-danger';
       if(index===sel.selectedIndex) btn.className+=' on';
-      btn.textContent=opt.textContent;
+      btn.textContent=opt.getAttribute('data-full')||opt.textContent;
       try{
         var isBatch = (sel.className||'').indexOf('batch-select')>=0;
-        var isReal = opt.value && String(opt.value).indexOf('__')!==0;
+        var pv = String(opt.value || '');
+        var isReal = pv && pv !== '__add__' && pv !== '__del__';
         if(isBatch && isReal && window.__delBatch){
           var delBtn=document.createElement('span');
           delBtn.className='picker-del';
-          delBtn.textContent='删除';
+          delBtn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+          delBtn.title='删除该批号';
           delBtn.addEventListener('click',function(ev){
             ev.stopPropagation(); ev.preventDefault();
             window.__delBatch(opt.value).then(function(ok){
@@ -689,6 +694,25 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
       });
       list.appendChild(btn);
     });
+    /* 「＋ 添加批号」固定贴在底部，不随列表滚动 */
+    var pbox=mask.querySelector('.picker-box');
+    if(pbox){
+      var oldAdd=pbox.querySelector('.picker-add');
+      if(oldAdd && oldAdd.parentNode) oldAdd.parentNode.removeChild(oldAdd);
+      if(addOpt){
+        var addBtn=document.createElement('button');
+        addBtn.type='button';
+        addBtn.className='picker-add';
+        addBtn.textContent=addOpt.textContent;
+        addBtn.addEventListener('click',function(ev){
+          ev.stopPropagation();
+          sel.value=addOpt.value;
+          sel.dispatchEvent(new Event('change',{bubbles:true}));
+          close();
+        });
+        pbox.insertBefore(addBtn, pbox.lastElementChild);
+      }
+    }
     mask.classList.add('active');
     var current=list.querySelector('.picker-item.on');
     if(current && current.scrollIntoView) current.scrollIntoView({block:'center'});
@@ -926,7 +950,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                 <div class="admin-footer">
                     <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
                     <div id="ltUseCount" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
-                    满卷时间计算工具 v1.81<br>
+                    满卷时间计算工具 v1.82<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1344,6 +1368,11 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.82', date: '2026-11-28', items: [
+    '调整：批号下拉里每项显示旦数、工艺时间、个数',
+    '新增：内置 6 组预设（C9856C / C9855C 带批号，另有 55、70、40、20 四组无批号）',
+    '说明：无批号预设选中后批号留空，只把旦数、工艺时间、个数填进去'
+  ]},
   { version: 'v1.81', date: '2026-11-28', items: [
     '调整：双击「重置」改为重置当前模板（原来会清空全部模板）',
     '新增：重置弹窗顶部显示班次汇总条，四个模板与总计按 12 个满卷折一车显示'
@@ -2413,6 +2442,38 @@ const Store = {
     try { S.batchDeniers = JSON.parse(localStorage.getItem(CFG.KEY.BATCH_DENIERS) || '{}') || {}; } catch(e){ S.batchDeniers = {}; }
     try { S.batchPT = JSON.parse(localStorage.getItem(CFG.KEY.BATCH_PT) || '{}') || {}; } catch(e){ S.batchPT = {}; }
     try { S.batchCounts = JSON.parse(localStorage.getItem(CFG.KEY.BATCH_COUNTS) || '{}') || {}; } catch(e){ S.batchCounts = {}; }
+    this.seedBatchPresets();
+  },
+  BATCH_PRESET_KEY: 'luotong_batch_preset_v1',
+  BATCH_PRESETS: [
+    { name: 'C9856C', denier: '620', pt: '1:13:27', count: '48' },
+    { name: 'C9855C', denier: '540', pt: '1:24:58', count: '48' },
+    { name: '__p55', denier: '55', pt: '0:01:58', count: '288' },
+    { name: '__p70', denier: '70', pt: '0:01:51', count: '288' },
+    { name: '__p40', denier: '40', pt: '0:02:42', count: '288' },
+    { name: '__p20', denier: '20', pt: '0:04:55', count: '288' }
+  ],
+  /* 只在第一次运行时写入预设，之后用户删掉也不会再加回来 */
+  seedBatchPresets(){
+    try {
+      if(localStorage.getItem(this.BATCH_PRESET_KEY) === '1') return;
+      this.BATCH_PRESETS.forEach(p => {
+        if(S.batchOpts.indexOf(p.name) < 0) S.batchOpts.push(p.name);
+        S.batchDeniers[p.name] = p.denier;
+        S.batchPT[p.name] = p.pt;
+        S.batchCounts[p.name] = p.count;
+      });
+      this.saveBatchOpts();
+      this.saveBatchDeniers();
+      this.saveBatchPT();
+      this.saveBatchCounts();
+      localStorage.setItem(this.BATCH_PRESET_KEY, '1');
+    } catch(e){}
+  },
+  /* 0:01:58 → 1:58，预设里凑整显示 */
+  shortPT(pt){
+    const m = String(pt || '').match(/^0:0?(\d{1,2}:\d{2})$/);
+    return m ? m[1] : String(pt || '');
   },
   saveBatchOpts(){ localStorage.setItem(CFG.KEY.BATCH_OPTS, JSON.stringify(S.batchOpts)); },
   saveBatchDeniers(){ localStorage.setItem(CFG.KEY.BATCH_DENIERS, JSON.stringify(S.batchDeniers)); },
@@ -3101,22 +3162,56 @@ const Scheduler = {
 };
 
 const Batch = {
+  /* 选项文字：批号 + 旦数 · 工艺时间 · 个数；无批号的预设只显示后三项 */
+  labelOf(o){
+    /* 选项只显示批号、旦数、工艺时间；个数照样会带进去，只是不写在选项里 */
+    const isParam = String(o).indexOf('__p') === 0;
+    const bits = [];
+    const d = S.batchDeniers[o], pt = S.batchPT[o];
+    if(d !== undefined && d !== '') bits.push(d + '旦');
+    if(pt) bits.push(Store.shortPT(pt));
+    const tail = bits.join(' · ');
+    if(isParam) return tail || '无批号';
+    return o + (tail ? ' · ' + tail : '');
+  },
+  /* 车头框里只显示批号本身；无批号的预设显示「未设置」。选项列表用 data-full 显示完整信息 */
+  syncLabels(){
+    for(let c = 0; c < CFG.CARS; c++){
+      const sel = $(`batch_v${c}`);
+      if(!sel || !sel.options) continue;
+      const opts = sel.options;
+      for(let i = 0; i < opts.length; i++){
+        const o = opts[i];
+        if(o.getAttribute('data-full') === null) continue;
+        const v = o.value || '';
+        if(!v) o.textContent = '无批号';
+        else if(v.indexOf('__p') === 0) o.textContent = '未设置';
+        else o.textContent = v;
+      }
+      AutoSize.select(sel);
+    }
+  },
   refreshSelects(){
     for(let c = 0; c < CFG.CARS; c++){
       const sel = $(`batch_v${c}`);
       if(!sel) continue;
       const cur = sel.value;
       let html = '<option value="">无批号</option>';
-      S.batchOpts.forEach(o => html += `<option value="${U.esc(o)}">${U.esc(o)}</option>`);
+      S.batchOpts.forEach(o => {
+        const lb = Batch.labelOf(o);
+        html += `<option value="${U.esc(o)}" data-full="${U.esc(lb)}">${U.esc(lb)}</option>`;
+      });
       html += `<option value="__add__">＋ 添加批号</option>`;
       sel.innerHTML = html;
       if(cur && S.batchOpts.includes(cur)) sel.value = cur;
       else sel.value = '';
       AutoSize.select(sel);
     }
+    this.syncLabels();
   },
   applyAll(val, skipDenier, skipPT, skipCount){
-    if(val && !S.batchOpts.includes(val)) val = '';
+    const isParam = typeof val === 'string' && val.indexOf('__p') === 0;
+    if(val && !isParam && !S.batchOpts.includes(val)) val = '';
     if(!val) val = '';
     S.currentBatch = val;
     for(let c = 0; c < CFG.CARS; c++){ const sel = $(`batch_v${c}`); if(sel) sel.value = val; }
@@ -3140,6 +3235,7 @@ const Batch = {
       const pt = $(`processTime_v${c}`); if(pt) AutoSize.input(pt, 45, 160);
     }
     if(ptChanged) Scheduler.updateAll();
+    Batch.syncLabels();
   },
   _restore(sel){ sel.value = S.currentBatch || ''; AutoSize.select(sel); },
   handleChange(sel){
