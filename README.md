@@ -7,9 +7,9 @@
 | 版本 | 链接 | 说明 |
 | --- | --- | --- |
 | 现版 | https://amos023.github.io/luotong-app/ | 对应根目录 `index.html`，随每次提交自动更新 |
-| 初版存档 | https://amos023.github.io/luotong-app/branch/ | 对应 `branch/index.html`，固定为早期「满卷时间计算工具」页面 |
+| 初版存档 | https://amos023.github.io/luotong-app/branch/ | 对应 `branch/index.html`，固定为 v0.6 初版优化版「满卷时间计算表」页面 |
 
-`branch/` 是历史存档，内容不跟随现版更新；除非手动覆盖 `branch/index.html`，该地址会一直保持初版形态。两个地址共用同一域名，`localStorage` 互通，初版页面本身不保存数据，互不干扰。
+`branch/` 是历史存档，内容是 v0.6 初版优化版；除非手动覆盖 `branch/index.html`，该地址不会跟随现版更新。两个地址共用同一域名，`localStorage` 互通，初版页面本身不保存数据，互不干扰。
 
 ## 目录结构
 
