@@ -498,6 +498,7 @@ body.hscroll-locked .one-car-block .sub-car-row.header-row .grid-container{overf
 .gd-dots i{display:block;width:6px;height:6px;border-radius:50%;background:#cbd5e1;transition:all .26s cubic-bezier(.34,1.4,.64,1)}
 .gd-dots i.on{background:#f97316;width:16px;border-radius:3px}
 .gd-nav{display:flex;align-items:center;gap:2px;flex:0 0 auto}
+.gd-btn.demo{background:#ff9500!important;border-color:#ff9500!important;color:#fff!important}
 .gd-btn{background:#f97316;color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:700;padding:8px 16px;cursor:pointer;font-family:inherit;white-space:nowrap}
 .gd-btn.ghost{background:transparent;color:#94a3b8;font-weight:600;padding:8px 8px}
 .gd-btn:active{opacity:.8}
@@ -515,6 +516,15 @@ body.hscroll-locked .one-car-block .sub-car-row.header-row .grid-container{overf
 .modal-box{border-radius:16px!important;padding:20px 18px!important;max-width:420px!important;max-height:none!important;margin:0 auto!important;box-shadow:0 18px 48px rgba(16,24,40,.22)!important}
 .modal-overlay.active .modal-box{animation:modalIn .16s ease}
 #resetModal{padding-top:126px!important}
+#demoMask{position:fixed;inset:0;z-index:62000;pointer-events:auto}
+#firstRunCard{z-index:63000!important}
+#demoHole{position:absolute;border:2px solid #ff9500;border-radius:12px;box-shadow:0 0 0 9999px rgba(15,23,42,.6);transition:left .32s cubic-bezier(.32,.72,.28,1),top .32s cubic-bezier(.32,.72,.28,1),width .32s cubic-bezier(.32,.72,.28,1),height .32s cubic-bezier(.32,.72,.28,1),opacity .22s ease;pointer-events:none;opacity:0}
+#demoBub{position:fixed;left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:420px;background:#fff;border-radius:12px;padding:9px 12px 8px;box-shadow:0 8px 24px rgba(16,24,40,.22);animation:demoIn .26s cubic-bezier(.32,.72,.28,1) both;transition:top .3s cubic-bezier(.32,.72,.28,1),bottom .3s cubic-bezier(.32,.72,.28,1)}
+
+#demoTitle{margin:0;font-size:13.5px;font-weight:800;color:#0f172a}
+#demoDesc{margin:3px 0 0;font-size:12px;line-height:1.45;color:#475569}
+#demoStop{margin-top:6px;padding:4px 10px;border:1px solid #e2e8f0;background:#f1f4f8;color:#64748b;border-radius:8px;font-size:11.5px;font-weight:700;font-family:inherit}
+@keyframes demoIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 .shift-sum{display:flex;gap:4px;margin:0 0 10px}
 .sum-cell{flex:1 1 0;min-width:0;background:#f3f6fb;border-radius:8px;padding:5px 2px 6px;text-align:center;overflow:hidden}
 .sum-label{font-size:12.5px;font-weight:600;color:#7d93b0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
@@ -883,9 +893,9 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     </label>
                     <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;margin-top:10px;">
                         <input type="checkbox" id="settingGuideAlways" style="width:18px;height:18px;">
-                        每次打开都显示新手引导（默认关闭，只首次显示）
+                        每次打开都询问是否演示（默认关闭）
                     </label>
-                    <button class="admin-btn" type="button" id="guideResetBtn" style="margin-top:12px;">重看新手引导</button>
+                    <button class="admin-btn" type="button" id="guideResetBtn" style="margin-top:12px;">▶ 现在播放一遍演示</button>
                     <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:12px;">
                         <input type="checkbox" id="settingDateAutoRoll" style="width:18px;height:18px;">
                         日期按班次自动更新（7:00 换日，默认开启）
@@ -950,7 +960,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                 <div class="admin-footer">
                     <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
                     <div id="ltUseCount" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
-                    满卷时间计算工具 v1.82<br>
+                    满卷时间计算工具 v1.83<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1368,6 +1378,10 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.83', date: '2026-11-28', items: [
+    '新增：新手指引第一步「▶ 看演示」，自动走一遍选批号、填时间、看第二车、空位填充、折叠',
+    '说明：演示借用一个空模板进行，结束后自动清空并切回原来的模板'
+  ]},
   { version: 'v1.82', date: '2026-11-28', items: [
     '调整：批号下拉里每项显示旦数、工艺时间、个数',
     '新增：内置 6 组预设（C9856C / C9855C 带批号，另有 55、70、40、20 四组无批号）',
@@ -4992,6 +5006,250 @@ function countEmptySlots(carIdx){
    6 步高亮挖空 + 气泡。首次打开自动播放一次，之后可点右上角 ? 重看。
    目标元素用 CSS 选择器定位，取真实 getBoundingClientRect 画框，
    所以不依赖固定坐标，横竖屏、不同宽度都能对准。 */
+/* 自动演示：借一个空模板走完整流程，结束后清空该模板 */
+const Demo = {
+  running: false, _ui: null, _tab: -1, _orig: 0, _abort: false,
+  sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); },
+  pickTab(){
+    for(let t = 0; t < 4; t++){
+      if(TabVis.hidden(t)) continue;
+      const d = S.data[t] || {};
+      let has = false;
+      /* 只看时间：位号是默认带出来的，不能当成「这个模板用过」 */
+      for(const k in d){
+        if(/^(start|time)_v\d+_s\d+_i\d+$/.test(k) && String(d[k] === undefined ? '' : d[k]).trim()){ has = true; break; }
+      }
+      if(!has) return t;
+    }
+    return -1;
+  },
+  ui(){
+    if(this._ui) return this._ui;
+    const w = document.createElement('div');
+    w.id = 'demoMask';
+    w.innerHTML = '<div id="demoHole"></div><div id="demoBub">'
+      + '<p id="demoTitle"></p><p id="demoDesc"></p>'
+      + '<div style="text-align:right"><button id="demoStop" type="button">结束演示</button></div><\/div>';
+    document.body.appendChild(w);
+    this._ui = w;
+    w.querySelector('#demoStop').addEventListener('click', function(){ Demo._abort = true; Demo.stop(); });
+    return w;
+  },
+  say(title, desc){
+    this.ui();
+    this._ui.querySelector('#demoTitle').textContent = title;
+    this._ui.querySelector('#demoDesc').textContent = desc;
+  },
+  /* 卡片底边刚好压在 L1（列头行）上沿，按当前视口里第一辆可见的车算 */
+  alignToL1(offset){
+    const bub = this._ui ? this._ui.querySelector('#demoBub') : null;
+    if(!bub) return;
+    const vh = window.innerHeight;
+    const bh = bub.offsetHeight || 100;
+    const off = offset || 0;
+    let top;
+    const hr = document.querySelector('.one-car-block .header-row');
+    if(hr){
+      const bd = hr.getBoundingClientRect().top;
+      top = bd - bh + off;           /* 卡片下沿贴住 L1 顶部，off 为额外下移量 */
+    } else {
+      top = vh * 0.28 + off;
+    }
+    top = Math.max(8, Math.min(vh - bh - 8, top));
+    bub.style.bottom = 'auto';
+    bub.style.top = top + 'px';
+  },
+  holeTo(sel, pad, keepBub){
+    const el = (typeof sel === 'string') ? document.querySelector(sel) : sel;
+    const hole = this._ui ? this._ui.querySelector('#demoHole') : null;
+    if(!el || !hole) return;
+    const r = el.getBoundingClientRect();
+    const p = pad || 6;
+    hole.style.opacity = '1';
+    hole.style.left = (r.left - p) + 'px';
+    hole.style.top = (r.top - p) + 'px';
+    hole.style.width = (r.width + p * 2) + 'px';
+    hole.style.height = (r.height + p * 2) + 'px';
+    /* 批号、折叠这些没被指定的步骤，仍按「内容区放上方 / 车头栏放下方」走 */
+    const bub0 = this._ui.querySelector('#demoBub');
+    if(bub0 && !keepBub){
+      const bh0 = bub0.offsetHeight || 120;
+      const vh0 = window.innerHeight;
+      const host0 = el.closest ? el.closest('.one-car-block') : null;
+      const hr0 = (host0 && host0.querySelector('.header-row')) || document.querySelector('.one-car-block .header-row');
+      const bd0 = hr0 ? hr0.getBoundingClientRect().top : vh0 * 0.38;
+      const inContent = (r.top + r.height / 2) >= bd0;
+      let t0 = inContent ? (bd0 - bh0 - 12) : (bd0 + 12);
+      t0 = Math.max(8, Math.min(vh0 - bh0 - 8, t0));
+      bub0.style.bottom = 'auto';
+      bub0.style.top = t0 + 'px';
+    }
+  },
+  /* 只把目标滚到屏幕中间，不抢焦点（避免弹键盘挡住画面） */
+  focusCell(el){
+    if(!el) return;
+    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(e){}
+  },
+  start(){
+    if(this.running) return;
+    const t = this.pickTab();
+    if(t < 0){ showToast('四个模板都有数据，先清空一个再演示', 'err'); return; }
+    this._tab = t;
+    this._orig = S.tab;
+    this._abort = false;
+    this.running = true;
+    this.ui();
+    App.switchTab(t);
+    this.run();
+  },
+  async run(){
+    const wait = (ms) => this.sleep(ms);
+    const alive = () => this.running && !this._abort;
+    const t = this._tab;
+
+    await wait(360);
+    if(!alive()) return;
+
+    /* 1 选批号 */
+    this.say('选批号', '点开批号选 C9856C，旦数、工艺时间、个数会自动带出来');
+    this.holeTo('#block_v0 .batch-box', 8);
+    await wait(1900);
+    if(!alive()) return;
+    try { Batch.applyAll('C9856C'); } catch(e){}
+    await wait(900);
+    if(!alive()) return;
+
+    /* 2 填 3~6 排时间 */
+    this.say('填满卷时间', '在第 3～6 排填上时间，后面的排会按工艺时间自动往后推');
+    this.alignToL1();
+    const rows = [['2', '9:00'], ['3', '9:13'], ['4', '9:25'], ['5', '9:09']];
+
+    for(let i = 0; i < rows.length; i++){
+      if(!alive()) return;
+      const sidx = rows[i][0], val = rows[i][1];
+      const el = $('start_v0_s' + sidx + '_i1');   /* 固定填第 1 车，t 是模板号不是车号 */
+      this.focusCell(el);
+      await wait(340);
+      if(!alive()) return;
+      this.holeTo(el, 5);
+      if(el){
+        el.value = val;
+        try { Flags.manualStart(0, +sidx, true); } catch(e){}
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      await wait(700);
+    }
+    if(!alive()) return;
+    try { Scheduler.updateAll(); } catch(e){}
+    await wait(900);
+    if(!alive()) return;
+
+    /* 3 空位填充：先滑到第 2 车，再演示填充 */
+    const c = $('main_content');
+    const b2 = $('block_v1');
+    if(c && b2){
+      c.scrollTo({ top: b2.offsetTop - c.offsetTop, behavior: 'smooth' });
+    }
+    await wait(1300);
+    if(!alive()) return;
+    this.say('空位填充', '这两排的时间还是空的');
+    this.alignToL1(26);
+    this.holeTo('#start_v1_s0_i1', 8, true);
+    await wait(1600);
+    if(!alive()) return;
+    this.say('空位填充', '点这辆车自己的「空位填充」，它会自动补齐');
+    this.alignToL1();
+    this.holeTo('#emptySlotBtn_v1', 8, true);
+    await wait(1500);
+    if(!alive()) return;
+    const eb = $('emptySlotBtn_v1');
+    if(eb) eb.click();
+    await wait(2600);
+    if(!alive()) return;
+
+    /* 5 折叠 */
+    this.say('折叠', '把做完的车收起来，十辆车翻起来更快');
+    this.holeTo('#block_v1 .toggle-btn', 8);
+    await wait(1500);
+    if(!alive()) return;
+    const tb = document.querySelector('#block_v1 .toggle-btn');
+    if(tb) tb.click();
+    await wait(1800);
+    if(!alive()) return;
+
+    this.stop();
+  },
+  stop(){
+    this.running = false;
+    if(this._ui && this._ui.parentNode){ this._ui.parentNode.removeChild(this._ui); }
+    this._ui = null;
+    if(this._tab >= 0){
+      try { S.data[this._tab] = {}; } catch(e){}
+    }
+    try {
+      if(S.tab !== this._orig){ App.switchTab(this._orig); }
+      else { Store.initDefaults(); App.loadTab(); Store.save(); }
+    } catch(e){}
+    this._tab = -1;
+    /* 「每次打开都播放」只生效一次，播完自动关掉，免得每次启动都弹 */
+    try { localStorage.setItem('luotong_guide_always_v1', 'false'); } catch(e){}
+    showToast('演示结束，演示数据已清空');
+  }
+};
+
+/* 首次使用：要么看演示，要么跳过，只弹一次 */
+const FirstRun = {
+  KEY: 'luotong_demo_prompt_v1',
+  seen(){
+    try {
+      if(localStorage.getItem(this.KEY)) return true;
+      if(localStorage.getItem('luotong_guide_seen_v1')) return true;
+      if(localStorage.getItem('luotong_guide_always_v1')) return true;
+    } catch(e){ return true; }
+    return false;
+  },
+  hasData(){
+    /* 直接看本地存档，不用等页面把车卡片渲染完，判断更快 */
+    try {
+      const raw = localStorage.getItem(CFG.KEY.ALL);
+      return !!(raw && /"(start|time)_v\d+_s\d+_i\d+":"[^"]+"/.test(raw));
+    } catch(e){ return false; }
+  },
+  done(){ try { localStorage.setItem(this.KEY, '1'); } catch(e){} },
+  maybePrompt(){
+    if(this.seen() || this.hasData()) return;
+    this.show();
+  },
+  show(repeat){
+    if($('firstRunCard')) return;
+    const frTitle = repeat ? '演示教程' : '第一次使用';
+    const frDesc = repeat
+      ? '要看一遍演示吗？会用示例数据自动走完整个流程。'
+      : '第一次用的话，可以先看一遍演示教程，会用示例数据自动走完整个流程。';
+    const mask = document.createElement('div');
+    mask.className = 'modal-overlay active';
+    mask.id = 'firstRunCard';
+    mask.innerHTML = '<div class="modal-box">'
+      + '<div class="modal-title">' + frTitle + '</div>'
+      + '<p style="font-size:13.5px;line-height:1.6;color:#475569;margin:0 0 4px">' + frDesc + '</p>'
+      + '<p style="font-size:12px;line-height:1.5;color:#94a3b8;margin:0">演示结束后数据自动清空，不影响你自己的录入。</p>'
+      + '<div class="modal-actions">'
+      + '<button class="modal-btn cancel" data-fr="skip" style="order:1">跳过</button>'
+      + '<button class="modal-btn danger" data-fr="demo" style="order:2">演示教程</button>'
+      + '</div></div>';
+    document.body.appendChild(mask);
+    mask.addEventListener('click', function(e){
+      const b = e.target.closest ? e.target.closest('[data-fr]') : null;
+      if(!b) return;
+      const act = b.getAttribute('data-fr');
+      FirstRun.done();
+      if(mask.parentNode) mask.parentNode.removeChild(mask);
+      if(act === 'demo'){ setTimeout(function(){ try { Demo.start(); } catch(err){ console.error(err); } }, 200); }
+    });
+  }
+};
+
 const Guide = {
   KEY: 'luotong_guide_seen_v1',
   ALWAYS_KEY: 'luotong_guide_always_v1',
@@ -5021,6 +5279,16 @@ const Guide = {
   ],
 
   init(){
+    let always = false;
+    try { always = localStorage.getItem('luotong_guide_always_v1') === 'true'; } catch(e){}
+    if(always){
+      /* 后台勾了「每次打开都询问」，先弹是否演示 */
+      setTimeout(function(){ try { FirstRun.show(true); } catch(e){ console.error(e); } }, 260);
+      return;
+    }
+    try { FirstRun.maybePrompt(); } catch(e){}
+  },
+  _legacyInit(){
     if(this.mask) return;
     const wrap = document.createElement('div');
     wrap.id = 'guideMask';
@@ -5040,7 +5308,7 @@ const Guide = {
     const rb = document.getElementById('guideResetBtn');
     if(rb) rb.addEventListener('click', () => {
       try { Modals.close('adminPanelModal'); } catch(e) {}
-      setTimeout(() => this.reset(), 220);
+      setTimeout(function(){ try { Demo.start(); } catch(err){ console.error(err); } }, 260);
     });
 
     // 自动播放：后台开关开启时每次都弹（便于反复查看），否则只在首次弹一次
@@ -5132,7 +5400,8 @@ const Guide = {
       '<p class="gd-title">' + st.title + '</p>' +
       '<p class="gd-desc">' + st.desc + '</p>' +
       '<div class="gd-ft">' +
-        '<button class="gd-btn ghost" data-gd="skip">跳过</button>' +
+        (i === 0 ? '<button class="gd-btn demo" data-gd="demo">▶ 看演示</button>'
+                 : '<button class="gd-btn ghost" data-gd="skip">跳过</button>') +
         '<div class="gd-dots">' + dots + '</div>' +
         '<div class="gd-nav">' + prev +
           '<button class="gd-btn" data-gd="next">' + nextTxt + '</button>' +
@@ -5147,10 +5416,14 @@ const Guide = {
 
   _bind(){
     const q = (k) => this.bub.querySelector('[data-gd="' + k + '"]');
-    const skip = q('skip'), prev = q('prev'), next = q('next');
+    const skip = q('skip'), prev = q('prev'), next = q('next'), demo = q('demo');
     if(skip) skip.onclick = () => this.end();
     if(prev) prev.onclick = () => this.show(this.idx - 1);
     if(next) next.onclick = () => this.next();
+    if(demo) demo.onclick = () => {
+      this.end();
+      setTimeout(function(){ try { Demo.start(); } catch(e){ console.error(e); } }, 300);
+    };
   },
 
   place(){
@@ -5227,6 +5500,8 @@ const Guide = {
 
 function boot(){
   Layout.apply();
+  /* 首次的演示选择框先弹出来，不等车卡片渲染 */
+  try { FirstRun.maybePrompt(); } catch(e){}
   setTimeout(() => {
     HeaderFields.migrate();
     Store.loadTabNames();
@@ -5269,7 +5544,6 @@ function boot(){
     try { ViewPos.restore(); } catch(e) {}
     try { Sync.dates(0); } catch(e) {}
 
-    Guide.init();
     TimeTip.bind();
     ScrollGuard.bind();
     Renderer.updateDirBtn();
@@ -5285,6 +5559,10 @@ function boot(){
       mask.classList.add('hidden');
       setTimeout(() => mask.remove(), 300);
     }
+    /* 只处理后台开关「每次打开都询问」的情形 */
+    try {
+      if(localStorage.getItem('luotong_guide_always_v1') === 'true'){ Guide.init(); }
+    } catch(e){}
   }, 50);
 }
 
