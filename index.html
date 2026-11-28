@@ -960,7 +960,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                 <div class="admin-footer">
                     <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
                     <div id="ltUseCount" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
-                    满卷时间计算工具 v1.85<br>
+                    满卷时间计算工具 v1.86<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1378,6 +1378,9 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.86', date: '2026-11-28', items: [
+    '修复：车头个数低于批号里的个数时不标红，现在只要比批号个数小就显示红色'
+  ]},
   { version: 'v1.85', date: '2026-11-28', items: [
     '调整：车头栏个数改成按有效位号分摊（48÷6=8、288÷6=48），手动改过的不再覆盖',
     '调整：重置时保留批号、工艺时间、个数、旦数这几项，其余照常清空'
@@ -5034,15 +5037,15 @@ function recountCarCount(c){
 
 function updateCountWarnings(){
   var preset = S.currentBatch ? String(S.batchCounts[S.currentBatch] === undefined ? '' : S.batchCounts[S.currentBatch]).trim() : '';
-  var unit = /^\d+$/.test(preset) ? Math.round(parseInt(preset, 10) / CFG.SUBS) : null;
+  /* 基准就是批号里的个数：车头这个数低于它就标红 */
+  var limit = /^\d+$/.test(preset) ? parseInt(preset, 10) : null;
   for(var c = 0; c < CFG.CARS; c++){
     var el = $('count_v' + c);
     if(!el) continue;
     var raw = String(el.value || '').trim();
     var low = false;
-    if(unit !== null && /^\d+$/.test(raw)){
-      var need = unit * (countTimeCells(c) || CFG.SUBS);
-      low = parseInt(raw, 10) < need;
+    if(limit !== null && /^\d+$/.test(raw)){
+      low = parseInt(raw, 10) < limit;
     }
     el.classList.toggle('count-low', low);
   }
