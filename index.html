@@ -23,6 +23,9 @@ body{background:#f2f2f7;margin:0;padding:0;color:#333;font-size:13px;overflow:hi
 .reset-text:active{color:#007aff}
 .reverse-text{flex:0 0 auto;padding:14px 16px;margin-right:2px;color:#666;font-size:15px;font-weight:bold;line-height:normal;cursor:pointer;display:flex;align-items:center;user-select:none;white-space:nowrap;transition:color .2s;border-bottom:3px solid transparent;position:relative}
 .reverse-text::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);height:20px;width:1px;background:#d2d5d9}
+.dir-text{flex:0 0 auto;padding:14px 12px;color:#666;font-size:15px;font-weight:bold;line-height:normal;cursor:pointer;display:flex;align-items:center;user-select:none;white-space:nowrap;transition:color .2s}
+.dir-text:active,.dir-text:hover{color:#007aff}
+.dir-text.on{color:#007aff}
 .reverse-text:active{color:#007aff}
 .reverse-text:hover{color:#007aff}
 .reverse-text.on{color:#ff9500}
@@ -527,7 +530,13 @@ body.hscroll-locked .one-car-block .sub-car-row.header-row .grid-container{overf
 .modal-actions.modal-actions-3{grid-template-columns:1fr 1fr 1fr!important}
 .modal-actions.modal-actions-1{grid-template-columns:1fr!important}
 .reset-group{text-align:left;margin:0 0 4px 0}
-.reset-group + .reset-group{margin-top:16px;padding-top:14px;border-top:1px dashed #e2e8f0}
+.reset-group + .reset-group{margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0}
+.reset-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.reset-row-text{min-width:0}
+.reset-mini-btn{flex:0 0 auto;min-width:56px;height:34px;padding:0 14px;border-radius:17px;border:1px solid #c7ccd4;background:#fff;color:#1c1c1e;font-size:14px;font-weight:700;cursor:pointer}
+.reset-mini-btn.danger{border-color:var(--c-danger-bd);background:var(--c-danger-bg);color:var(--c-danger)}
+#resetModal .modal-actions{margin-top:10px!important}
+#resetModal .modal-actions .modal-btn{min-height:42px!important;font-size:14.5px!important;letter-spacing:0!important}
 .reset-group-title{font-size:13.5px;font-weight:700;margin:0 0 6px 0}
 .reset-group-title.blue{color:#007aff}
 .reset-group-title.red{color:#ff3b30}
@@ -750,7 +759,6 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
 <div class="lock-banner" id="lockBanner">🔒 系统已被管理员锁定，禁止修改数据。</div>
 
 <nav class="top-nav">
-    <div class="reverse-text" data-action="toggle-reverse" title="位号与方向反向">反向</div>
     <div class="reset-text" data-action="open-reset" title="重置数据">重置</div>
     <div class="main-tabs" id="main-tabs"></div>
     <span class="region-hint">模板栏</span>
@@ -768,32 +776,27 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
     <div class="modal-box">
         <div class="modal-title">重置数据</div>
 
-        <div class="reset-group">
-            <div class="reset-group-title red">重置所有内容</div>
-            <div class="reset-group-desc">
-                车头栏、位号、录入内容全部清空，恢复初始状态
+        <div class="reset-group reset-row">
+            <div class="reset-row-text">
+                <div class="reset-group-title blue">60头模式</div>
+                <div class="reset-group-desc">位号 1→6，方向固定从上往下</div>
             </div>
-            <div class="modal-actions">
-                <button class="modal-btn danger" data-action="reset-current" style="order:0">重置当前模板</button>
-                <button class="modal-btn danger" data-action="reset-all" style="order:1">重置全部模板</button>
-            </div>
+            <button class="reset-mini-btn" id="reverseToggleBtn" data-action="toggle-reverse">关</button>
         </div>
 
         <div class="reset-group">
-            <div class="reset-group-title blue">清除输入内容</div>
-            <div class="reset-group-desc">
-                清除时间、车次/班次、备注、台车号
-            </div>
+            <div class="reset-group-title red">重置</div>
+            <div class="reset-group-desc">车头栏、位号、录入内容全部清空，批号保留</div>
             <div class="modal-actions">
-                <button class="modal-btn" data-action="reset-content-current" style="order:0">清除当前模板</button>
-                <button class="modal-btn" data-action="reset-content-all" style="order:1">清除全部模板</button>
+                <button class="modal-btn danger" data-action="reset-current" style="order:0">重置当前</button>
+                <button class="modal-btn danger" data-action="reset-all" style="order:1">重置全部</button>
             </div>
         </div>
 
-        <div class="modal-actions modal-actions-1" style="margin-top:10px">
-            <button class="modal-btn cancel" data-action="restore-before-reset">恢复上次清除前的数据</button>
+        <div class="modal-actions modal-actions-1">
+            <button class="modal-btn cancel" data-action="restore-before-reset">恢复上次数据</button>
         </div>
-        <div class="modal-actions modal-actions-1" style="margin-top:10px">
+        <div class="modal-actions modal-actions-1">
             <button class="modal-btn cancel" data-action="close-modal" data-modal="resetModal">取消</button>
         </div>
     </div>
@@ -857,6 +860,11 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                     <p style="font-size:11.5px;color:#94a3b8;margin:9px 0 0;line-height:1.6;">取消勾选的字段不在车头栏显示，数据保留；整块车头栏与车辆本身始终保留。</p>
                 </div>
                 <div class="admin-section">
+                    <div class="admin-section-title">计算方向</div>
+                    <button class="admin-btn" id="adminDirBtn" data-action="toggle-dir" style="width:100%;">计算方向：从下往上</button>
+                    <p style="font-size:11.5px;color:#94a3b8;margin:9px 0 0;line-height:1.6;">默认从下往上算；按模板分别记住。开启反向时固定从上往下。</p>
+                </div>
+                <div class="admin-section">
                     <div class="admin-section-title">内容区横滑锁定</div>
                     <div id="scrollLockList" style="display:flex;flex-direction:column;gap:9px;"></div>
                     <p style="font-size:11.5px;color:#94a3b8;margin:9px 0 0;line-height:1.6;">勾选后该模板只显示第一张卡片，内容区不能左右滑动；默认模板1～4与故障已锁定。</p>
@@ -899,7 +907,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                 <div class="admin-footer">
                     <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
                     <div id="ltUseCount" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
-                    满卷时间计算工具 v1.79<br>
+                    满卷时间计算工具 v1.80<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1317,6 +1325,14 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.80', date: '2026-11-27', items: [
+    '调整：计算方向改为顶栏箭头手动切换，不再根据第一排有没有填时间自动判断',
+    '说明：方向按模板记住，▼ 从上往下、▲ 从下往上；反向开启时固定从上往下',
+    '调整：计算方向放进后台管理，重置弹窗里不再放方向入口；默认从下往上',
+    '调整：重置弹窗里重置与清除各只保留一个「全部模板」按钮，按钮满宽排列',
+    '调整：反向只在重置弹窗里，顶栏不再保留入口，标题改为「60头模式」',
+    '调整：重置只保留「重置当前」「重置全部」两个按钮，清空内容但保留批号'
+  ]},
   { version: 'v1.79', date: '2026-11-27', items: [
     '调整：锁定按钮移到车头右侧，和折叠放在一起',
     '调整：上一车/下一车挪到车头左侧，内容区滚动条隐藏',
@@ -2795,14 +2811,8 @@ const Scheduler = {
     // Do not clear results while the user is midway through typing a duration;
     // validation on blur will either normalize it or clear it and recalculate.
     if(dur === null && durEl && durEl.value.trim() && document.activeElement === durEl) return;
-    // 方向以第一车手动输入的时间为准（自动算出来的不算）：
-    // 第 1 排手动填了 → 从上往下；第 6 排手动填了 → 从下往上；后面车沿用同一方向。
-    const manualAtRow = (c, s) => {
-      const el = $(`start_${pref(c)}_s${s}_i1`);
-      if(!el || !String(el.value || '').trim()) return false;
-      return Flags.isManualStart(c, s) && !T()[fk.autoFill(c, s)];
-    };
-    const dir = Reverse.on() ? 'forward' : (manualAtRow(0, 0) ? 'forward' : 'backward');
+    // 方向由顶栏箭头手动决定，按模板记住；反向开启时固定从上往下
+    const dir = Reverse.on() ? 'forward' : (T().globalDirection === 'forward' ? 'forward' : 'backward');
     Scheduler._dir = dir;   // 供空位填充复用同一方向
     for(let c = from; c < CFG.CARS; c++){ if(!CarLock.isLocked(c)) Scheduler.clearAutoFill(c); }
     for(let c = from; c < CFG.CARS; c++){
@@ -3364,6 +3374,15 @@ const Renderer = {
       }
     }
   },
+  updateDirBtn(){
+    const el = $('adminDirBtn');
+    if(!el) return;
+    const rev = Reverse.on();
+    const d = T().globalDirection || 'backward';
+    const fwd = rev || d === 'forward';
+    el.textContent = '计算方向：' + (fwd ? '从上往下' : '从下往上');
+    el.title = rev ? '反向开着，方向固定从上往下' : '点一下切换计算方向';
+  },
   updateActiveTab(){ $$('.main-tab').forEach(tab => tab.classList.toggle('active', +tab.dataset.index === S.tab)); }
 };
 
@@ -3528,6 +3547,7 @@ const App = {
     AutoSize.allHeaders();
     updateCountWarnings();
     updateTitleCustomMarks();
+    Renderer.updateDirBtn();
   },
   toggleEmptySlot(carIdx){
     if(S.locked) return;
@@ -3604,6 +3624,15 @@ const App = {
     const top = blocks[target].offsetTop - container.offsetTop;
     container.scrollTo({top, behavior: 'smooth'});
   },
+  toggleDir(){
+    if(Reverse.on()){ showToast('反向开着，方向固定从上往下', 'err'); return; }
+    const d = T();
+    d.globalDirection = (d.globalDirection === 'forward') ? 'backward' : 'forward';
+    Renderer.updateDirBtn();
+    Scheduler.updateAll();
+    Store.saveDebounced();
+    showToast('计算方向：' + (d.globalDirection === 'forward' ? '从上往下' : '从下往上'));
+  },
   jumpFirstOpenCar(){
     const container = $('main_content');
     if(!container) return;
@@ -3634,13 +3663,23 @@ const App = {
     return idx;
   },
   /* 切换反向模式：位号左右镜像 + 方向固定从上往下 */
+  syncReverseBtn(){
+    const on = Reverse.on();
+    const b = $('reverseToggleBtn');
+    if(b){
+      b.textContent = on ? '开' : '关';
+      b.classList.toggle('danger', on);
+    }
+    const top = document.querySelector('.reverse-text');
+    if(top) top.classList.toggle('on', on);
+  },
   toggleReverse(){
     const target = Reverse.on() ? '默认顺序（位号 6→1，计算从下往上）' : '反向顺序（位号 1→6，计算从上往下）';
     Modals.askConfirm('切换顺序', '将切换到' + target + '，并清空所有模板的内容。\n（故障记录不受影响）').then(function(ok){
       if(!ok) return;
       Reverse.set(!Reverse.on());
-      const btn = document.querySelector('.reverse-text');
-      if(btn) btn.classList.toggle('on', Reverse.on());
+      App.syncReverseBtn();
+      try { Renderer.updateDirBtn(); } catch(e) {}
       /* 清空所有模板，按新顺序重画 */
       S.data = Array.from({length: CFG.TEMPLATES}, () => ({}));
       for(let t = 0; t < CFG.TEMPLATES; t++) resetBatchBaseDate(t);
@@ -3871,6 +3910,7 @@ const App = {
   },
   resetCurrent(){
     if(S.locked) return;
+    const keepBatch = (S.data[S.tab] || {})['batch_v0'] || '';
     UndoClear.clearAll();
     Store.save();              // 先把当前页面内容落盘，保证快照拿到的是最新数据
     Store.saveBeforeReset();   // 重置前留一份，专供误触恢复
@@ -3880,6 +3920,7 @@ const App = {
       if(el.id && !el.id.startsWith('setting') && el.id !== 'adminPassword') el.value = '';
     });
     const d = S.data[S.tab];
+    if(keepBatch){ for(let c = 0; c < CFG.CARS; c++) d['batch_' + pref(c)] = keepBatch; }
     resetBatchBaseDate(S.tab);
     for(let c = 0; c < CFG.CARS; c++){
       const v = pref(c);
@@ -3903,6 +3944,12 @@ const App = {
   },
   resetAll(){
     if(S.locked) return;
+    /* 重置清空一切，但批号保留 */
+    const keepBatch = {};
+    for(let t = 0; t < CFG.TEMPLATES; t++){
+      const b = (S.data[t] || {})['batch_v0'];
+      if(b) keepBatch[t] = b;
+    }
     UndoClear.clearAll();
     Store.save();
     Store.saveBeforeReset();
@@ -3918,6 +3965,10 @@ const App = {
     installFaultTemplateTab();
     Renderer.updateActiveTab();
     Store.initDefaults();
+    for(const t in keepBatch){
+      const d = S.data[t] || (S.data[t] = {});
+      for(let c = 0; c < CFG.CARS; c++) d['batch_' + pref(c)] = keepBatch[t];
+    }
     App.loadTab();
     try { ViewPos.clear(); } catch(e) {}
     Store.save();
@@ -4282,11 +4333,11 @@ const Events = {
         if(Events._resetTimer) clearTimeout(Events._resetTimer);
         Events._resetTimer = setTimeout(() => {
           Events._resetTimer = null;
-          if(!S.locked) Modals.open('resetModal');
+          if(!S.locked){ App.syncReverseBtn(); Modals.open('resetModal'); }
         }, 300);
         break;
       }
-      case 'open-login': Modals.openLogin(); break;
+      case 'open-login': Modals.openLogin(); try { Renderer.updateDirBtn(); } catch(e) {} break;
       case 'reset-content-current': Modals.close('resetModal'); App.resetContent(false); break;
       case 'reset-content-all': Modals.close('resetModal'); App.resetContent(true); break;
       case 'reset-current': Modals.close('resetModal'); App.resetCurrent(); break;
@@ -4305,6 +4356,7 @@ const Events = {
       case 'goto-remark': App.gotoRemark(+t.dataset.car); break;
       case 'scroll-cars': App.scrollCars(+t.dataset.dir); break;
       case 'toggle-collapse': App.toggleCollapse(t); break;
+      case 'toggle-dir': App.toggleDir(); break;
       case 'toggle-reverse': App.toggleReverse(); break;
       case 'toggle-opt': {
         const prev = document.activeElement;
@@ -4787,10 +4839,8 @@ const Guide = {
   STEPS: [
     { sel: '#main-tabs', title: '模板标签',
       desc: '这里有 7 个模板：模板 1～4、故障、实验、ST-48，各自数据完全独立。做不同批号时切一下就行，不会互相影响。' },
-    { sel: '.reverse-text', title: '反向（60 头）',
-      desc: '做 60 头时才打开：位号从上到下变成 1→6，计算方向固定从上往下。做 48 头保持关闭。切换会清空所有模板重新开始。' },
-    { sel: '.reset-text', title: '重置',
-      desc: '点开可选「重置所有内容」或「清除输入内容」，也能恢复上次清除前的数据。双击这个按钮直接清空全部模板。' },
+    { sel: '.reset-text', title: '重置与反向',
+      desc: '点开可选「重置所有内容」或「清除输入内容」，也能恢复上次清除前的数据。做 60 头时在这里打开「反向模式」：位号从上到下变成 1→6，计算固定从上往下。双击按钮直接清空全部模板。' },
     { sel: '#block_v0 .batch-box', title: '批号',
       desc: '先选批号，会自动带出旦数、个数和工艺时间，不用一个个手填。' },
     { sel: ['#title_v0_s0_i1', '#start_v0_s0_i1'], title: '自动计算',
@@ -5057,8 +5107,8 @@ function boot(){
     Guide.init();
     TimeTip.bind();
     ScrollGuard.bind();
-    const rvBtn = document.querySelector('.reverse-text');
-    if(rvBtn) rvBtn.classList.toggle('on', Reverse.on());
+    Renderer.updateDirBtn();
+    App.syncReverseBtn();
     const drCb = $('settingDateAutoRoll');
     if(drCb){
       drCb.checked = localStorage.getItem('luotong_date_auto_roll_v1') !== 'off';
