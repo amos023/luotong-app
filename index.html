@@ -960,7 +960,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                 <div class="admin-footer">
                     <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
                     <div id="ltUseCount" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
-                    满卷时间计算工具 v1.84<br>
+                    满卷时间计算工具 v1.85<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1378,6 +1378,10 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.85', date: '2026-11-28', items: [
+    '调整：车头栏个数改成按有效位号分摊（48÷6=8、288÷6=48），手动改过的不再覆盖',
+    '调整：重置时保留批号、工艺时间、个数、旦数这几项，其余照常清空'
+  ]},
   { version: 'v1.84', date: '2026-11-28', items: [
     '修复：切换模板时没有接上该模板上次停留的车，重新打开后切过去会回到顶部'
   ]},
@@ -2973,6 +2977,8 @@ const Scheduler = {
       if(Flags.emptyFill(c)) Scheduler.fillEmptySlots(c);
     }
     Sync.dates(from);
+    /* 自动算出来的时间也要计入个数，重算全部车辆 */
+    try { for(let cc = 0; cc < CFG.CARS; cc++) recountCarCount(cc); } catch(e){}
   },
   processCar(c, dir, dur){
     const rows = [];
@@ -3236,7 +3242,17 @@ const Batch = {
       for(let c = 0; c < CFG.CARS; c++){ if(CarLock.isLocked(c)) continue; const el = $(`denier_v${c}`); if(el) el.value = S.batchDeniers[val]; }
     }
     if(!skipCount && val && S.batchCounts[val] !== undefined){
-      for(let c = 0; c < CFG.CARS; c++){ if(CarLock.isLocked(c)) continue; const el = $(`count_v${c}`); if(el) el.value = S.batchCounts[val]; }
+      /* 车头个数 = 单个位号个数 × 有效位号数；还没录时间就是空 */
+      const total = parseInt(String(S.batchCounts[val]), 10);
+      for(let c = 0; c < CFG.CARS; c++){
+        if(CarLock.isLocked(c)) continue;
+        if(T()[`countManual_v${c}`]) continue;
+        const el = $(`count_v${c}`);
+        if(!el || !(total > 0)) continue;
+        const unit = Math.round(total / CFG.SUBS);
+        const n = countTimeCells(c);
+        el.value = n > 0 ? String(unit * n) : '';
+      }
     }
     if(!skipCount) updateCountWarnings();
     let ptChanged = false;
@@ -4023,6 +4039,7 @@ const App = {
       [`time_${v}_s${sIdx}_i${colNum}`, `tf_${v}_s${sIdx}_i${colNum}`, `shift_${v}_s${sIdx}_i${colNum}`, `train_${v}_s${sIdx}_i${colNum}`, `name_${v}_s${sIdx}_i${colNum}`].forEach(id => { const el = $(id); if(el) el.value = ''; });
     }
     Sync.dates();
+    try { recountCarCount(carIdx); } catch(e){}
     Store.saveDebounced();
     updateTitleCustomMarks();
     if(typeof TF.checkDuplicates === 'function') TF.checkDuplicates();
@@ -4092,6 +4109,18 @@ const App = {
   resetCurrent(){
     if(S.locked) return;
     const keepBatch = (S.data[S.tab] || {})['batch_v0'] || '';
+    /* 批号带出来的这几样重置时保留 */
+    const keepKeep = {};
+    {
+      const src = S.data[S.tab] || {};
+      for(let c = 0; c < CFG.CARS; c++){
+        const v = pref(c);
+        ['processTime_', 'denier_'].forEach(function(k){
+          const val = src[k + v];
+          if(val !== undefined && val !== '') keepKeep[k + v] = val;
+        });
+      }
+    }
     UndoClear.clearAll();
     Store.save();              // 先把当前页面内容落盘，保证快照拿到的是最新数据
     Store.saveBeforeReset();   // 重置前留一份，专供误触恢复
@@ -4102,6 +4131,7 @@ const App = {
     });
     const d = S.data[S.tab];
     if(keepBatch){ for(let c = 0; c < CFG.CARS; c++) d['batch_' + pref(c)] = keepBatch; }
+    for(const k in keepKeep){ d[k] = keepKeep[k]; }
     resetBatchBaseDate(S.tab);
     for(let c = 0; c < CFG.CARS; c++){
       const v = pref(c);
@@ -4125,11 +4155,22 @@ const App = {
   },
   resetAll(){
     if(S.locked) return;
-    /* 重置清空一切，但批号保留 */
+    /* 重置清空一切，但批号、工艺时间、个数、旦数保留 */
     const keepBatch = {};
+    const keepAll = {};
     for(let t = 0; t < CFG.TEMPLATES; t++){
-      const b = (S.data[t] || {})['batch_v0'];
+      const src = S.data[t] || {};
+      const b = src['batch_v0'];
       if(b) keepBatch[t] = b;
+      const map = {};
+      for(let c = 0; c < CFG.CARS; c++){
+        const v = pref(c);
+        ['processTime_', 'denier_'].forEach(function(k){
+          const val = src[k + v];
+          if(val !== undefined && val !== '') map[k + v] = val;
+        });
+      }
+      if(Object.keys(map).length) keepAll[t] = map;
     }
     UndoClear.clearAll();
     Store.save();
@@ -4149,6 +4190,10 @@ const App = {
     for(const t in keepBatch){
       const d = S.data[t] || (S.data[t] = {});
       for(let c = 0; c < CFG.CARS; c++) d['batch_' + pref(c)] = keepBatch[t];
+    }
+    for(const t in keepAll){
+      const d = S.data[t] || (S.data[t] = {});
+      for(const k in keepAll[t]) d[k] = keepAll[t][k];
     }
     App.loadTab();
     try { ViewPos.clear(); } catch(e) {}
@@ -4610,6 +4655,7 @@ const Events = {
       el._dirty = true;
       delete T()[fk.autoFill(+el.dataset.car, +el.dataset.s)];
       Sync.rowToB_F(pref(+el.dataset.car), +el.dataset.s, true);
+      try { recountCarCount(+el.dataset.car); } catch(_e){}
       return;
     }
     if(role === 'title'){ Events.onTitleInput(el); return; }
@@ -4656,7 +4702,12 @@ const Events = {
     if(field === 'headerName' && carIdx === 0){
       syncHeaderFieldFromV0('headerName', el.value); Store.saveDebounced(); return;
     }
-    if(field === 'count'){ updateCountWarnings(); }
+    if(field === 'count'){
+      const mc = String(el.id || '').match(/^count_v(\d+)$/);
+      if(mc) T()['countManual_v' + mc[1]] = true;
+      updateCountWarnings();
+    }
+
     Store.saveDebounced();
   },
   onChange(e){
@@ -4955,16 +5006,43 @@ function openFaultTemplate(){
 }
 
 /* 车头栏个数低于当前批号预设个数时标红：预设为纯数字才比较，空值不标红 */
+/* 该车里填了几个时间（只看时间格，不看位号） */
+function countTimeCells(c){
+  let n = 0;
+  for(let s = 0; s < CFG.SUBS; s++){
+    for(let i = 1; i <= 6; i++){
+      const el = $('start_v' + c + '_s' + s + '_i' + i);
+      if(el && String(el.value || '').trim()) n++;
+    }
+  }
+  return n;
+}
+/* 时间变化后重算这辆车的个数：批号个数 ÷ 有效位号数，手动改过的不动 */
+function recountCarCount(c){
+  const batch = S.currentBatch;
+  if(!batch) return;
+  const total = parseInt(String(S.batchCounts[batch] === undefined ? '' : S.batchCounts[batch]), 10);
+  if(!(total > 0)) return;
+  if(T()['countManual_v' + c]) return;
+  const unit = Math.round(total / CFG.SUBS);   /* 单个位号的个数，如 48÷6=8 */
+  const n = countTimeCells(c);
+  const el = $('count_v' + c);
+  if(el) el.value = n > 0 ? String(unit * n) : '';   /* 没有时间就留空 */
+  updateCountWarnings();
+  try { T()['count_' + pref(c)] = el ? el.value : ''; } catch(e){}
+}
+
 function updateCountWarnings(){
   var preset = S.currentBatch ? String(S.batchCounts[S.currentBatch] === undefined ? '' : S.batchCounts[S.currentBatch]).trim() : '';
-  var limit = /^\d+$/.test(preset) ? parseInt(preset, 10) : null;
+  var unit = /^\d+$/.test(preset) ? Math.round(parseInt(preset, 10) / CFG.SUBS) : null;
   for(var c = 0; c < CFG.CARS; c++){
     var el = $('count_v' + c);
     if(!el) continue;
     var raw = String(el.value || '').trim();
     var low = false;
-    if(limit !== null && /^\d+$/.test(raw)){
-      low = parseInt(raw, 10) < limit;
+    if(unit !== null && /^\d+$/.test(raw)){
+      var need = unit * (countTimeCells(c) || CFG.SUBS);
+      low = parseInt(raw, 10) < need;
     }
     el.classList.toggle('count-low', low);
   }
