@@ -960,7 +960,7 @@ select:focus{border-color:#1677ff!important;box-shadow:0 0 0 3px rgba(22,119,255
                 <div class="admin-footer">
                     <div id="ltUsage" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
                     <div id="ltUseCount" style="font-size:12px;color:#8e8e93;margin-bottom:4px;"></div>
-                    满卷时间计算工具 v1.83<br>
+                    满卷时间计算工具 v1.84<br>
                     © 2026 保留所有权利
                 </div>
             </div>
@@ -1378,6 +1378,9 @@ const CFG = {
 };
 
 const UPDATE_LOGS = [
+  { version: 'v1.84', date: '2026-11-28', items: [
+    '修复：切换模板时没有接上该模板上次停留的车，重新打开后切过去会回到顶部'
+  ]},
   { version: 'v1.83', date: '2026-11-28', items: [
     '新增：新手指引第一步「▶ 看演示」，自动走一遍选批号、填时间、看第二车、空位填充、折叠',
     '说明：演示借用一个空模板进行，结束后自动清空并切回原来的模板'
@@ -3628,7 +3631,16 @@ const App = {
         const offset = Number.isFinite(anchor.offset) ? anchor.offset : 0;
         container.scrollTop += target.getBoundingClientRect().top - container.getBoundingClientRect().top - offset;
       }else{
-        container.scrollTop = Number.isFinite(S.scroll[index]) ? S.scroll[index] : 0;
+        /* 本次会话没切过这个模板时，用持久化下来的车位置（重开也能接上） */
+        const saved = ViewPos.all()[index];
+        const bl = [...container.querySelectorAll('.one-car-block')];
+        if(saved !== undefined && saved !== null && bl[saved]){
+          container.style.scrollBehavior = 'auto';
+          container.scrollTop = bl[saved].offsetTop - container.offsetTop;
+          requestAnimationFrame(function(){ container.style.scrollBehavior = ''; });
+        }else{
+          container.scrollTop = Number.isFinite(S.scroll[index]) ? S.scroll[index] : 0;
+        }
       }
     };
     requestAnimationFrame(() => { restorePosition(); requestAnimationFrame(restorePosition); });
