@@ -3,299 +3,596 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>满卷时间计算工具</title>
+    <title>满卷时间计算表</title>
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: #f2f2f7; margin: 0; padding: 12px; color: #333; font-size: 14px; }
-        
-        .header { background: white; border-radius: 12px; padding: 15px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); text-align: center; }
-        .header h1 { font-size: 18px; margin: 0 0 6px 0; color: #007aff; }
-        .header p { font-size: 13px; color: #888; margin: 0; }
-        
-        .grid-container { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            column-gap: 10px; 
-            row-gap: 12px; /* 稍微缩小卡片之间的距离 */
+        body { background: #f2f2f7; margin: 0; padding: 8px; color: #333; font-size: 13px; }
+
+        .page { max-width: 900px; margin: 0 auto; }
+
+        /* 顶部班次汇总 */
+        .summary {
+            max-width: 900px;
+            margin: 0 auto 8px;
+            background: #fff;
+            border-radius: 10px;
+            padding: 8px 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        @media (min-width: 768px) { 
-            .grid-container { grid-template-columns: repeat(3, 1fr); } 
+        .sum-groups { display: flex; gap: 5px; }
+        .sum-groups .g {
+            flex: 1;
+            min-width: 0;
+            text-align: center;
+            background: #f3f6fb;
+            border-radius: 8px;
+            padding: 6px 2px 7px;
         }
-        @media (min-width: 1000px) { 
-            .grid-container { grid-template-columns: repeat(4, 1fr); } 
+        .sum-groups .g .name {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #3f6ea8;
+            line-height: 1.25;
+            white-space: nowrap;
+        }
+        .sum-groups .g.total { background: #e6f0ff; }
+        .sum-groups .g.total .name { color: #007aff; }
+        .sum-groups .g.total .cnt { color: #3f6ea8; font-size: 14px; }
+        .sum-groups .g .cnt {
+            display: block;
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: 600;
+            color: #55606e;
+            line-height: 1.3;
+            margin-top: 2px;
+            white-space: nowrap;
         }
 
-        .item-card { 
-            background: white; 
-            border-radius: 10px; 
-            padding: 12px 10px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
+        /* 每个模板一张卡片 */
+        .tpl {
+            background: #fff;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
         }
-        
-        .item-title-wrapper {
+
+        .tpl-head {
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-weight: bold;
-            font-size: 14px;
-            color: #007aff;
-            border-bottom: 1px solid #f0f0f0;
-            padding-bottom: 8px;
-            margin-bottom: 8px;
+            gap: 6px;
+            padding: 5px 10px;
+            background: #f3f6fb;
+            border-bottom: 1px solid #e3e8f0;
+            font-size: 12px;
+            color: #5b6b82;
         }
-        .title-prefix { margin-right: 4px; }
-        .item-title-input { 
-            width: 32px; 
-            text-align: center; 
-            font-weight: bold; 
-            font-size: 15px; 
-            color: #007aff; 
-            border: none;
-            border-bottom: 1px dashed #007aff; 
-            background: transparent;
+        .tpl-name { font-weight: 700; color: #3f6ea8; font-size: 13px; }
+        .tpl-sub { color: #9aa7b8; font-size: 11px; }
+        .tpl-head .spacer { flex: 1; }
+        .tpl-head input {
+            width: 62px;
+            height: 26px;
             padding: 0;
+            border: 1px solid #cbd4e1;
+            border-radius: 5px;
+            background: #fff;
+            text-align: center;
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: #d9480f;
             outline: none;
         }
-        .item-title-input:focus { background: #f0f8ff; border-bottom-style: solid; }
+        .tpl-head input:focus { border-color: #007aff; box-shadow: 0 0 0 2px rgba(0,122,255,0.15); }
+        .tpl-head input::placeholder { color: #c8ccd4; font-weight: 400; }
 
-        .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .input-row label { font-size: 13px; color: #666; width: 58px; white-space: nowrap; }
-        .input-row input { 
-            flex: 1; 
-            width: 100%; 
-            min-width: 0; 
-            padding: 6px 4px; /* 稍微缩小上下 padding */
-            border: 1px solid #d1d1d6; 
-            border-radius: 6px; 
-            font-size: 14px; 
-            text-align: center; 
-            background: #fdfdfd;
-            transition: all 0.2s ease;
+        .tpl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        table { border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+
+        thead th {
+            background: #fafbfd;
+            color: #444;
+            font-size: 12px;
+            font-weight: 700;
+            height: 32px;
+            padding: 0 2px;
+            border-bottom: 1px solid #dcdfe4;
+            border-right: 1px solid #e5e7ea;
+            white-space: nowrap;
         }
-        .input-row input:focus { 
-            border-color: #007aff; 
-            background: #fff;
-            outline: none; 
-            box-shadow: 0 0 0 3px rgba(0,122,255,0.15); 
+        thead th:last-child { border-right: none; }
+        thead th:nth-child(1) { width: 46px; position: sticky; left: 0; z-index: 3; background: #f0f3f8; }
+        thead th:nth-child(2) { width: 72px; }
+        thead th:nth-child(n+3) { width: 72px; }
+
+        tbody td {
+            height: 34px;
+            padding: 0;
+            border-bottom: 1px solid #eff1f4;
+            border-right: 1px solid #eff1f4;
+            text-align: center;
+            font-size: 13px;
+            font-family: monospace;
+            white-space: nowrap;
         }
-        
-        /* 核心修改：压低结果区高度，产生内部滚动 */
-        .result-area { 
-            margin-top: 8px; 
-            background: #f8f9fb; 
-            border-radius: 8px; 
-            padding: 4px; 
-            height: 120px; /* 固定高度，彻底锁死卡片变长 */
-            overflow-y: auto; 
-            display: flex;
-            flex-direction: column;
-            gap: 4px; 
+        tbody td:last-child { border-right: none; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody td.c-no { width: 46px; position: sticky; left: 0; z-index: 1; background: #fff; }
+        tbody td.c-start { width: 72px; }
+        tbody td.c-t { width: 72px; }
+
+        tbody td input {
+            display: block;
+            width: 100%;
+            height: 32px;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            padding: 0;
+            color: #333;
         }
-        
-        /* 压缩记录条间距 */
-        .record-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            padding: 4px 8px; /* 缩小上下 padding */
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #e5e5ea;
-            font-size: 12px; 
-            color: #555; 
-            white-space: nowrap; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-        }
-        
-        .record-item span:first-child { color: #666; font-weight: 500; }
-        .record-item span:last-child { font-family: monospace; font-size: 13px; font-weight: bold; color: #34c759; }
-        
-        .empty-tip { 
-            text-align: center; 
-            color: #aaa; 
-            font-size: 13px; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%; /* 没数据时居中 */
-        }
-        
-        /* 美化滚动条 */
-        .result-area::-webkit-scrollbar { width: 3px; }
-        .result-area::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 3px; }
+        tbody td.c-start input { font-family: monospace; color: #007aff; font-weight: 600; }
+        tbody td.c-t input { font-family: monospace; color: #3f4a5a; font-weight: 600; }
+        tbody td:focus-within { background: #eaf3ff; }
+        tbody td input::placeholder { color: #d5d8dd; font-weight: 400; }
+
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>📦 满卷时间计算工具</h1>
-        <p>白班截止时间 20:40，夜班截止时间 08:40</p>
+    <div class="summary" id="summary">
+        <div class="sum-groups" id="sumGroups"></div>
     </div>
 
-    <div class="grid-container" id="grid"></div>
+    <div class="page" id="page"></div>
 
     <script>
-        function autoFormat(val) {
+        const PER_CAR = 12;            // 一车 = 12 个满卷时间（台车两边各 6 个位号）
+        const GROUP = 6;
+        const GROUPS = 4;
+        const ROWS = GROUP * GROUPS;   // 24 个位号
+        let COLS = 10;                 // 默认显示 10 车
+
+        const times = [];              // times[i]：位号 i+1 的各车完成时刻（分钟）
+        const dataRows = [];           // 24 个数据行
+        const headRows = [];           // 4 个表头行
+        const tables = [];             // 4 个 table 元素
+
+        for (let i = 0; i < ROWS; i++) times.push([]);
+
+        function cnNum(n) {
+            const arr = ['一','二','三','四','五','六','七','八','九','十'];
+            return arr[n - 1] || String(n);
+        }
+        function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+        /* 纯数字输入的解析规则：
+           mode='time'（时间点）→ 1~2 位当小时（>23 则当分钟）；3~4 位当 HHMM
+           mode='dur'（工艺时间）→ 1~2 位当分钟；3~4 位当 HHMM
+           例：050 → 00:50，113 → 01:13，930 → 09:30，9 → 09:00（time）/ 00:09（dur） */
+        function autoFormat(val, mode) {
             if (!val) return "";
-            val = val.replace('：', ':');
-            if (val.includes(':')) return val; 
-            let num = parseInt(val);
-            if (isNaN(num)) return val;
-            let h, m;
-            if (num >= 100) {
-                h = Math.floor(num / 100);
-                m = num % 100;
-            } else {
-                h = num;
-                m = 0;
+            val = String(val).replace('：', ':').trim();
+            if (val.includes(':')) {
+                const p = val.split(':');
+                let h = parseInt(p[0]) || 0;
+                let m = parseInt(p[1]) || 0;
+                if (m > 59) m = 59;
+                if (h > 23) h = 23;
+                if (h < 0) h = 0;
+                if (m < 0) m = 0;
+                return pad2(h) + ':' + pad2(m);
             }
+            if (!/^\d+$/.test(val)) return val;
+
+            let h = 0, m = 0;
+            if (val.length >= 3) {
+                h = parseInt(val.slice(0, val.length - 2));
+                m = parseInt(val.slice(-2));
+            } else if (mode === 'dur') {
+                h = 0;
+                m = parseInt(val);
+            } else {
+                const n = parseInt(val);
+                if (n <= 23) { h = n; m = 0; }
+                else { h = 0; m = n; }
+            }
+            if (isNaN(h)) h = 0;
+            if (isNaN(m)) m = 0;
+            if (h > 23) h = 23;
             if (m > 59) m = 59;
-            return (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
+            return pad2(h) + ':' + pad2(m);
         }
 
-        function timeToMins(timeStr) {
-            if(!timeStr || !timeStr.includes(':')) return null;
-            let parts = timeStr.split(':');
-            let h = parseInt(parts[0]);
-            let m = parseInt(parts[1]);
+        function timeToMins(str) {
+            if (!str || !str.includes(':')) return null;
+            const p = str.split(':');
+            const h = parseInt(p[0]);
+            const m = parseInt(p[1]);
             if (isNaN(h) || isNaN(m)) return null;
             return h * 60 + m;
         }
 
+        function parseLoose(str, mode) { return timeToMins(autoFormat(str, mode)); }
+
         function minsToTime(mins) {
-            let h = Math.floor(mins / 60) % 24;
-            let m = mins % 60;
-            return (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
+            const h = Math.floor(mins / 60) % 24;
+            const m = mins % 60;
+            return pad2(h) + ':' + pad2(m);
         }
 
-        const grid = document.getElementById('grid');
-        
-        for (let i = 1; i <= 24; i++) {
-            let card = document.createElement('div');
-            card.className = 'item-card';
-            card.innerHTML = `
-                <div class="item-title-wrapper">
-                    <span class="title-prefix">位号</span>
-                    <input type="text" class="item-title-input calc-input" id="title_${i}" value="${i}">
-                </div>
-                <div class="input-row">
-                    <label>满卷时长</label>
-                    <input type="text" id="dur_${i}" placeholder="如: 9:00" class="calc-input">
-                </div>
-                <div class="input-row">
-                    <label>满卷开始</label>
-                    <input type="text" id="start_${i}" placeholder="如: 9:00" class="calc-input">
-                </div>
-                <div class="result-area" id="res_${i}">
-                    <div class="empty-tip">填写后自动计算</div>
-                </div>
-            `;
-            grid.appendChild(card);
+        function limitMins(start) {
+            const t840 = 8 * 60 + 40;
+            const t2040 = 20 * 60 + 40;
+            if (start < t840) return t840;
+            if (start < t2040) return t2040;
+            return t840 + 24 * 60;
+        }
 
-            document.getElementById(`dur_${i}`).addEventListener('blur', function() {
-                this.value = autoFormat(this.value);
-                calculateItem(i);
+        function applyTableWidth() {
+            const w = (46 + 72 * (1 + COLS)) + 'px';
+            tables.forEach(function (t) { t.style.width = w; });
+        }
+
+        /* ---------- 建 4 个模板 ---------- */
+        function buildAll() {
+            const page = document.getElementById('page');
+
+            for (let g = 0; g < GROUPS; g++) {
+                const from = g * GROUP + 1;
+                const to = from + GROUP - 1;
+
+                const card = document.createElement('div');
+                card.className = 'tpl';
+
+                const head = document.createElement('div');
+                head.className = 'tpl-head';
+                head.innerHTML =
+                    '<span class="tpl-name">模板 ' + (g + 1) + '</span>' +
+                    '<span class="tpl-sub">位号 ' + from + '–' + to + '</span>' +
+                    '<span class="spacer"></span>' +
+                    '<span>工艺时间</span>' +
+                    '<input type="text" id="proc_' + g + '" placeholder="01:00" inputmode="numeric">';
+                card.appendChild(head);
+
+                const scroll = document.createElement('div');
+                scroll.className = 'tpl-scroll';
+
+                const table = document.createElement('table');
+                tables[g] = table;
+
+                const thead = document.createElement('thead');
+                const htr = document.createElement('tr');
+                htr.innerHTML = '<th>位号</th><th>时间</th>';
+                for (let c = 1; c <= COLS; c++) {
+                    const th = document.createElement('th');
+                    th.textContent = cnNum(c) + '车';
+                    htr.appendChild(th);
+                }
+                thead.appendChild(htr);
+                headRows[g] = htr;
+                table.appendChild(thead);
+
+                const tbody = document.createElement('tbody');
+                for (let r = 0; r < GROUP; r++) {
+                    const idx = g * GROUP + r;      // 0 基
+                    const tr = document.createElement('tr');
+
+                    const tdNo = document.createElement('td');
+                    tdNo.className = 'c-no';
+                    const inNo = document.createElement('input');
+                    inNo.type = 'text';
+                    inNo.id = 'no_' + (idx + 1);
+                    inNo.value = idx + 1;
+                    inNo.setAttribute('inputmode', 'numeric');
+                    tdNo.appendChild(inNo);
+                    tr.appendChild(tdNo);
+
+                    const tdStart = document.createElement('td');
+                    tdStart.className = 'c-start';
+                    const inStart = document.createElement('input');
+                    inStart.type = 'text';
+                    inStart.id = 'start_' + (idx + 1);
+                    inStart.setAttribute('inputmode', 'numeric');
+                    tdStart.appendChild(inStart);
+                    tr.appendChild(tdStart);
+
+                    for (let c = 0; c < COLS; c++) {
+                        tr.appendChild(makeTimeCell(idx, c));
+                    }
+
+                    tbody.appendChild(tr);
+                    dataRows[idx] = tr;
+                }
+                table.appendChild(tbody);
+                scroll.appendChild(table);
+                card.appendChild(scroll);
+                page.appendChild(card);
+            }
+
+            bindEvents();
+            applyTableWidth();
+            if (loadState()) renderAll(); else updateSummary();
+        }
+
+        function makeTimeCell(rowIdx, colIdx) {
+            const td = document.createElement('td');
+            td.className = 'c-t';
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.dataset.row = rowIdx;
+            inp.dataset.col = colIdx;
+            inp.setAttribute('inputmode', 'numeric');
+            td.appendChild(inp);
+            return td;
+        }
+
+        /* ---------- 事件 ---------- */
+        function bindEvents() {
+            for (let i = 1; i <= ROWS; i++) {
+                const no = document.getElementById('no_' + i);
+                no.addEventListener('input', function () {
+                    this.value = this.value.replace(/\D/g, '');
+                    scheduleSave();
+                });
+                no.addEventListener('focus', function () { setTimeout(() => this.select(), 10); });
+
+                const st = document.getElementById('start_' + i);
+                st.addEventListener('input', () => recomputeRow(i - 1));
+                st.addEventListener('blur', function () {
+                    this.value = autoFormat(this.value, 'time');
+                    recomputeRow(i - 1);
+                });
+                st.addEventListener('focus', function () { setTimeout(() => this.select(), 10); });
+                st.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.blur();
+                        const nxt = document.getElementById('start_' + (i + 1));
+                        if (nxt) { nxt.focus(); nxt.select(); }
+                    }
+                });
+            }
+
+            /* 每个模板一个工艺时间：改它只重算该模板 6 行 */
+            for (let g = 0; g < GROUPS; g++) {
+                const el = document.getElementById('proc_' + g);
+                if (!el) continue;
+                el.addEventListener('input', () => recomputeGroup(g));
+                el.addEventListener('blur', function () {
+                    this.value = autoFormat(this.value, 'dur');
+                    recomputeGroup(g);
+                });
+                el.addEventListener('focus', function () { setTimeout(() => this.select(), 10); });
+            }
+
+            /* 任何输入框点进来就全选，方便直接覆盖输入 */
+            document.getElementById('page').addEventListener('focusin', function (e) {
+                const t = e.target;
+                if (!t || t.tagName !== 'INPUT') return;
+                setTimeout(function () { try { t.select(); } catch (err) {} }, 30);
+                setTimeout(function () {
+                    try {
+                        t.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+                    } catch (err) {}
+                }, 320);
             });
 
-            document.getElementById(`start_${i}`).addEventListener('blur', function() {
-                this.value = autoFormat(this.value);
-                calculateItem(i);
+            /* 车次时间格：改哪格，从哪格往后重算，前面不动 */
+            document.getElementById('page').addEventListener('input', function (e) {
+                const t = e.target;
+                if (!t.dataset || t.dataset.col === undefined) return;
+                const i = parseInt(t.dataset.row);
+                const c = parseInt(t.dataset.col);
+                const v = parseLoose(t.value, 'time');
+                if (v === null) {
+                    times[i] = times[i].slice(0, c);
+                    renderAll();
+                    return;
+                }
+                times[i][c] = v;
+                recomputeFrom(i, c);
             });
-            
-            document.getElementById(`dur_${i}`).addEventListener('input', () => calculateItem(i));
-            document.getElementById(`start_${i}`).addEventListener('input', () => calculateItem(i));
-
-            let titleInput = document.getElementById(`title_${i}`);
-            titleInput.addEventListener('blur', function() {
-                if (this.value.trim() === "") {
-                    this.value = i;
+            document.getElementById('page').addEventListener('focusout', function (e) {
+                const t = e.target;
+                if (!t.dataset || t.dataset.col === undefined) return;
+                const i = parseInt(t.dataset.row);
+                const c = parseInt(t.dataset.col);
+                if (times[i][c] !== undefined) {
+                    t.value = minsToTime(times[i][c]);
                 }
             });
-            titleInput.addEventListener('input', function() {
-                this.value = this.value.replace(/\D/g, '');
-            });
         }
 
-        const allInputs = document.querySelectorAll('.calc-input');
-        allInputs.forEach((input, index) => {
-            input.addEventListener('focus', function() {
-                setTimeout(() => {
-                    this.select();
-                }, 10); 
-            });
+        /* ---------- 计算 ---------- */
+        function getProc(i) {
+            const el = document.getElementById('proc_' + Math.floor(i / GROUP));
+            return el ? parseLoose(el.value, 'dur') : null;
+        }
+        function getStart(i) {
+            return parseLoose(document.getElementById('start_' + (i + 1)).value, 'time');
+        }
 
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); 
-                    this.blur(); 
-                    setTimeout(() => {
-                        if (index + 1 < allInputs.length) {
-                            const nextInput = allInputs[index + 1];
-                            nextInput.focus();
-                            nextInput.select(); 
-                        }
-                    }, 50);
+        function computeRow(i) {
+            const start = getStart(i);
+            const dur = getProc(i);
+            if (start === null || dur === null || dur <= 0) { times[i] = []; return; }
+            const limit = limitMins(start);
+            const arr = [];
+            let t = start, guard = 0;
+            while (guard++ < 400) {
+                t += dur;
+                if (t > limit) break;
+                arr.push(t);
+            }
+            times[i] = arr;
+        }
+
+        function recomputeRow(i) { computeRow(i); renderAll(); }
+
+        function recomputeGroup(g) {
+            const from = g * GROUP, to = from + GROUP;
+            for (let i = from; i < to; i++) computeRow(i);
+            renderAll();
+        }
+
+        function recomputeFrom(i, c) {
+            const dur = getProc(i);
+            const start = getStart(i);
+            if (dur === null || dur <= 0 || start === null) { renderAll(); return; }
+            if (times[i][c] === undefined) { renderAll(); return; }
+
+            let limit = limitMins(start);
+            if (times[i][c] > limit) limit = limitMins(times[i][c]);
+
+            const arr = times[i].slice(0, c + 1);
+            let t = arr[c], guard = 0;
+            while (guard++ < 400) {
+                const n = t + dur;
+                if (n > limit) break;
+                arr.push(n);
+                t = n;
+            }
+            times[i] = arr;
+            renderAll();
+        }
+
+        /* 所有模板统一步长增列 */
+        function ensureCols(n) {
+            if (n <= COLS) return;
+            for (let c = COLS; c < n; c++) {
+                headRows.forEach(function (htr) {
+                    const th = document.createElement('th');
+                    th.textContent = cnNum(c + 1) + '车';
+                    htr.appendChild(th);
+                });
+                dataRows.forEach(function (tr, rowIdx) {
+                    tr.appendChild(makeTimeCell(rowIdx, c));
+                });
+            }
+            COLS = n;
+            applyTableWidth();
+        }
+
+        function renderAll() {
+            let maxLen = 10;
+            for (let i = 0; i < ROWS; i++) {
+                if (times[i].length > maxLen) maxLen = times[i].length;
+            }
+            ensureCols(maxLen);
+
+            const ae = document.activeElement;
+            for (let i = 0; i < ROWS; i++) {
+                const cells = dataRows[i].querySelectorAll('td.c-t input');
+                for (let c = 0; c < COLS; c++) {
+                    const inp = cells[c];
+                    if (!inp || inp === ae) continue;
+                    const v = times[i][c];
+                    inp.value = v === undefined ? '' : minsToTime(v);
                 }
-            });
-        });
+            }
+            updateSummary();
+            scheduleSave();
+        }
 
-        function calculateItem(index) {
-            let durInput = document.getElementById(`dur_${index}`).value;
-            let startInput = document.getElementById(`start_${index}`).value;
-            let resDiv = document.getElementById(`res_${index}`);
-
-            let startMins = timeToMins(startInput);
-            let durMins = timeToMins(durInput);
-
-            if (startMins === null || durMins === null || durMins <= 0) {
-                resDiv.innerHTML = `<div class="empty-tip">填写后自动计算</div>`;
-                return;
+        /* ---------- 顶部汇总：合计车数 / 最晚满卷 / 各模板车数 ---------- */
+        function updateSummary() {
+            const perGroup = [];
+            for (let g = 0; g < GROUPS; g++) perGroup.push(0);
+            for (let i = 0; i < ROWS; i++) {
+                perGroup[Math.floor(i / GROUP)] += times[i].length;
             }
 
-            let time840 = 8 * 60 + 40;
-            let time2040 = 20 * 60 + 40;
-            let limitMins;
-
-            if (startMins >= time840 && startMins < time2040) {
-                limitMins = time2040; 
-            } else {
-                limitMins = time840 + 24 * 60; 
+            const gEl = document.getElementById('sumGroups');
+            if (!gEl) return;
+            if (!gEl.dataset.built) {
+                let html = '';
+                for (let g = 0; g < GROUPS; g++) {
+                    html += '<div class="g"><b class="name">模板' + (g + 1) + '</b>'
+                         +  '<span class="cnt" id="sumC' + g + '">0 车</span></div>';
+                }
+                html += '<div class="g total"><b class="name">总计</b>'
+                     +  '<span class="cnt" id="sumTotal">0 车</span></div>';
+                gEl.innerHTML = html;
+                gEl.dataset.built = '1';
             }
 
-            let currentMins = startMins;
-            if (startMins < time840) {
-                limitMins = time840; 
-            }
+            let all = 0;
+            for (let g = 0; g < GROUPS; g++) all += perGroup[g];
 
-            let html = "";
-            let count = 2; 
-            let safetyCounter = 0;
+            const tEl = document.getElementById('sumTotal');
+            if (tEl) tEl.textContent = String(Math.round((all / PER_CAR) * 10) / 10) + ' 车';
 
-            while (safetyCounter < 100) {
-                let finishMins = currentMins + durMins;
-                if (finishMins > limitMins) break; 
-
-                html += `
-                    <div class="record-item">
-                        <span>第${count}车</span>
-                        <span>${minsToTime(finishMins)}</span>
-                    </div>
-                `;
-
-                currentMins = finishMins;
-                count++;
-                safetyCounter++;
-            }
-
-            if (html === "") {
-                resDiv.innerHTML = `<div class="empty-tip" style="color:#ff3b30;">超出截止时间</div>`;
-            } else {
-                resDiv.innerHTML = html;
+            for (let g = 0; g < GROUPS; g++) {
+                const b = document.getElementById('sumC' + g);
+                if (b) {
+                    b.textContent = String(Math.round((perGroup[g] / PER_CAR) * 10) / 10) + ' 车';
+                }
             }
         }
+
+        /* ---------- 本地保存：刷新、关掉再开都还在 ---------- */
+        const STORE_KEY = 'luotong_manjuan';
+        let saveTimer = null;
+
+        function scheduleSave() {
+            if (saveTimer) clearTimeout(saveTimer);
+            saveTimer = setTimeout(saveState, 300);
+        }
+
+        function saveState() {
+            const st = { procs: [], rows: [] };
+            for (let g = 0; g < GROUPS; g++) {
+                const el = document.getElementById('proc_' + g);
+                st.procs.push(el ? el.value : '');
+            }
+            for (let i = 0; i < ROWS; i++) {
+                const no = document.getElementById('no_' + (i + 1));
+                const srt = document.getElementById('start_' + (i + 1));
+                st.rows.push({
+                    no: no ? no.value : '',
+                    start: srt ? srt.value : '',
+                    times: times[i].slice()
+                });
+            }
+            try { localStorage.setItem(STORE_KEY, JSON.stringify(st)); } catch (e) {}
+        }
+
+        function loadState() {
+            let raw = null;
+            try { raw = localStorage.getItem(STORE_KEY); } catch (e) { return false; }
+            if (!raw) return false;
+            let st = null;
+            try { st = JSON.parse(raw); } catch (e) { return false; }
+            if (!st) return false;
+
+            if (Array.isArray(st.procs)) {
+                st.procs.forEach(function (v, g) {
+                    const el = document.getElementById('proc_' + g);
+                    if (el) el.value = v || '';
+                });
+            }
+            if (Array.isArray(st.rows)) {
+                st.rows.forEach(function (r, i) {
+                    if (!r || i >= ROWS) return;
+                    const no = document.getElementById('no_' + (i + 1));
+                    const srt = document.getElementById('start_' + (i + 1));
+                    if (no && r.no !== undefined) no.value = r.no;
+                    if (srt && r.start !== undefined) srt.value = r.start;
+                    if (Array.isArray(r.times)) times[i] = r.times.slice();
+                });
+            }
+            return true;
+        }
+
+        buildAll();
     </script>
 </body>
 </html>
